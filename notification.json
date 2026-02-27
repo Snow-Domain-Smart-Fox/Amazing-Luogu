@@ -22,5 +22,11 @@
     "title": "🎉 【个人浅定制动态博客预告】Amazing Luogu 感恩季 贰 预告",
     "time": "2026-02-25 18:00",
     "content": "# Amazing Luogu 感恩季 贰 预告\n\n![](https://cdn.luogu.com.cn/upload/image_hosting/qgg2swjp.png)\n\n预计 $3$ 至 $4$ 月开发完成，**敬请期待**。\n\n一个有效反馈即可浅定制一个这个。\n\n需准备：\n\n- Github 账号\n- Supabase 账号\n\n虽然放在 Github 上，但还是会加密的。\n\n你可以加载完成后篡改内容，但这是面对开发小白开放的福利，且你无法控制数据库。"
-  }
+  },
+  {
+    "id": 5,
+    "title": "🎉 反馈渠道更新须知",
+    "time": "2026-02-25 18:00",
+    "content": "# 反馈渠道更新须知\n\n由于插件内置的 BUG 反馈坏了，所以应急部署了未开发完工的工单系统。\n\n新的 BUG 反馈链接：<https://ticket.amlg.top>。\n\n为了防滥用，需要邮箱验证注册。\n\n如果没有或暂时用不了邮箱，请 私信 [作者1](https://www.luogu.com.cn/chat?uid=1393230) 与 [作者2](https://www.luogu.com.cn/chat?uid=1393230) 以反馈（也可以只私信一个）。\n\n由于未开发完成，可能会出现错绑/盗绑洛谷账号的情况，此时可联系 [私信作者](https://www.luogu.com.cn/chat?uid=1393230) 以删除账号。
+"  }，
 ]
