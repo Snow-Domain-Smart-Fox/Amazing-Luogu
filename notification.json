@@ -28,5 +28,11 @@
     "title": "🎉 反馈渠道更新须知",
     "time": "2026-02-25 18:00",
     "content": "# 反馈渠道更新须知\n\n由于插件内置的 BUG 反馈坏了，所以应急部署了未开发完工的工单系统。\n\n新的 BUG 反馈链接：<https://ticket.amlg.top>。\n\n为了防滥用，需要邮箱验证注册。\n\n如果没有或暂时用不了邮箱，请 私信 [作者1](https://www.luogu.com.cn/chat?uid=1393230) 与 [作者2](https://www.luogu.com.cn/chat?uid=1393230) 以反馈（也可以只私信一个）。\n\n由于未开发完成，可能会出现错绑/盗绑洛谷账号的情况，此时可联系 [私信作者](https://www.luogu.com.cn/chat?uid=1393230) 以删除账号。"
+  },
+  {
+    "id": 6,
+    "title": "🎉 Amazing Luogu 0.8.7 版本预告",
+    "time": "2026-02-26 10:00",
+    "content": "## Amazing Luogu 0.8.7 - 版本预告\n\n为了丰富插件功能，提升用户使用体验，Amazing Luogu 即将推出 **0.8.7 版本**！\n\n### 核心更新计划：\n- 功能复刻，经典回归\n    - 复活 Extend Luogu 的大部分核心功能\n    - 对复刻功能进行兼容性适配，适配 Amazing Luogu 4 现有架构\n- 体验优化\n    - 修复复刻功能相关的已知兼容性问题\n    - 优化功能加载逻辑，提升运行流畅度\n\n### 后续规划：\nAmazing Luogu 0.8.8 版本预计将完成 Extend Luogu 所有功能的复刻与适配，实现全量功能回归。\n\n如有关于 Extend Luogu 功能复刻的建议或需求，欢迎洛谷私信 yangrenrui 反馈！"
   }
 ]
