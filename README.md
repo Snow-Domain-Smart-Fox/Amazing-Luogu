@@ -34,7 +34,7 @@
 
 点击以下安装链接，确认安装用户脚本：
 
-> 🔗 [安装 Amazing Luogu](https://github.com/zym2013/Amazing-Luogu/raw/refs/heads/main/index.user.js)
+> 🔗 [安装 Amazing Luogu](https://github.com/Snow-Domain-Smart-Fox/Amazing-Luogu/raw/refs/heads/main/index.user.js)
 
 ### 3. 开始使用
 
