@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      0.9.4
+// @version      0.9.5
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -49,23 +49,23 @@
 // @grant        GM_listValues
 // @grant        unsafeWindow
 // @license      CC-BY-NC-ND-4.0
-// @require      https://cdn.jsdmirror.cn/npm/sweetalert2@11.26.17/dist/sweetalert2.min.js
-// @require      https://cdn.jsdmirror.cn/gh/highlightjs/cdn-release/build/highlight.min.js
-// @require      https://cdn.jsdmirror.cn/npm/marked@4.0.0/marked.min.js
-// @require      https://cdn.jsdmirror.cn/npm/dompurify@3.3.1/dist/purify.min.js
-// @require      https://cdn.jsdmirror.cn/npm/katex@0.16.27/dist/katex.min.js
-// @require      https://cdn.jsdmirror.cn/npm/katex@0.16.27/dist/contrib/auto-render.min.js
-// @require      https://cdn.jsdmirror.cn/npm/@fortawesome/fontawesome-free@7.1.0/js/all.min.js
-// @require      https://cdn.jsdmirror.cn/npm/jquery@3.7.1/dist/jquery.min.js
-// @require      https://cdn.jsdmirror.cn/npm/izitoast@1.4.0/dist/js/iziToast.min.js
-// @require      https://cdn.jsdmirror.cn/npm/clipboard@2.0.11/dist/clipboard.min.js
-// @require      https://cdn.jsdmirror.cn/ajax/libs/vue/2.6.11/vue.min.js
-// @require      https://cdn.jsdmirror.cn/npm/mark.js@8.11.1/dist/mark.min.js
-// @resource     iziToastCSS https://cdn.jsdmirror.cn/npm/izitoast@1.4.0/dist/css/iziToast.min.css
-// @resource     icomoonCSS https://cdn.jsdmirror.cn/gh/marcelodolza/iziToast@master/docs/css/icomoon.css
-// @resource     hljs https://cdn.jsdmirror.cn/gh/highlightjs/cdn-release/build/styles/github.min.css
-// @resource     swal https://cdn.jsdmirror.cn/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css
-// @resource     animate https://cdn.jsdmirror.cn/ajax/libs/animate.css/4.1.1/animate.min.css
+// @require      https://fastly.jsdelivr.net/npm/sweetalert2@11.26.17/dist/sweetalert2.min.js
+// @require      https://fastly.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js
+// @require      https://fastly.jsdelivr.net/npm/marked@4.0.0/marked.min.js
+// @require      https://fastly.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.min.js
+// @require      https://fastly.jsdelivr.net/npm/katex@0.16.27/dist/katex.min.js
+// @require      https://fastly.jsdelivr.net/npm/katex@0.16.27/dist/contrib/auto-render.min.js
+// @require      https://fastly.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/js/all.min.js
+// @require      https://fastly.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js
+// @require      https://fastly.jsdelivr.net/npm/izitoast@1.4.0/dist/js/iziToast.min.js
+// @require      https://fastly.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js
+// @require      https://fastly.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js
+// @require      https://fastly.jsdelivr.net/npm/mark.js@8.11.1/dist/mark.min.js
+// @resource     iziToastCSS https://fastly.jsdelivr.net/npm/izitoast@1.4.0/dist/css/iziToast.min.css
+// @resource     icomoonCSS https://fastly.jsdelivr.net/gh/marcelodolza/iziToast@master/docs/css/icomoon.css
+// @resource     hljs https://fastly.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github.min.css
+// @resource     swal https://fastly.jsdelivr.net/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css
+// @resource     animate https://fastly.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css
 // @run-at       document-start
 // ==/UserScript==
 function getCurrentUserId() {
@@ -103,7 +103,6 @@ a[href="/user/1157535"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -121,7 +120,6 @@ a[href="/user/1157535"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -139,7 +137,6 @@ a[href="/user/1157535"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -157,7 +154,6 @@ a[href="/user/1157535"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -175,7 +171,6 @@ a[href="/user/1393230"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -193,7 +188,6 @@ a[href="/user/1393230"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -211,7 +205,6 @@ a[href="/user/1393230"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); 
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -229,7 +222,6 @@ a[href="/user/1393230"][target="_blank"]:not(:has(> .luogu-username:first-child)
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 100px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     z-index: 2;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -239,7 +231,6 @@ a[href="/user/1393230"][target="_blank"]:not(:has(> .luogu-username:first-child)
     top: 5px;
 }
 `);
-
 let benbenctrlenterInited = false;
 let slogenFunctionRunned = false;
 let nbnhhshInited = false;
@@ -247,12 +238,12 @@ let chatWSRD = false;
 let Notificationaaaaaaa = null;
 let supabaseRunned = false;
 let onlineInitialized = false;
+let ocrInitialized = false;
 let NotificationCache = GM_getValue("AML_notification_cache", null);
 let NotificationCacheTime = GM_getValue("AML_notification_cache_time", 0);
 if (NotificationCache && Date.now() - NotificationCacheTime < 24 * 60 * 60 * 1000) {
 	Notificationaaaaaaa = NotificationCache;
 }
-
 function getNotification() {
 	if (Notificationaaaaaaa) {
 		let result__ = Notificationaaaaaaa;
@@ -266,7 +257,6 @@ function getNotification() {
 		}
 		let node = null;
 		d.innerHTML = '';
-		// 渲染DOM操作也移到回调内
 		sortedResult.forEach(notification => {
 			const parser = new DOMParser();
 			node = parser.parseFromString(`<div class="aml-notification-item${GM_getValue("AML_notification_read_" + notification.id, false) ? "" : " unread"}">
@@ -291,10 +281,9 @@ function getNotification() {
 				let Event1 = new CustomEvent("AML_notification_read", { detail: { id: notification.id } });
 				document.dispatchEvent(Event1);
 				this.classList.remove("unread");
-				document.getElementsByClassName('aml-modal-header')[0].innerHTML = '<h4>' + notification.title + '</h4><button id="aml-close-modal" onclick="document.getElementById(\'aml-notification-modal\').style.display = \'none\'; document.getElementById(\'aml-notification-modal\').classList.toggle(\'show\');" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg><!-- <i class="fas fa-times"></i> Font Awesome fontawesome.com --></button>';
+				document.getElementsByClassName('aml-modal-header')[0].innerHTML = '<h4>' + notification.title + '</h4><button id="aml-close-modal" onclick="document.getElementById(\'aml-notification-modal\').style.display = \'none\'; document.getElementById(\'aml-notification-modal\').classList.toggle(\'show\');" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg></button>';
 				document.getElementsByClassName('aml-modal-body')[0].innerHTML = tmp.innerHTML;
 				document.getElementById('aml-modal-time').innerHTML = notification.time;
-				document.getElementById('aml-notification-modal').style.display = 'flex';
 				document.getElementById('aml-notification-modal').classList.toggle('show');
 			});
 			d.appendChild(node);
@@ -313,15 +302,12 @@ function getNotification() {
 			responseType: "json",
 			onload: function (response) {
 				if (response.status >= 200 && response.status < 300) {
-					// 数据获取成功后再处理
 					const result__ = response.response;
 					Notificationaaaaaaa = result__;
 					GM_setValue("AML_notification_cache", result__);
 					GM_setValue("AML_notification_cache_time", Date.now());
 					console.log("数据获取成功：", result__);
-					// 先判断数据是否为有效数组，增加鲁棒性
 					if (Array.isArray(result__)) {
-						// 排序操作移到回调内
 						const sortedResult = result__.sort((a, b) => b.id - a.id);
 						let inner = '';
 						const d = document.getElementById("aml-notification-list");
@@ -332,7 +318,6 @@ function getNotification() {
 						}
 						let node = null;
 						d.innerHTML = '';
-						// 渲染DOM操作也移到回调内
 						sortedResult.forEach(notification => {
 							const parser = new DOMParser();
 							node = parser.parseFromString(`<div class="aml-notification-item${GM_getValue("AML_notification_read_" + notification.id, false) ? "" : " unread"}">
@@ -357,10 +342,9 @@ function getNotification() {
 								let Event1 = new CustomEvent("AML_notification_read", { detail: { id: notification.id } });
 								document.dispatchEvent(Event1);
 								this.classList.remove("unread");
-								document.getElementsByClassName('aml-modal-header')[0].innerHTML = '<h4>' + notification.title + '</h4><button id="aml-close-modal" onclick="document.getElementById(\'aml-notification-modal\').style.display = \'none\'; document.getElementById(\'aml-notification-modal\').classList.toggle(\'show\');" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg><!-- <i class="fas fa-times"></i> Font Awesome fontawesome.com --></button>';
+								document.getElementsByClassName('aml-modal-header')[0].innerHTML = '<h4>' + notification.title + '</h4><button id="aml-close-modal" onclick="document.getElementById(\'aml-notification-modal\').style.display = \'none\'; document.getElementById(\'aml-notification-modal\').classList.toggle(\'show\');" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg></button>';
 								document.getElementsByClassName('aml-modal-body')[0].innerHTML = tmp.innerHTML;
 								document.getElementById('aml-modal-time').innerHTML = notification.time;
-								document.getElementById('aml-notification-modal').style.display = 'flex';
 								document.getElementById('aml-notification-modal').classList.toggle('show');
 							});
 							d.appendChild(node);
@@ -462,25 +446,25 @@ async function follow() {
 }
 async function all() {
 	function main() {
-		async function check(){
+		async function check() {
 			let uid = getCurrentUserId();
 			if (GM_getValue("Intro2Restore_" + uid, false)) {
 				try {
 					const introdution = GM_getValue("Intro2Verify_" + uid);
 					const edit_introdution_2 = await fetch("https://www.luogu.com.cn/api/user/updateIntroduction", {
-								method: "POST",
-								headers: {
-									"Content-Type": "application/json",
-									"x-csrf-token": gettoken()
-								},
-								body: JSON.stringify({
-									introduction: introdution,
-								}),
-							});
-							if (!edit_introdution_2.ok) {
-								throw new Error("恢复简介失败");
-							}
-							GM_setValue("Intro2Restore_" + uid, false);
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"x-csrf-token": gettoken()
+						},
+						body: JSON.stringify({
+							introduction: introdution,
+						}),
+					});
+					if (!edit_introdution_2.ok) {
+						throw new Error("恢复简介失败");
+					}
+					GM_setValue("Intro2Restore_" + uid, false);
 				} catch (verifyErr) {
 					console.error("获取简介验证简介失败:", verifyErr);
 				}
@@ -618,12 +602,12 @@ async function all() {
 						mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"%20viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c9.4-9.4 24.6-9.4 33.9 0l47 47 47-47c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6 0-33.9z"/></svg>');
 					}
 					details.bug>summary::before {
-						-webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M256 0c53 0 96 43 96 96l0 3.6c0 15.7-12.7 28.4-28.4 28.4l-135.1 0c-15.7 0-28.4-12.7-28.4-28.4l0-3.6c0-53 43-96 96-96zM41.4 105.4c12.5-12.5 32.8-12.5 45.3 0l64 64c.7 .7 1.3 1.4 1.9 2.1c14.2-7.3 30.4-11.4 47.5-11.4l112 0c17.1 0 33.2 4.1 47.5 11.4c.6-.7 1.2-1.4 1.9-2.1l64-64c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3l-64 64c-.7 .7-1.4 1.3-2.1 1.9c6.2 12 10.1 25.3 11.1 39.5l64.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c0 24.6-5.5 47.8-15.4 68.6c2.2 1.3 4.2 2.9 6 4.8l64 64c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0l-63.1-63.1c-24.5 21.8-55.8 36.2-90.3 39.6L272 240c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 239.2c-34.5-3.4-65.8-17.8-90.3-39.6L86.6 502.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l64-64c1.9-1.9 3.9-3.4 6-4.8C101.5 367.8 96 344.6 96 320l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64.3 0c1.1-14.1 5-27.5 11.1-39.5c-.7-.6-1.4-1.2-2.1-1.9l-64-64c-12.5-12.5-12.5-32.8 0-45.3z"/></svg>');
-						mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M256 0c53 0 96 43 96 96l0 3.6c0 15.7-12.7 28.4-28.4 28.4l-135.1 0c-15.7 0-28.4-12.7-28.4-28.4l0-3.6c0-53 43-96 96-96zM41.4 105.4c12.5-12.5 32.8-12.5 45.3 0l64 64c.7 .7 1.3 1.4 1.9 2.1c14.2-7.3 30.4-11.4 47.5-11.4l112 0c17.1 0 33.2 4.1 47.5 11.4c.6-.7 1.2-1.4 1.9-2.1l64-64c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3l-64 64c-.7 .7-1.4 1.3-2.1 1.9c6.2 12 10.1 25.3 11.1 39.5l64.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c0 24.6-5.5 47.8-15.4 68.6c2.2 1.3 4.2 2.9 6 4.8l64 64c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0l-63.1-63.1c-24.5 21.8-55.8 36.2-90.3 39.6L272 240c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 239.2c-34.5-3.4-65.8-17.8-90.3-39.6L86.6 502.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l64-64c1.9-1.9 3.9-3.4 6-4.8C101.5 367.8 96 344.6 96 320l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64.3 0c1.1-14.1 5-27.5 11.1-39.5c-.7-.6-1.4-1.2-2.1-1.9l-64-64c-12.5-12.5-12.5-32.8 0-45.3z"/></svg>');
+						-webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0c53 0 96 43 96 96l0 3.6c0 15.7-12.7 28.4-28.4 28.4l-135.1 0c-15.7 0-28.4-12.7-28.4-28.4l0-3.6c0-53 43-96 96-96zM41.4 105.4c12.5-12.5 32.8-12.5 45.3 0l64 64c.7 .7 1.3 1.4 1.9 2.1c14.2-7.3 30.4-11.4 47.5-11.4l112 0c17.1 0 33.2 4.1 47.5 11.4c.6-.7 1.2-1.4 1.9-2.1l64-64c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3l-64 64c-.7 .7-1.4 1.3-2.1 1.9c6.2 12 10.1 25.3 11.1 39.5l64.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c0 24.6-5.5 47.8-15.4 68.6c2.2 1.3 4.2 2.9 6 4.8l64 64c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0l-63.1-63.1c-24.5 21.8-55.8 36.2-90.3 39.6L272 240c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 239.2c-34.5-3.4-65.8-17.8-90.3-39.6L86.6 502.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l64-64c1.9-1.9 3.9-3.4 6-4.8C101.5 367.8 96 344.6 96 320l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64.3 0c1.1-14.1 5-27.5 11.1-39.5c-.7-.6-1.4-1.2-2.1-1.9l-64-64c-12.5-12.5-12.5-32.8 0-45.3z"/></svg>');
+						mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0c53 0 96 43 96 96l0 3.6c0 15.7-12.7 28.4-28.4 28.4l-135.1 0c-15.7 0-28.4-12.7-28.4-28.4l0-3.6c0-53 43-96 96-96zM41.4 105.4c12.5-12.5 32.8-12.5 45.3 0l64 64c.7 .7 1.3 1.4 1.9 2.1c14.2-7.3 30.4-11.4 47.5-11.4l112 0c17.1 0 33.2 4.1 47.5 11.4c.6-.7 1.2-1.4 1.9-2.1l64-64c12.5-12.5 32.8-12.5 45.3 0s12.5 32.8 0 45.3l-64 64c-.7 .7-1.4 1.3-2.1 1.9c6.2 12 10.1 25.3 11.1 39.5l64.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-64 0c0 24.6-5.5 47.8-15.4 68.6c2.2 1.3 4.2 2.9 6 4.8l64 64c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0l-63.1-63.1c-24.5 21.8-55.8 36.2-90.3 39.6L272 240c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 239.2c-34.5-3.4-65.8-17.8-90.3-39.6L86.6 502.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l64-64c1.9-1.9 3.9-3.4 6-4.8C101.5 367.8 96 344.6 96 320l-64 0c-17.7 0-32-14.3-32-32s14.3-32 32-32l64.3 0c1.1-14.1 5-27.5 11.1-39.5c-.7-.6-1.4-1.2-2.1-1.9l-64-64c-12.5-12.5-12.5-32.8 0-45.3z"/></svg>');
 					}
 					details.flask>summary::before {
-						-webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M288 0L160 0 128 0C110.3 0 96 14.3 96 32s14.3 32 32 32l0 132.8c0 11.8-3.3 23.5-9.5 33.5L10.3 406.2C3.6 417.2 0 429.7 0 442.6C0 480.9 31.1 512 69.4 512l309.2 0c38.3 0 69.4-31.1 69.4-69.4c0-12.8-3.6-25.4-10.3-36.4L329.5 230.4c-6.2-10.1-9.5-21.7-9.5-33.5L320 64c17.7 0 32-14.3 32-32s-14.3-32-32-32L288 0zM192 196.8L192 64l64 0 0 132.8c0 23.7 6.6 46.9 19 67.1L309.5 320l-171 0L173 263.9c12.4-20.2 19-43.4 19-67.1z"/></svg>');
-						mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc. --><path d="M288 0L160 0 128 0C110.3 0 96 14.3 96 32s14.3 32 32 32l0 132.8c0 11.8-3.3 23.5-9.5 33.5L10.3 406.2C3.6 417.2 0 429.7 0 442.6C0 480.9 31.1 512 69.4 512l309.2 0c38.3 0 69.4-31.1 69.4-69.4c0-12.8-3.6-25.4-10.3-36.4L329.5 230.4c-6.2-10.1-9.5-21.7-9.5-33.5L320 64c17.7 0 32-14.3 32-32s-14.3-32-32-32L288 0zM192 196.8L192 64l64 0 0 132.8c0 23.7 6.6 46.9 19 67.1L309.5 320l-171 0L173 263.9c12.4-20.2 19-43.4 19-67.1z"/></svg>');
+						-webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M288 0L160 0 128 0C110.3 0 96 14.3 96 32s14.3 32 32 32l0 132.8c0 11.8-3.3 23.5-9.5 33.5L10.3 406.2C3.6 417.2 0 429.7 0 442.6C0 480.9 31.1 512 69.4 512l309.2 0c38.3 0 69.4-31.1 69.4-69.4c0-12.8-3.6-25.4-10.3-36.4L329.5 230.4c-6.2-10.1-9.5-21.7-9.5-33.5L320 64c17.7 0 32-14.3 32-32s-14.3-32-32-32L288 0zM192 196.8L192 64l64 0 0 132.8c0 23.7 6.6 46.9 19 67.1L309.5 320l-171 0L173 263.9c12.4-20.2 19-43.4 19-67.1z"/></svg>');
+						mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M288 0L160 0 128 0C110.3 0 96 14.3 96 32s14.3 32 32 32l0 132.8c0 11.8-3.3 23.5-9.5 33.5L10.3 406.2C3.6 417.2 0 429.7 0 442.6C0 480.9 31.1 512 69.4 512l309.2 0c38.3 0 69.4-31.1 69.4-69.4c0-12.8-3.6-25.4-10.3-36.4L329.5 230.4c-6.2-10.1-9.5-21.7-9.5-33.5L320 64c17.7 0 32-14.3 32-32s-14.3-32-32-32L288 0zM192 196.8L192 64l64 0 0 132.8c0 23.7 6.6 46.9 19 67.1L309.5 320l-171 0L173 263.9c12.4-20.2 19-43.4 19-67.1z"/></svg>');
 					}
 					summary::before {
 						content: "";
@@ -927,6 +911,8 @@ async function all() {
 				showUserIntroductionEnabled: GM_getValue("amlShowUserIntroductionEnabled", true),
 				extendTaskEnabled: GM_getValue("amlExtendTaskEnabled", true),
 				benbenctrlenterEnabled: GM_getValue("amlBenbenctrlenterEnabled", true),
+				OCRCaptchaEnabled: GM_getValue("amlOCRCaptchaEnabled", true),
+				acceptedProblemCmpEnabled: GM_getValue("amlAcceptedProblemCmpEnabled", true),
 				autoO2Enabled: GM_getValue("amlAutoO2Enabled", false),
 				slogenTimeFormat: GM_getValue(
 					"amlSlogenTimeFormat",
@@ -1087,6 +1073,8 @@ async function all() {
 				showUserIntroductionEnabled: "amlShowUserIntroductionEnabled",
 				extendTaskEnabled: "amlExtendTaskEnabled",
 				benbenctrlenterEnabled: "amlBenbenctrlenterEnabled",
+				OCRCaptchaEnabled: "amlOCRCaptchaEnabled",
+				acceptedProblemCmpEnabled: "amlAcceptedProblemCmpEnabled",
 				autoO2Enabled: "amlAutoO2Enabled",
 				codeforcesOriginDifEnabled: "amlCodeforcesOriginDifEnabled",
 				slogenTimeFormat: "amlSlogenTimeFormat",
@@ -1192,6 +1180,20 @@ async function all() {
 					desc: "当聚焦（focus）在犇犇输入框时按下 Ctrl(Windows)/Command(Mac) +Enter 快捷键可以发送犇犇",
 					tag: "功能",
 					status: "stable",
+				},
+				{
+					key: "OCRCaptchaEnabled",
+					label: "自动填充字母识别验证码",
+					desc: "自动填充字母识别验证码",
+					tag: "功能",
+					status: "stable",
+				},
+				{
+					key: "acceptedProblemCmpEnabled",
+					label: "题目数量对比",
+					desc: "在他人主页显示做题数量对比，红色为更少，绿色为更多",
+					tag: "功能",
+					status: "stable"
 				},
 				{
 					key: "autoO2Enabled",
@@ -1935,7 +1937,6 @@ async function all() {
 				.aml-loading { color: #64748b; font-style: italic; }
 				.aml-error { color: #ef4444; font-size: 13px; }
 				@media (max-width: 768px) { .aml-home-grid { grid-template-columns: 1fr; } }
-				/* 设置页卡片风格 */
 				.aml-settings-section {
 					background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
 					border: 1px solid #e2e8f0;
@@ -2185,13 +2186,9 @@ async function all() {
 					grid-column: 1 / -1;
 					display: none;
 				}
-				/* ================= 鸣谢页样式美化 (匹配首页风格) ================= */
-				/* 替换原有的 .thanks-grid 和 .thanks-card 相关样式 */
-
 				.aml-tab-content#thanks-panel {
-					padding: 20px; /* 确保面板内边距一致 */
+					padding: 20px;
 				}
-
 				.aml-tab-content#thanks-panel h4 {
 					margin: 0 0 16px;
 					font-size: 1.15em;
@@ -2201,25 +2198,21 @@ async function all() {
 					align-items: center;
 					gap: 8px;
 					padding-bottom: 10px;
-					border-bottom: 2px solid #6366f1; /* 与设置页/首页标题一致 */
+					border-bottom: 2px solid #6366f1;
 				}
-
 				.aml-tab-content#thanks-panel > p {
 					color: #64748b;
 					margin-bottom: 20px;
 					font-size: 0.95em;
 				}
-
 				.thanks-grid {
 					display: grid;
-					grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* 保持卡片宽度 */
-					gap: 16px; /* 与首页功能网格一致 */
+					grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+					gap: 16px;
 					margin: 0;
 				}
-
 				.thanks-card {
 					text-align: center;
-					/* 匹配 .aml-home-card 背景与边框 */
 					background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
 					border: 1px solid #e2e8f0;
 					border-radius: 12px;
@@ -2235,8 +2228,6 @@ async function all() {
 					flex-direction: column;
 					align-items: center;
 				}
-
-				/* 添加左侧 accent 条，匹配 .aml-home-card::before */
 				.thanks-card::before {
 					content: '';
 					position: absolute;
@@ -2245,52 +2236,41 @@ async function all() {
 					opacity: 0;
 					transition: opacity 0.3s ease;
 				}
-
 				.thanks-card:hover {
-					/* 匹配 .aml-home-card:hover */
 					transform: translateY(-3px);
 					box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
 					border-color: #6366f1;
 				}
-
 				.thanks-card:hover::before {
 					opacity: 1;
 				}
-
-				/* 保持动画 */
 				@keyframes fadeInUp {
 					to { opacity: 1; transform: translateY(0); }
 				}
-
-				/* 延迟动画，保持原有节奏 */
 				.thanks-card:nth-child(1) { animation-delay: 0.05s; }
 				.thanks-card:nth-child(2) { animation-delay: 0.1s; }
 				.thanks-card:nth-child(3) { animation-delay: 0.15s; }
 				.thanks-card:nth-child(4) { animation-delay: 0.2s; }
 				.thanks-card:nth-child(5) { animation-delay: 0.25s; }
 				.thanks-card:nth-child(n+6) { animation-delay: 0.3s; }
-
 				.thanks-avatar {
 					width: 68px;
 					height: 68px;
 					border-radius: 50%;
 					object-fit: cover;
-					/* 匹配首页卡片边框风格 */
 					border: 3px solid #e2e8f0;
 					transition: all 0.3s ease;
 					margin: 0 auto 14px;
 					display: block;
 					background: #fff;
 				}
-
 				.thanks-card:hover .thanks-avatar {
 					transform: scale(1.05);
 					border-color: #6366f1;
 					box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
 				}
-
 				.thanks-username {
-					font-size: 1.1em; /* 稍微调小以适应卡片 */
+					font-size: 1.1em;
 					font-weight: 700;
 					margin: 0 0 8px;
 					color: #1e293b;
@@ -2299,24 +2279,21 @@ async function all() {
 					text-overflow: ellipsis;
 					max-width: 100%;
 				}
-
 				.thanks-contribution {
 					font-size: 0.9em;
 					line-height: 1.5;
 					color: #64748b;
 					margin: 8px 0 16px;
-					flex: 1; /* 让按钮到底部 */
+					flex: 1;
 					display: -webkit-box;
 					-webkit-line-clamp: 3;
 					-webkit-box-orient: vertical;
 					overflow: hidden;
 				}
-
 				.thanks-action {
-					margin-top: auto; /* 确保按钮在底部 */
+					margin-top: auto;
 					width: 100%;
 				}
-
 				.thanks-follow-btn {
 					width: 100%;
 					display: inline-flex;
@@ -2324,7 +2301,6 @@ async function all() {
 					justify-content: center;
 					gap: 6px;
 					padding: 8px 16px;
-					/* 匹配 .aml-primary-btn */
 					background: linear-gradient(135deg, #6366f1, #8b5cf6);
 					color: #fff;
 					font-weight: 600;
@@ -2335,17 +2311,14 @@ async function all() {
 					transition: all 0.3s ease;
 					box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 				}
-
 				.thanks-follow-btn:hover {
 					transform: translateY(-2px);
 					box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
 					background: linear-gradient(135deg, #7c3aed, #a78bfa);
 				}
-
 				.thanks-follow-btn:active {
 					transform: translateY(0);
 				}
-
 				.thanks-follow-btn:disabled {
 					opacity: 0.7;
 					cursor: not-allowed;
@@ -2353,11 +2326,9 @@ async function all() {
 					box-shadow: none;
 					background: #cbd5e1;
 				}
-
 				.thanks-follow-btn i {
 					font-size: 13px;
 				}
-
 				.aml-explore-top-grid {
 					display: grid;
 					grid-template-columns: 2fr 1fr;
@@ -2565,7 +2536,6 @@ async function all() {
 			let my_info;
 			async function initPanel() {
 				const { yiyan, historyHtml } = ["", ""];
-
 				my_info = `
 	<div class="welcomeContainer">
 		<div class="welcomeRight">
@@ -2578,7 +2548,7 @@ async function all() {
 				</div>
 				<div style="display:flex;align-items:center;gap:8px">
 					<button onclick="document.getElementById('aml-notification-drawer').classList.toggle('open');" class="aml-header-btn" id="aml-notification-btn" title="消息" style="position:relative;">
-						<svg class="fa-bell svg-inline--fa" data-prefix="fas" data-icon="bell" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M224 0c-17.7 0-32 14.3-32 32l0 3.2C119 50 64 114.6 64 192l0 21.7c0 48.1-16.4 94.8-46.4 132.4L7.8 358.3C2.7 364.6 0 372.4 0 380.5 0 400.1 15.9 416 35.5 416l376.9 0c19.6 0 35.5-15.9 35.5-35.5 0-8.1-2.7-15.9-7.8-22.2l-9.8-12.2C400.4 308.5 384 261.8 384 213.7l0-21.7c0-77.4-55-142-128-156.8l0-3.2c0-17.7-14.3-32-32-32zM162 464c7.1 27.6 32.2 48 62 48s54.9-20.4 62-48l-124 0z"></path></svg><!-- <i class="fa-solid fa-bell"></i> Font Awesome fontawesome.com -->
+						<svg class="fa-bell svg-inline--fa" data-prefix="fas" data-icon="bell" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M224 0c-17.7 0-32 14.3-32 32l0 3.2C119 50 64 114.6 64 192l0 21.7c0 48.1-16.4 94.8-46.4 132.4L7.8 358.3C2.7 364.6 0 372.4 0 380.5 0 400.1 15.9 416 35.5 416l376.9 0c19.6 0 35.5-15.9 35.5-35.5 0-8.1-2.7-15.9-7.8-22.2l-9.8-12.2C400.4 308.5 384 261.8 384 213.7l0-21.7c0-77.4-55-142-128-156.8l0-3.2c0-17.7-14.3-32-32-32zM162 464c7.1 27.6 32.2 48 62 48s54.9-20.4 62-48l-124 0z"></path></svg>
 						<span id="aml-notification-badge" style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#ef4444;border-radius:50%;display:none;"></span>
 					</button>
 				</div>
@@ -2771,18 +2741,18 @@ async function all() {
 			</div>
 			<div id="aml-notification-drawer" class="aml-notification-drawer">
 				<div class="aml-notification-header">
-					<h5><svg class="svg-inline--fa fa-bell" data-prefix="fas" data-icon="bell" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M224 0c-17.7 0-32 14.3-32 32l0 3.2C119 50 64 114.6 64 192l0 21.7c0 48.1-16.4 94.8-46.4 132.4L7.8 358.3C2.7 364.6 0 372.4 0 380.5 0 400.1 15.9 416 35.5 416l376.9 0c19.6 0 35.5-15.9 35.5-35.5 0-8.1-2.7-15.9-7.8-22.2l-9.8-12.2C400.4 308.5 384 261.8 384 213.7l0-21.7c0-77.4-55-142-128-156.8l0-3.2c0-17.7-14.3-32-32-32zM162 464c7.1 27.6 32.2 48 62 48s54.9-20.4 62-48l-124 0z"></path></svg><!-- <i class="fa-solid fa-bell"></i> Font Awesome fontawesome.com --> 消息中心</h5>
-					<button id="aml-close-notification" onclick="document.getElementById('aml-notification-drawer').classList.remove('open');" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg><!-- <i class="fas fa-times"></i> Font Awesome fontawesome.com --></button>
+					<h5><svg class="svg-inline--fa fa-bell" data-prefix="fas" data-icon="bell" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M224 0c-17.7 0-32 14.3-32 32l0 3.2C119 50 64 114.6 64 192l0 21.7c0 48.1-16.4 94.8-46.4 132.4L7.8 358.3C2.7 364.6 0 372.4 0 380.5 0 400.1 15.9 416 35.5 416l376.9 0c19.6 0 35.5-15.9 35.5-35.5 0-8.1-2.7-15.9-7.8-22.2l-9.8-12.2C400.4 308.5 384 261.8 384 213.7l0-21.7c0-77.4-55-142-128-156.8l0-3.2c0-17.7-14.3-32-32-32zM162 464c7.1 27.6 32.2 48 62 48s54.9-20.4 62-48l-124 0z"></path></svg> 消息中心</h5>
+					<button id="aml-close-notification" onclick="document.getElementById('aml-notification-drawer').classList.remove('open');" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg></button>
 				</div>
 				<div id="aml-notification-list" class="aml-notification-list">
 					<div style="text-align:center;padding:20px;color:#64748b;">正在加载...</div>
 				</div>
 			</div>
-			<div id="aml-notification-modal" class="aml-notification-modal" style="display:none;">
+			<div id="aml-notification-modal" class="aml-notification-modal" style="display:flex;">
 				<div class="aml-modal-content">
 					<div class="aml-modal-header">
 						<h4 id="aml-modal-title">标题</h4>
-						<button id="aml-close-modal" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg><!-- <i class="fas fa-times"></i> Font Awesome fontawesome.com --></button>
+						<button id="aml-close-modal" class="aml-header-btn"><svg class="svg-inline--fa fa-xmark" data-prefix="fas" data-icon="xmark" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M55.1 73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L147.2 256 9.9 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192.5 301.3 329.9 438.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.8 256 375.1 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192.5 210.7 55.1 73.4z"></path></svg></button>
 					</div>
 					<div class="aml-modal-body" id="aml-modal-body"></div>
 					<div class="aml-modal-footer">
@@ -2813,40 +2783,32 @@ async function all() {
 					const carouselContainer = document.getElementById('aml-explore-carousel');
 					const scriptCountEl = document.getElementById('aml-script-count');
 					const scriptsGrid = document.getElementById('aml-scripts-grid');
-
 					if (!carouselTrack || !carouselDots || !scriptsGrid) return;
-
 					let currentSlide = 0;
 					const totalSlides = exploreAds.length;
-
 					exploreAds.forEach((ad, index) => {
 						const slide = document.createElement('div');
 						slide.className = 'aml-carousel-slide';
 						slide.innerHTML = \`<img src="\${ad.image}" alt="Ad \${index}"><div class="aml-carousel-caption">\${ad.text}</div>\`;
 						slide.addEventListener('click', () => { window.open(ad.link, '_blank'); });
 						carouselTrack.appendChild(slide);
-
 						const dot = document.createElement('div');
 						dot.className = \`aml-carousel-dot \${index === 0 ? 'active' : ''}\`;
 						carouselDots.appendChild(dot);
 					});
-
 					function updateCarousel() {
 						carouselTrack.style.transform = \`translateX(-\${currentSlide * 100}%)\`;
 						document.querySelectorAll('.aml-carousel-dot').forEach((dot, index) => {
 							dot.classList.toggle('active', index === currentSlide);
 						});
 					}
-
 					setInterval(() => {
 						currentSlide = (currentSlide + 1) % totalSlides;
 						updateCarousel();
 					}, 5000);
-
 					if (scriptCountEl) {
 						scriptCountEl.textContent = exploreAds.length;
 					}
-
 					exploreScripts.forEach(script => {
 						const card = document.createElement('div');
 						card.className = 'aml-script-card';
@@ -3070,8 +3032,6 @@ async function all() {
 				const defaultHistory = "";
 				let yiyan = defaultYiyan;
 				let historyHtml = defaultHistory;
-
-				// ==================== 缓存配置 ====================
 				const CACHE_KEY = {
 					YIYAN: "aml_yiyan_cache",
 					YIYAN_TIME: "aml_yiyan_cache_time",
@@ -3079,39 +3039,30 @@ async function all() {
 					HISTORY_TIME: "aml_history_cache_time",
 				};
 				const CACHE_DURATION = {
-					YIYAN: 1 * 60 * 60 * 1000,   // 1小时
-					HISTORY: 24 * 60 * 60 * 1000 // 1天
+					YIYAN: 1 * 60 * 60 * 1000,
+					HISTORY: 24 * 60 * 60 * 1000
 				};
-
-				// ==================== 工具函数：获取缓存 ====================
 				function getCache(key, timeKey, duration) {
 					try {
 						const cacheTime = GM_getValue(timeKey, 0);
 						const now = Date.now();
-						// 缓存未过期
 						if (now - cacheTime < duration) {
 							return GM_getValue(key, null);
 						}
-					} catch (e) {}
+					} catch (e) { }
 					return null;
 				}
-
-				// ==================== 工具函数：设置缓存 ====================
 				function setCache(key, timeKey, data) {
 					try {
 						GM_setValue(key, data);
 						GM_setValue(timeKey, Date.now());
-					} catch (e) {}
+					} catch (e) { }
 				}
-
-				// ==================== 1. 获取一言（带1小时缓存） ====================
 				if (typeof GM_xmlhttpRequest !== "undefined") {
-					// 先读缓存
 					const cacheYiyan = getCache(CACHE_KEY.YIYAN, CACHE_KEY.YIYAN_TIME, CACHE_DURATION.YIYAN);
 					if (cacheYiyan) {
 						yiyan = cacheYiyan;
 					} else {
-						// 无缓存/缓存过期 → 请求接口
 						try {
 							const res = await new Promise((resolve, reject) => {
 								GM_xmlhttpRequest({
@@ -3126,25 +3077,19 @@ async function all() {
 							const data = JSON.parse(res.responseText);
 							if (data?.text) {
 								yiyan = { text: data.text, tag: data.tag || "" };
-								// 写入缓存
 								setCache(CACHE_KEY.YIYAN, CACHE_KEY.YIYAN_TIME, yiyan);
 							}
 						} catch {
-							// 请求失败，尝试读取过期缓存兜底
 							const fallback = GM_getValue(CACHE_KEY.YIYAN, defaultYiyan);
 							yiyan = fallback;
 						}
 					}
 				}
-
-				// ==================== 2. 获取历史上的今天（带1天缓存） ====================
 				if (typeof GM_xmlhttpRequest !== "undefined") {
-					// 先读缓存
 					const cacheHistory = getCache(CACHE_KEY.HISTORY, CACHE_KEY.HISTORY_TIME, CACHE_DURATION.HISTORY);
 					if (cacheHistory) {
 						historyHtml = cacheHistory;
 					} else {
-						// 无缓存/缓存过期 → 请求接口
 						try {
 							const res = await new Promise((resolve, reject) => {
 								GM_xmlhttpRequest({
@@ -3158,7 +3103,6 @@ async function all() {
 							});
 							const data = JSON.parse(res.responseText);
 							let tempHtml = "";
-
 							if ((data?.code === 200 && Array.isArray(data?.events)) || Array.isArray(data?.events)) {
 								tempHtml = data.events
 									.slice(0, 5)
@@ -3168,22 +3112,17 @@ async function all() {
 									)
 									.join("");
 							}
-
 							if (tempHtml) {
 								historyHtml = tempHtml;
-								// 写入缓存
 								setCache(CACHE_KEY.HISTORY, CACHE_KEY.HISTORY_TIME, historyHtml);
 							}
 						} catch (e) {
 							console.warn("History API error:", e);
-							// 请求失败，尝试读取过期缓存兜底
 							const fallback = GM_getValue(CACHE_KEY.HISTORY, defaultHistory);
 							historyHtml = fallback;
 						}
 					}
 				}
-
-				// ==================== 渲染到页面 ====================
 				let yiyan_ = document.getElementsByClassName("aml-yiyan")[0];
 				if (yiyan_) {
 					yiyan_.innerHTML = yiyan?.text || "暂无内容";
@@ -3196,7 +3135,6 @@ async function all() {
 				if (history) {
 					history.innerHTML = historyHtml || "暂无记录";
 				}
-
 				return { yiyan, historyHtml };
 			}
 			function gettoken() {
@@ -3252,7 +3190,7 @@ async function all() {
 				const username = await getusername(uid);
 				const greeting = document.getElementsByClassName("aml-home-greeting")[0];
 				if (greeting) {
-					greeting.innerHTML = `👋 Hi, ${username} !`;
+					greeting.innerHTML = `👋 Hi, ${username == null ? '访客' : username} !`;
 				}
 			}
 			if (window.location.href.includes("www.luogu.com")) {
@@ -3274,6 +3212,8 @@ async function all() {
 					amlVscodeLuoguEnabled: false,
 					amlCodeforcesOriginDifEnabled: true,
 					amlBenbenctrlenterEnabled: true,
+					amlOCRCaptchaEnabled: true,
+					amlAcceptedProblemCmpEnabled: true,
 					amlNbnhhshEnabled: true,
 					amlProblemRandom: true,
 					amlUseLuoguMe: false,
@@ -3412,7 +3352,6 @@ async function all() {
 						<h4><i class="fas fa-wrench"></i> &nbsp;功能开关</h4>
 						<input type="text" id="aml-feature-search" class="aml-search-bar" placeholder="搜索功能、标签或描述...">
 						<div id="aml-features-container" class="aml-features-grid">`;
-
 				features.forEach((feature) => {
 					const statusText =
 						feature.status === "stable"
@@ -3434,7 +3373,6 @@ async function all() {
 				</div>
 			</div>`;
 				});
-
 				featuresHTML += `<div class="aml-no-results" id="aml-no-results">未找到匹配的功能项</div></div></div>
 		<div class="aml-settings-section aml-home-card">
 			<h4><i class="fa-solid fa-code"></i> &nbsp;VSCode Luogu API</h4>
@@ -3605,12 +3543,10 @@ async function all() {
 				const searchInput = document.getElementById("aml-feature-search");
 				const featureCards = document.querySelectorAll(".aml-feature-card");
 				const noResults = document.getElementById("aml-no-results");
-
 				if (searchInput) {
 					searchInput.addEventListener("input", function (e) {
 						const query = e.target.value.toLowerCase().trim();
 						let visibleCount = 0;
-
 						featureCards.forEach((card) => {
 							const searchText = card
 								.getAttribute("data-search-text")
@@ -3622,7 +3558,6 @@ async function all() {
 								card.style.display = "none";
 							}
 						});
-
 						if (noResults) {
 							noResults.style.display = visibleCount === 0 ? "block" : "none";
 						}
@@ -4030,7 +3965,6 @@ async function all() {
 						saveAMLSetting("slogenTimeFormat", newValue);
 					};
 				}
-
 				const memoContentInput = document.querySelector("#aml-memo-content");
 				const saveMemoBtn = document.querySelector("#aml-save-memo-btn");
 				if (memoContentInput && saveMemoBtn) {
@@ -4108,31 +4042,25 @@ async function all() {
 		.welcomeContainer ::-webkit-scrollbar {
 			width: 6px;
 		}
-
 		.welcomeLeft ::-webkit-scrollbar {
 			width: 3px !important;
 		}
-
 		.welcomeContainer ::-webkit-scrollbar-track {
 			background: rgba(0, 0, 0, 0.1) !important;
 			border-radius: 3px !important;
 		}
-
 		.welcomeLeft ::-webkit-scrollbar-track {
 			background: rgba(0, 0, 0, 0.1) !important;
 			border-radius: 3px !important;
 		}
-
 		.welcomeLeft ::-webkit-scrollbar-thumb {
 			background: #9c9 !important;
 			border-radius: 3px !important;
 		}
-
 		.welcomeContainer ::-webkit-scrollbar-thumb {
 			background: rgba(102, 126, 234, 0.6);
 			border-radius: 3px;
 		}
-
 		.welcomeContainer {
 			display: flex;
 			gap: 15px;
@@ -4140,7 +4068,6 @@ async function all() {
 			height: 100%;
 			overflow: hidden;
 		}
-
 		.welcomeLeft {
 			flex: 2;
 			display: flex;
@@ -4153,7 +4080,6 @@ async function all() {
 			border-radius: 10px;
 			border: 1px solid #888;
 		}
-
 		.welcomeRight {
 			flex: 5;
 			display: flex;
@@ -4166,7 +4092,6 @@ async function all() {
 			border: 1px solid #888;
 			overflow-y: auto;
 		}
-
 		.welcomeTitle {
 			font-size: 18px;
 			font-weight: bold;
@@ -4174,7 +4099,6 @@ async function all() {
 			color: #ddd;
 			text-align: center;
 		}
-
 		.welcomeContent {
 			flex: 1;
 			overflow-y: auto;
@@ -4184,45 +4108,37 @@ async function all() {
 			padding-bottom: 10px;
 			padding-right: 10px;
 		}
-
 		.welcomeContent ul,
 		.welcomeContent ol {
 			padding-left: 20px;
 			margin: 5px 0;
 		}
-
 		.welcomeContent li {
 			margin-bottom: 5px;
 		}
-
 		.welcomeItem {
 			margin-bottom: 15px;
 			padding-bottom: 10px;
 			border-bottom: 1px solid #777;
 		}
-
 		.welcomeItem:last-child {
 			border-bottom: none;
 			margin-bottom: 0;
 			padding-bottom: 0;
 		}
-
 		.eventYear {
 			font-weight: bold;
 			color: #bbb;
 		}
-
 		.eventTitle {
 			color: #9c9;
 		}
-
 		.eventDescription {
 			color: #aaa;
 			font-size: 12px;
 			margin-top: 5px;
 			display: block;
 		}
-
 		.poetryContent {
 			font-size: 18px;
 			font-style: italic;
@@ -4230,23 +4146,19 @@ async function all() {
 			margin-bottom: 10px;
 			color: #e0e0e0;
 		}
-
 		.poetryOrigin {
 			font-size: 14px;
 			text-align: right;
 			color: #aaa;
 			margin-bottom: 10px;
 		}
-
 		.poetryOrigin a {
 			color: #9c9;
 			text-decoration: none;
 		}
-
 		.poetryOrigin a:hover {
 			text-decoration: underline;
 		}
-
 		.poetryTranslation {
 			font-size: 14px;
 			color: #aaa;
@@ -4254,25 +4166,20 @@ async function all() {
 			padding-top: 10px;
 			border-top: 1px solid #777;
 		}
-
 		.poetryTranslationTitle {
 			font-weight: bold;
 			color: #bbb;
 			margin-bottom: 5px;
 		}
-
 		.poetryTranslationItem {
 			margin-bottom: 5px;
 		}
-
 		.poetryTranslationItem:last-child {
 			margin-bottom: 0;
 		}
-
 		#poetryContent {
 			border-bottom: 1px solid #777;
 		}
-
 		#chajianinfo {
 			margin-bottom: 10px;
 			color: #1e1e1e;
@@ -4294,7 +4201,6 @@ async function all() {
 			color: white;
 			font-family: LXGW Wenkai Screen;
 		}
-
 		.searchAnywhereMain {
 			height: min(600px, 100% - 10px);
 			width: min(750px, 100% - 10px);
@@ -4305,7 +4211,6 @@ async function all() {
 			display: flex;
 			flex-direction: column;
 		}
-
 		.inputArea {
 			display: block;
 			width: 100%;
@@ -4315,7 +4220,6 @@ async function all() {
 			transition: 0.2s;
 			margin-bottom: 10px;
 		}
-
 		.inputArea>input {
 			border-radius: 5px;
 			border: 2px solid #aaa;
@@ -4328,32 +4232,26 @@ async function all() {
 			background: transparent;
 			box-sizing: border-box;
 		}
-
 		.inputArea.onHover>input,
 		.inputArea.onFocus>input {
 			border: 2px solid white;
 		}
-
 		.inputArea.onHover,
 		.inputArea.onFocus,
 		.inputArea.withContent {
 			color: white !important;
 		}
-
 		.inputArea.onHover>input,
 		.inputArea.onFocus>input,
 		.inputArea.withContent>input {
 			color: white !important;
 		}
-
 		.inputArea.withIconLeft>input {
 			padding-left: 42px;
 		}
-
 		.inputArea.withIconRight>input {
 			padding-right: 42px;
 		}
-
 		.inputArea>div.iconLeft {
 			height: 48px;
 			width: 48px;
@@ -4363,7 +4261,6 @@ async function all() {
 			top: 0px;
 			left: 0px;
 		}
-
 		.inputArea>div.iconRight {
 			height: 48px;
 			width: 48px;
@@ -4373,17 +4270,14 @@ async function all() {
 			top: 0px;
 			right: 0px;
 		}
-
 		.inputArea>div.iconLeft>svg {
 			width: 20px !important;
 			height: 20px !important;
 		}
-
 		.inputArea>div.iconRight>svg {
 			width: 20px !important;
 			height: 20px !important;
 		}
-
 		.inputAreaSmall {
 			display: block;
 			width: 100%;
@@ -4392,7 +4286,6 @@ async function all() {
 			position: relative;
 			transition: 0.2s;
 		}
-
 		.inputAreaSmall>input {
 			border-radius: 5px;
 			border: 2px solid #aaa;
@@ -4405,109 +4298,86 @@ async function all() {
 			background: transparent;
 			box-sizing: border-box;
 		}
-
 		.inputAreaSmall.onHover>input,
 		.inputAreaSmall.onFocus>input {
 			border: 2px solid white;
 		}
-
 		.inputAreaSmall.onHover,
 		.inputAreaSmall.onFocus,
 		.inputAreaSmall.withContent {
 			color: white !important;
 		}
-
 		.inputAreaSmall.onHover>input,
 		.inputAreaSmall.onFocus>input,
 		.inputAreaSmall.withContent>input {
 			color: white !important;
 		}
-
 		.userPurple {
 			color: #cf5bff;
 			font-weight: bold;
 		}
-
 		.userRed {
 			color: #e74c3c;
 			font-weight: bold;
 		}
-
 		.userOrange {
 			color: #e67e22;
 			font-weight: bold;
 		}
-
 		.userYellow {
 			color: #d9a71d;
 			font-weight: bold;
 		}
-
 		.userGreen {
 			color: #5eb95e;
 			font-weight: bold;
 		}
-
 		.userGray {
 			color: #aaa;
 			font-weight: bold;
 		}
-
 		.userCheater {
 			color: #d3961c;
 			font-weight: bold;
 		}
-
 		.userBlue {
 			color: #07a2f1;
 			font-weight: bold;
 		}
-
 		.userGold {
 			color: #f1c40f;
 			font-weight: bold;
 		}
-
 		.badgePurple {
 			background-color: #cf5bff;
 		}
-
 		.badgeRed {
 			background-color: #e74c3c;
 		}
-
 		.badgeOrange {
 			background-color: #e67e22;
 		}
-
 		.badgeYellow {
 			background-color: #d9a71d;
 		}
-
 		.badgeGreen {
 			background-color: #5eb95e;
 		}
-
 		.badgeGray {
 			background-color: #999;
 		}
-
 		.badgeCheater {
 			background-color: #d3961c;
 		}
-
 		.badgeBlue {
 			background-color: #07a2f1;
 		}
-
 		.badgeBlack {
 			background-color: #0e1d69;
 		}
-
 		.badgeGold {
 			background-color: #f1c40f;
 		}
-
 		.searchAnywhereContent {
 			color: white;
 			flex: 1;
@@ -4516,11 +4386,9 @@ async function all() {
 			overflow-x: hidden;
 			overflow-y: auto;
 		}
-
 		.searchAnywhereContent::-webkit-scrollbar {
 			width: 0 !important;
 		}
-
 		.searchUserCard {
 			background: #444;
 			border-radius: 10px;
@@ -4534,43 +4402,35 @@ async function all() {
 			border: 2px solid #888;
 			box-sizing: border-box;
 		}
-
 		.searchCard.light {
 			border: 2px solid white;
 		}
-
 		.searchUserCard>div {
 			width: 100%;
 		}
-
 		.searchUserCardBody {
 			display: flex;
 			flex-direction: row;
 		}
-
 		.searchUserCardImg {
 			height: 36px;
 			width: 36px;
 			border-radius: 50%;
 			margin-right: 10px;
 		}
-
 		.searchUserCardInfo>span:first-child {
 			font-size: 14px;
 			margin-bottom: 3px;
 			display: inline-block;
 			color: #bbb;
 		}
-
 		.searchUserCardInfo>span:last-child {
 			font-size: 20px;
 		}
-
 		.searchUserCardMedia {
 			display: flex;
 			flex-direction: row;
 		}
-
 		.searchUserCardMedia>div {
 			margin-top: 5px;
 			flex: 1;
@@ -4578,7 +4438,6 @@ async function all() {
 			height: 23px;
 			verticle-align: center;
 		}
-
 		.searchUserCardMedia>div>div {
 			padding: 4px;
 			position: relative;
@@ -4586,7 +4445,6 @@ async function all() {
 			background: #777;
 			margin-right: 15px;
 		}
-
 		.searchUserCardMedia>div>div:after {
 			width: 10px;
 			height: 100%;
@@ -4598,7 +4456,6 @@ async function all() {
 			clip-path: polygon(0 0, 100% 50%, 0 100%);
 			background-color: inherit;
 		}
-
 		.userBadgeInfo {
 			font-size: 14px;
 			padding: 2px 5px;
@@ -4608,7 +4465,6 @@ async function all() {
 			margin: 0px 3px;
 			display: inline-block;
 		}
-
 		.searchProblemCard {
 			background: #444;
 			border-radius: 10px;
@@ -4622,17 +4478,14 @@ async function all() {
 			border: 2px solid #888;
 			box-sizing: border-box;
 		}
-
 		.searchProblemCard>div {
 			width: 100%;
 			display: flex;
 			flex-direction: row;
 		}
-
 		.searchProblemCard>div:last-child {
 			margin-top: 5px;
 		}
-
 		.searchProblemCardTag {
 			margin-right: 12px;
 			display: inline-flex;
@@ -4641,14 +4494,12 @@ async function all() {
 			height: 24px;
 			overflow: hidden;
 		}
-
 		.searchProblemCardTag>div {
 			padding: 2px;
 			position: relative;
 			display: inline-block;
 			margin-right: 5px;
 		}
-
 		.searchListCardTag {
 			margin-right: 12px;
 			display: inline-flex;
@@ -4657,20 +4508,17 @@ async function all() {
 			height: 24px;
 			overflow: hidden;
 		}
-
 		.searchListCardTag>div {
 			padding: 2px;
 			position: relative;
 			display: inline-block;
 			margin-right: 5px;
 		}
-
 		.searchListCardTag svg,
 		.searchProblemCardTag svg {
 			height: 20px !important;
 			width: 20px !important;
 		}
-
 		.problemTagInfo {
 			font-size: 16px;
 			padding: 4px 7px;
@@ -4678,11 +4526,9 @@ async function all() {
 			color: white;
 			display: inline-block;
 		}
-
 		.searchProblemCardBody>div:first-child {
 			margin-right: 5px;
 		}
-
 		.searchListCard {
 			background: #444;
 			border-radius: 10px;
@@ -4697,21 +4543,17 @@ async function all() {
 			box-sizing: border-box;
 			position: relative;
 		}
-
 		.searchListCard>div {
 			width: 100%;
 			display: flex;
 			flex-direction: row;
 		}
-
 		.searchListCardBody>div:first-child {
 			margin-right: 5px;
 		}
-
 		.searchListCardBody {
 			margin-bottom: 5px;
 		}
-
 		.searchAnywhereSettings {
 			position: fixed;
 			top: 0px;
@@ -4723,7 +4565,6 @@ async function all() {
 			transition: 0.2s;
 			color: white;
 		}
-
 		.searchAnywhereSettingsMain {
 			height: min(300px, 100% - 10px);
 			width: min(450px, 100% - 10px);
@@ -4734,7 +4575,6 @@ async function all() {
 			display: flex;
 			flex-direction: column;
 		}
-
 		.searchAnywhereSettingsContent {
 			flex: 1;
 			scrollbar-width: none;
@@ -4742,7 +4582,6 @@ async function all() {
 			overflow-x: hidden;
 			overflow-y: auto;
 		}
-
 		.searchAnywhereSettingsBag {
 			margin-bottom: 8px;
 			user-select: none;
@@ -4750,13 +4589,11 @@ async function all() {
 			position: relative;
 			line-height: 30px;
 		}
-
 		.searchAnywhereClicky {
 			position: relative;
 			height: 30px;
 			width: 30px;
 		}
-
 		.searchAnywhereClicky div {
 			transition: 0.2s;
 			position: absolute;
@@ -4764,32 +4601,25 @@ async function all() {
 			left: 0px;
 			cursor: pointer;
 		}
-
 		.searchAnywhereClicky div svg {
 			height: 30px;
 			width: 30px;
 		}
-
 		.searchAnywhereClicky[flag=false] .falseBlock {
 			opacity: 1;
 		}
-
 		.searchAnywhereClicky[flag=true] .falseBlock {
 			opacity: 0;
 		}
-
 		.searchAnywhereClicky[flag=true] .trueBlock {
 			opacity: 1;
 		}
-
 		.searchAnywhereClicky[flag=false] .trueBlock {
 			opacity: 0;
 		}
-
 		.searchAnywhereSettingsContent::-webkit-scrollbar {
 			width: 0 !important;
 		}
-
 		.searchAnywhereCloseSettings {
 			display: inline-grid;
 			place-items: center;
@@ -4799,11 +4629,9 @@ async function all() {
 			border-radius: 50%;
 			background: white;
 		}
-
 		.searchAnywhereCloseSettings:hover {
 			background: #aaa;
 		}
-
 		.searchAnywhereEntrance {
 			z-index: 99;
 			background: white;
@@ -4818,21 +4646,17 @@ async function all() {
 			border-radius: 5px;
 			cursor: pointer;
 		}
-
 		.searchAnywhereEntrance:hover {
 			background: #ccc;
 		}
-
 		.searchAnywhereEntrance svg {
 			height: 30px;
 			width: 30px;
 		}
-
 		.searchCard.light,
 		.searchCard {
 			color: white !important;
 		}
-
 		.searchAnywhereContent>div>div>a:hover {
 			color: #83c4ef;
 		}
@@ -4854,7 +4678,14 @@ async function all() {
 			background: #f8fafc;
 		}
 		.aml-notification-header h5 { margin: 0; color: #1e293b; font-size: 16px; }
-		.aml-notification-list { flex: 1; overflow-y: auto; padding: 10px; }
+		.aml-notification-list {
+			flex: 1;
+			overflow-y: auto;
+			padding: 10px;
+		}
+		.aml-notification-modal:not(.open) {
+			pointer-events: none !important;
+		}
 		.aml-notification-item {
 			padding: 12px; border-bottom: 1px solid #f1f5f9;
 			cursor: pointer; transition: background 0.2s;
@@ -4906,7 +4737,7 @@ async function all() {
 					class=""></path>
 				</svg></div>
 			<div class="iconRight"><svg style="cursor: pointer" class="searchAnywhereSettingsLink" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"
-				role="img"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+				role="img">
 				<path fill="currentColor"
 					d="M495.9 166.6C499.2 175.2 496.4 184.9 489.6 191.2L446.3 230.6C447.4 238.9 448 247.4 448 256C448 264.6 447.4 273.1 446.3 281.4L489.6 320.8C496.4 327.1 499.2 336.8 495.9 345.4C491.5 357.3 486.2 368.8 480.2 379.7L475.5 387.8C468.9 398.8 461.5 409.2 453.4 419.1C447.4 426.2 437.7 428.7 428.9 425.9L373.2 408.1C359.8 418.4 344.1 427 329.2 433.6L316.7 490.7C314.7 499.7 307.7 506.1 298.5 508.5C284.7 510.8 270.5 512 255.1 512C241.5 512 227.3 510.8 213.5 508.5C204.3 506.1 197.3 499.7 195.3 490.7L182.8 433.6C167 427 152.2 418.4 138.8 408.1L83.14 425.9C74.3 428.7 64.55 426.2 58.63 419.1C50.52 409.2 43.12 398.8 36.52 387.8L31.84 379.7C25.77 368.8 20.49 357.3 16.06 345.4C12.82 336.8 15.55 327.1 22.41 320.8L65.67 281.4C64.57 273.1 64 264.6 64 256C64 247.4 64.57 238.9 65.67 230.6L22.41 191.2C15.55 184.9 12.82 175.3 16.06 166.6C20.49 154.7 25.78 143.2 31.84 132.3L36.51 124.2C43.12 113.2 50.52 102.8 58.63 92.95C64.55 85.8 74.3 83.32 83.14 86.14L138.8 103.9C152.2 93.56 167 84.96 182.8 78.43L195.3 21.33C197.3 12.25 204.3 5.04 213.5 3.51C227.3 1.201 241.5 0 256 0C270.5 0 284.7 1.201 298.5 3.51C307.7 5.04 314.7 12.25 316.7 21.33L329.2 78.43C344.1 84.96 359.8 93.56 373.2 103.9L428.9 86.14C437.7 83.32 447.4 85.8 453.4 92.95C461.5 102.8 468.9 113.2 475.5 124.2L480.2 132.3C486.2 143.2 491.5 154.7 495.9 166.6V166.6zM256 336C300.2 336 336 300.2 336 255.1C336 211.8 300.2 175.1 256 175.1C211.8 175.1 176 211.8 176 255.1C176 300.2 211.8 336 256 336z" />
 				</svg></div>
@@ -4921,12 +4752,12 @@ async function all() {
 			<div>
 				<div class="searchAnywhereSettingsBag" for="lsawUserDisplay"> 显示用户 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawUserDisplay}">
 					<div class="falseBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor" d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z" />
 					</svg>
 					</div>
 					<div class="trueBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor"
 						d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM339.8 211.8C350.7 200.9 350.7 183.1 339.8 172.2C328.9 161.3 311.1 161.3 300.2 172.2L192 280.4L147.8 236.2C136.9 225.3 119.1 225.3 108.2 236.2C97.27 247.1 97.27 264.9 108.2 275.8L172.2 339.8C183.1 350.7 200.9 350.7 211.8 339.8L339.8 211.8z" />
 					</svg>
@@ -4935,12 +4766,12 @@ async function all() {
 				</div>
 				<div class="searchAnywhereSettingsBag" for="lsawProblemDisplay"> 显示题目 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawProblemDisplay}">
 					<div class="falseBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor" d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z" />
 					</svg>
 					</div>
 					<div class="trueBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor"
 						d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM339.8 211.8C350.7 200.9 350.7 183.1 339.8 172.2C328.9 161.3 311.1 161.3 300.2 172.2L192 280.4L147.8 236.2C136.9 225.3 119.1 225.3 108.2 236.2C97.27 247.1 97.27 264.9 108.2 275.8L172.2 339.8C183.1 350.7 200.9 350.7 211.8 339.8L339.8 211.8z" />
 					</svg>
@@ -4949,12 +4780,12 @@ async function all() {
 				</div>
 				<div class="searchAnywhereSettingsBag" for="lsawDiscussDisplay"> 显示讨论 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawDiscussDisplay}">
 					<div class="falseBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor" d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z" />
 					</svg>
 					</div>
 					<div class="trueBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor"
 						d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM339.8 211.8C350.7 200.9 350.7 183.1 339.8 172.2C328.9 161.3 311.1 161.3 300.2 172.2L192 280.4L147.8 236.2C136.9 225.3 119.1 225.3 108.2 236.2C97.27 247.1 97.27 264.9 108.2 275.8L172.2 339.8C183.1 350.7 200.9 350.7 211.8 339.8L339.8 211.8z" />
 					</svg>
@@ -4963,12 +4794,12 @@ async function all() {
 				</div>
 				<div class="searchAnywhereSettingsBag" for="lsawOfficialListDisplay"> 显示官方题单 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawOfficialListDisplay}">
 					<div class="falseBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor" d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z" />
 					</svg>
 					</div>
 					<div class="trueBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor"
 						d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM339.8 211.8C350.7 200.9 350.7 183.1 339.8 172.2C328.9 161.3 311.1 161.3 300.2 172.2L192 280.4L147.8 236.2C136.9 225.3 119.1 225.3 108.2 236.2C97.27 247.1 97.27 264.9 108.2 275.8L172.2 339.8C183.1 350.7 200.9 350.7 211.8 339.8L339.8 211.8z" />
 					</svg>
@@ -4977,12 +4808,12 @@ async function all() {
 				</div>
 				<div class="searchAnywhereSettingsBag" for="lsawSelectListDisplay"> 显示用户题单 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawSelectListDisplay}">
 					<div class="falseBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor" d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z" />
 					</svg>
 					</div>
 					<div class="trueBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 						<path fill="currentColor"
 						d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM339.8 211.8C350.7 200.9 350.7 183.1 339.8 172.2C328.9 161.3 311.1 161.3 300.2 172.2L192 280.4L147.8 236.2C136.9 225.3 119.1 225.3 108.2 236.2C97.27 247.1 97.27 264.9 108.2 275.8L172.2 339.8C183.1 350.7 200.9 350.7 211.8 339.8L339.8 211.8z" />
 					</svg>
@@ -5032,7 +4863,7 @@ async function all() {
 		</div>
 		</div>
 		<div class="searchAnywhereEntrance">
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
 			<path fill="black"
 			d="M236 176c0 15.46-12.54 28-28 28S180 191.5 180 176S192.5 148 208 148S236 160.5 236 176zM500.3 500.3c-15.62 15.62-40.95 15.62-56.57 0l-119.7-119.7c-40.41 27.22-90.9 40.65-144.7 33.46c-91.55-12.23-166-87.28-177.6-178.9c-17.24-136.2 97.29-250.7 233.4-233.4c91.64 11.6 166.7 86.07 178.9 177.6c7.19 53.8-6.236 104.3-33.46 144.7l119.7 119.7C515.9 459.3 515.9 484.7 500.3 500.3zM294.1 182.2C294.1 134.5 255.6 96 207.1 96C160.4 96 121.9 134.5 121.9 182.2c0 38.35 56.29 108.5 77.87 134C201.8 318.5 204.7 320 207.1 320c3.207 0 6.26-1.459 8.303-3.791C237.8 290.7 294.1 220.5 294.1 182.2z" />
 		</svg>
@@ -5441,7 +5272,7 @@ async function all() {
 										</div>
 										<div>
 											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path data-v-639bc19b="" fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${acs} / ${item.problemCount}</div>
-											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path fill="#f1c40f" d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z"/></svg></div>${item.markCount}</div>
+											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="#f1c40f" d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z"/></svg></div>${item.markCount}</div>
 										</div>
 									</a>
 								`;
@@ -5495,8 +5326,8 @@ async function all() {
 										</div>
 										<div>
 											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path data-v-639bc19b="" fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${item.problemCount}</div>
-											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path fill="currentColor" d="M256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512zM232 256C232 264 236 271.5 242.7 275.1L338.7 339.1C349.7 347.3 364.6 344.3 371.1 333.3C379.3 322.3 376.3 307.4 365.3 300L280 243.2V120C280 106.7 269.3 96 255.1 96C242.7 96 231.1 106.7 231.1 120L232 256z"/></svg></div>${new Date(item.createTime * 1000).pattern("yyyy/MM/dd")}</div>
-											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path fill="#f1c40f" d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z"/></svg></div>${item.markCount}</div>
+											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512zM232 256C232 264 236 271.5 242.7 275.1L338.7 339.1C349.7 347.3 364.6 344.3 371.1 333.3C379.3 322.3 376.3 307.4 365.3 300L280 243.2V120C280 106.7 269.3 96 255.1 96C242.7 96 231.1 106.7 231.1 120L232 256z"/></svg></div>${new Date(item.createTime * 1000).pattern("yyyy/MM/dd")}</div>
+											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="#f1c40f" d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z"/></svg></div>${item.markCount}</div>
 											<div style='flex: 1; text-align: right'>
 												<object style='display: inline-block'><a href="https://www.luogu.com.cn/user/${item.provider.uid}">
 													<div style='display: flex; flex-direction: row'>
@@ -6014,14 +5845,14 @@ async function all() {
 				[0x0e, 0x1d, 0x69],
 			];
 			GM_addStyle(`
-				@import url('https://cdn.jsdmirror.cn/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css');
+				@import url('https://fastly.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.min.css');
 				[data-v-0a593618],
 				[data-v-fdcd5a58] {
 					display: none;
 				}
 				@font-face {
 					font-family: 'Caveat';
-					src: url('https://cdn.jsdmirror.cn/gh/googlefonts/caveat/fonts/ttf/Caveat-Regular.ttf') format('truetype');
+					src: url('https://fastly.jsdelivr.net/gh/googlefonts/caveat/fonts/ttf/Caveat-Regular.ttf') format('truetype');
 					font-weight: 400;
 					font-style: normal;
 					font-display: swap
@@ -6553,15 +6384,10 @@ async function all() {
 				}
 				function getContentAfterFirstReportReply(str) {
 					const keyword = "举报回复";
-					// 查找“举报回复”首次出现的起始索引
 					const index = str.indexOf(keyword);
 					if (index === -1) {
-						// 若不存在该子串，返回空字符串或自定义提示
 						return "";
-						// 也可返回原字符串：return str;
 					}
-					// 截取从“举报回复”结束位置到字符串末尾的内容
-					// index + keyword.length 是“举报回复”后的第一个字符索引
 					return str.slice(index + keyword.length);
 				}
 				function processSingleReply(commentWrap) {
@@ -6632,12 +6458,130 @@ async function all() {
 					}, 500);
 				}
 			}
+			if (currentAMLSettings.acceptedProblemCmpEnabled) {
+				try {
+					let CACHE_KEY = "ACPCACHE";
+					let CACHE_TIME_KEY = "ACPCACHETIME";
+					let CACHE = GM_getValue(CACHE_KEY, [0, 0, 0, 0, 0, 0, 0, 0]);
+					let TIME = GM_getValue(CACHE_TIME_KEY, 0);
+					console.log(CACHE, TIME);
+					if (TIME < Date.now() - 1000 * 60 * 60 * 24) {
+						console.log("ACPCACHE过期，开始更新");
+						(async function () {
+							console.log("更新ACPCACHE");
+							let newCache = [0, 0, 0, 0, 0, 0, 0, 0];
+							let req = await fetch("https://www.luogu.com.cn/user/1432496/practice", {
+								headers: [
+									["x-lentille-request", "content-only"],
+								],
+							});
+							let data = await req.json();
+							data = data.data.passed;
+							for (let i of data) {
+								newCache[i.difficulty] += 1;
+							}
+							console.log(newCache);
+							GM_setValue(CACHE_KEY, newCache);
+							GM_setValue(CACHE_TIME_KEY, Date.now());
+							console.log("更新ACPCACHE完成");
+							console.log(newCache);
+						})();
+					}
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			if (currentAMLSettings.acceptedProblemCmpEnabled && location.pathname.split('/')[1] == 'user' && location.pathname.split('/')[3] == 'practice') {
+				let CACHE = GM_getValue("ACPCACHE", [0, 0, 0, 0, 0, 0, 0, 0]);
+				let aa = 0;
+				for (let i of document.getElementsByClassName("difficulty-tags")[0].children) {
+					if (Number(i.children[1].innerHTML.replaceAll('题', '')) > CACHE[aa]) {
+						i.children[1].style.color = "green";
+					}
+					if (Number(i.children[1].innerHTML.replaceAll('题', '')) < CACHE[aa]) {
+						i.children[1].style.color = "red";
+					}
+					aa += 1;
+				}
+			}
+			if(currentAMLSettings.OCRCaptchaEnabled&&!ocrInitialized){
+				(async function () {
+					const OCR_API = "https://captcha.amlg.top/ocr";
+					const CONFIGS = [
+						{ img: "div.img[data-v-d0ac2ee6] img", input: "input.lform-size-middle[data-v-62a70fee][placeholder*='图形验证码']" },
+						{ img: "#--swal-problem-submit-captcha", input: ".swal2-input[placeholder*='输入上面的验证码']" }
+					];
+					let lastBase64 = "";
+					let isWatching = false;
+					const observer = new MutationObserver(() => {
+						if (isWatching) return;
+						for (let cfg of CONFIGS) {
+							const img = document.querySelector(cfg.img);
+							const input = document.querySelector(cfg.input);
+							if (img && input) {
+								isWatching = true;
+								observer.disconnect();
+								startWatch();
+								break;
+							}
+						}
+					});
+					observer.observe(document.body, { childList: true, subtree: true });
+					function startWatch() {
+						let img, input;
+						for (let cfg of CONFIGS) {
+							img = document.querySelector(cfg.img);
+							input = document.querySelector(cfg.input);
+							if (img && input) break;
+						}
+						if (!img || !input) {
+							setTimeout(startWatch, 300);
+							return;
+						}
+						if (img.naturalWidth <= 0 || img.naturalHeight <= 0) {
+							requestAnimationFrame(startWatch);
+							return;
+						}
+						const canvas = document.createElement("canvas");
+						canvas.width = img.naturalWidth;
+						canvas.height = img.naturalHeight;
+						const ctx = canvas.getContext("2d");
+						ctx.drawImage(img, 0, 0);
+						const base64 = canvas.toDataURL("image/png");
+						if (base64 !== lastBase64) {
+							lastBase64 = base64;
+							recognizeAndFill(base64, input);
+						}
+						setTimeout(startWatch, 220);
+					}
+					function recognizeAndFill(base64, input) {
+						GM_xmlhttpRequest({
+							method: "POST",
+							url: OCR_API,
+							headers: { "Content-Type": "application/json" },
+							data: JSON.stringify({ image: base64 }),
+							onload: (res) => {
+								try {
+									const result = JSON.parse(res.responseText);
+									if (result.code === 0) {
+										const code = result.data.trim();
+										input.value = code;
+										input.dispatchEvent(new Event('input', { bubbles: true }));
+										input.dispatchEvent(new Event('change', { bubbles: true }));
+										console.log("✅ 识别填充成功：", code);
+									}
+								} catch (e) {
+									console.error("❌ 识别失败", e);
+								}
+							}
+						});
+					}
+				})();
+			}
 			if (currentAMLSettings.benbenctrlenterEnabled && !benbenctrlenterInited) {
 				benbenctrlenterInited = true;
 				document.addEventListener('keyup', function (event) {
-					// 统一判断：Ctrl (Win/Linux) 或 Command (Mac) + Enter
 					const isCtrlOrCommand = event.ctrlKey || event.metaKey;
-
 					if (
 						isCtrlOrCommand
 						&& event.key === "Enter"
@@ -6690,7 +6634,7 @@ async function all() {
 			if (currentAMLSettings.autoSaveDiscussEnabled && location.pathname.startsWith("/discuss/")) {
 				let discussId = location.pathname.split("/discuss/")[1].split("/")[0];
 				let parser = new DOMParser();
-				let doc = parser.parseFromString(`<button data-v-505b6a97="" data-v-216447b8="" class="lform-size-middle lcolor-var-green-3" type="button">保存<!----></button>`, 'text/html').body.firstElementChild;
+				let doc = parser.parseFromString(`<button data-v-505b6a97="" data-v-216447b8="" class="lform-size-middle lcolor-var-green-3" type="button">保存</button>`, 'text/html').body.firstElementChild;
 				doc.onclick = function () {
 					try {
 						const url = 'https://luogu.store/';
@@ -6771,7 +6715,7 @@ async function all() {
 				let search = new URLSearchParams(location.search);
 				let cpbtn = document.querySelector("[data-v-f265fec6]").querySelector("[data-v-f265fec6]").querySelector("[data-v-f265fec6]").lastChild.firstChild.lastChild;
 				const parser = new DOMParser();
-				const doc = parser.parseFromString(`<button data-v-505b6a97="" data-v-f265fec6-s="" class="aml-vscode lform-size-middle button-transparent" type="button">跳转到 VSCode Luogu<!----></button>`, 'text/html').body.firstChild;
+				const doc = parser.parseFromString(`<button data-v-505b6a97="" data-v-f265fec6-s="" class="aml-vscode lform-size-middle button-transparent" type="button">跳转到 VSCode Luogu</button>`, 'text/html').body.firstChild;
 				doc.onclick = function () {
 					Swal.fire({
 						icon: "info",
@@ -6995,16 +6939,13 @@ async function all() {
 						O2INPUT.click();
 					}
 				} catch (error) {
-
 				}
 			}
 			if (currentAMLSettings.nbnhhshEnabled && !nbnhhshInited) {
 				nbnhhshInited = true;
 				let Nbnhhsh = ((htmlText, cssText) => {
 					const API_URL = "https://lab.magiconch.com/api/nbnhhsh/";
-
 					const request = (method, url, data, onOver) => {
-						// GM_xmlhttpRequest返回的对象支持abort，兼容原脚本的中止逻辑
 						return GM_xmlhttpRequest({
 							method: method,
 							url: url,
@@ -7015,7 +6956,6 @@ async function all() {
 							withCredentials: true,
 							onload: (res) => {
 								let result = null;
-								// 修复点1：JSON解析加try/catch，避免返回非JSON内容时报错卡死
 								try {
 									result = res.responseText ? JSON.parse(res.responseText) : null;
 								} catch (e) {
@@ -7026,64 +6966,50 @@ async function all() {
 							onerror: () => {
 								onOver(null);
 							},
-							// 修复点2：添加超时回调，避免请求挂起无响应
 							ontimeout: () => {
 								onOver(null);
 							},
 						});
 					};
-
 					const Guess = {};
 					const guess = (text, onOver) => {
-						// 修复点3：match加判空（|| []），避免无匹配内容时调用join报错
 						text = text.match(/[a-z0-9]{2,}/gi) || [];
 						text = text.join(",");
-						// 空内容直接返回，不发起请求
 						if (!text) return onOver([]);
-
 						if (Guess[text]) {
 							return onOver(Guess[text]);
 						}
-
 						if (guess._request) {
 							guess._request.abort();
 						}
-
 						app.loading = true;
 						guess._request = request(
 							"POST",
 							API_URL + "guess",
 							{ text },
 							(data) => {
-								// 修复点4：无论是否成功，都重置loading状态（核心解决一直加载中）
 								app.loading = false;
 								Guess[text] = data || [];
 								onOver(data || []);
 							},
 						);
 					};
-
 					const submitTran = (name) => {
 						let text = prompt(
 							"输入缩写对应文字 末尾可通过括号包裹（简略注明来源）",
 							"",
 						);
-
 						if (!text || !text.trim || !text.trim()) {
 							return;
 						}
-
 						request("POST", API_URL + "translation/" + name, { text }, () => {
 							alert("感谢对好好说话项目的支持！审核通过后这条对应将会生效");
 						});
 					};
-
 					const transArrange = (trans) => {
 						return trans.map((tran) => {
 							const match = tran.match(/^(.+?)([（\(](.+?)[）\)])?$/);
-							// 修复点5：match加判空，避免匹配失败时match为null报错
 							if (!match) return { text: tran };
-
 							if (match.length === 4) {
 								return {
 									text: match[1],
@@ -7096,7 +7022,6 @@ async function all() {
 							}
 						});
 					};
-
 					const getSelectionText = (_) => {
 						let text = getSelection().toString().trim();
 						if (!!text && /[a-z0-9]/i.test(text)) {
@@ -7105,28 +7030,22 @@ async function all() {
 							return null;
 						}
 					};
-
 					const fixPosition = (_) => {
-						// 修复点6：Range加判空，避免无选中内容时getRangeAt(0)报错
 						if (!getSelection().rangeCount) return;
 						let rect = getSelection().getRangeAt(0).getBoundingClientRect();
-
 						const activeEl = document.activeElement;
 						if (["TEXTAREA", "INPUT"].includes(activeEl?.tagName))
 							rect = activeEl.getBoundingClientRect();
-
 						let scrollTop =
 							document.documentElement.scrollTop || document.body.scrollTop;
 						let top = Math.floor(scrollTop + rect.top + rect.height);
 						let left = Math.floor(rect.left);
-
 						if (top === 0 && left === 0) {
 							app.show = false;
 						}
 						app.top = top;
 						app.left = left;
 					};
-
 					const timer = (_) => {
 						if (getSelectionText()) {
 							setTimeout(timer, 300);
@@ -7134,36 +7053,27 @@ async function all() {
 							app.show = false;
 						}
 					};
-
 					const nbnhhsh = (_) => {
 						let text = getSelectionText();
 						app.show = !!text && /[a-z0-9]/i.test(text);
-
 						if (!app.show) {
 							return;
 						}
-
 						fixPosition();
-
 						guess(text, (data) => {
-							// 修复点7：data加判空，避免data为null时判断data.length报错
 							if (!data || !data.length) {
 								app.show = false;
 							} else {
 								app.tags = data;
 							}
 						});
-
 						setTimeout(timer, 300);
 					};
-
 					const _nbnhhsh = (_) => {
 						setTimeout(nbnhhsh, 1);
 					};
-
 					document.body.addEventListener("mouseup", _nbnhhsh);
 					document.body.addEventListener("keyup", _nbnhhsh);
-
 					const createEl = (html) => {
 						createEl._el.innerHTML = html;
 						let el = createEl._el.children[0];
@@ -7171,10 +7081,8 @@ async function all() {
 						return el;
 					};
 					createEl._el = document.createElement("div");
-
 					createEl(`<style>${cssText}</style>`);
 					const el = createEl(htmlText);
-
 					const app = new Vue({
 						el,
 						data: {
@@ -7189,7 +7097,6 @@ async function all() {
 							transArrange,
 						},
 					});
-
 					return {
 						guess,
 						submitTran,
@@ -7263,9 +7170,6 @@ async function all() {
 					letter-spacing: -0.6px;
 					bottom:0;
 				}
-				.nbnhhsh-tag-list{
-					/*padding:4px 0;*/
-				}
 				.nbnhhsh-tag-item{
 					padding:4px 14px;
 					position: relative;
@@ -7331,46 +7235,6 @@ async function all() {
 				`,
 				);
 			}
-			// if (currentAMLSettings.slogenTimeEnabled) {
-			// 	function updateSlogenTime() {
-			// 		if (!getCurrentUserId()) {
-			// 			return;
-			// 		}
-			// 		let time = new Date();
-			// 		let timestring = currentAMLSettings.slogenTimeFormat.replace(
-			// 			"{time}",
-			// 			time.getFullYear().toString() +
-			// 			"年" +
-			// 			(time.getMonth() + 1).toString() +
-			// 			"月" +
-			// 			time.getDate().toString() +
-			// 			"日 " +
-			// 			time.getHours().toString() +
-			// 			"时" +
-			// 			time.getMinutes().toString() +
-			// 			"分",
-			// 		);
-			// 		if (GM_getValue("aml-slogan-time-string", "") != timestring) {
-			// 			GM_setValue("aml-slogan-time-string", timestring);
-			// 			fetch("/api/user/updateSlogan", {
-			// 				method: "POST",
-			// 				headers: [
-			// 					["content-type", "application/json"],
-			// 					["referer", "https://www.luogu.com.cn/"],
-			// 					["x-csrf-token", gettoken()],
-			// 				],
-			// 				body: JSON.stringify({
-			// 					slogan: timestring,
-			// 				}),
-			// 			});
-			// 		}
-			// 	}
-			// 	if (!slogenFunctionRunned) {
-			// 		slogenFunctionRunned = true;
-			// 		setInterval(updateSlogenTime, 1000);
-			// 	}
-			// }
-			// 洛谷个人介绍增强 - 结构100%还原原生 + 不破坏Vue虚拟DOM
 			if (currentAMLSettings.showUserIntroductionEnabled && location.pathname.match(/^\/user\/\d+$/)) {
 				console.log("洛谷个人介绍增强功能触发");
 				let userUid = location.pathname.split("/")[2];
@@ -7380,9 +7244,8 @@ async function all() {
 				if (!isAdmin && !verified) {
 					console.log("增强功能启动")
 					const it = res.user.introduction;
-					const escapedIt = it.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+					const escapedIt = it.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 					const introduction = marked.parse(escapedIt);
-
 					// ==============================================
 					// ✅ 1:1 还原洛谷原生 l-card 结构、属性、样式
 					// ==============================================
@@ -7391,7 +7254,6 @@ async function all() {
 					jsCard.setAttribute('data-v-f4fefeb2', '');
 					jsCard.setAttribute('data-v-754e1ea4-s', '');
 					jsCard.className = 'l-card';
-
 					jsCard.innerHTML = `
 			<div data-v-f4fefeb2="" class="header aml-user-introduction-header">
 			<h3 data-v-f4fefeb2="" style="margin: 0px;">个人介绍</h3>
@@ -7403,7 +7265,6 @@ async function all() {
 			<div class="lfe-marked">${introduction}</div>
 			</div>
 					`.trim();
-
 					// ==============================================
 					// ✅ 核心安全修复：不删除任何Vue DOM，只安全插入
 					// ==============================================
@@ -7411,7 +7272,6 @@ async function all() {
 					if (mainContent) {
 						mainContent.appendChild(jsCard);
 					}
-
 					// 仅渲染当前卡片内的公式
 					if (typeof katex !== 'undefined') {
 						renderMathInElement(jsCard, {
@@ -7424,11 +7284,10 @@ async function all() {
 					}
 				}
 			}
-
 			// ==============================================
 			// 👇 只有注释的按钮逻辑 放到 IF 外面（全页面生效）
 			// ==============================================
-			if (location.pathname.match(/^\/user\/\d+$/)&&JSON.parse(document.getElementById("lentille-context").innerHTML).data.user.uid!=getCurrentUserId()) {
+			if (location.pathname.match(/^\/user\/\d+$/) && JSON.parse(document.getElementById("lentille-context").innerHTML).data.user.uid != getCurrentUserId()) {
 				const mainContents = document.querySelectorAll('.main');
 				if (mainContents.length >= 3) {
 					const mainContent = mainContents[2];
@@ -7439,9 +7298,8 @@ async function all() {
 						const cardHeader = targetCard.querySelector('.header');
 						const resData = JSON.parse(document.getElementById("lentille-context").innerHTML).data;
 						const it = resData.user.introduction;
-						const escapedIt = it.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+						const escapedIt = it.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 						const introduction = marked.parse(escapedIt);
-
 						if (cardHeader) {
 							// 没有edit-tab就自动创建，带上 aml-deltab
 							let editTab = cardHeader.querySelector('span[data-v-f4fefeb2]');
@@ -7450,17 +7308,14 @@ async function all() {
 								editTab.className = 'edit-button edit-tab aml-deltab';
 								cardHeader.appendChild(editTab);
 							}
-
 							// 插入按钮
 							editTab.innerHTML += `
 			<button data-v-505b6a97="" class="lform-size-small" type="button" data-type="copy">复制</button>
 			<button data-v-505b6a97="" class="lform-size-small" type="button" data-type="render" alt="渲染为 HTML，请小心鉴别">渲染为 HTML</button>
 							`.trim();
-
 							const copyBtn = editTab.querySelector('button[data-type="copy"]');
 							const renderBtn = editTab.querySelector('button[data-type="render"]');
 							const renderContent = targetCard.querySelector('.lfe-marked');
-
 							// 复制功能
 							copyBtn.addEventListener('click', function () {
 								GM_setClipboard(it);
@@ -7471,7 +7326,6 @@ async function all() {
 									topLayer: true
 								});
 							});
-
 							// 渲染切换
 							renderBtn.onclick = function () {
 								const isHtml = renderBtn.innerHTML.includes('HTML');
@@ -7522,10 +7376,8 @@ async function all() {
 				try {
 					const SUPABASE_URL = "https://ktwhwvafywwekfkvskbk.supabase.co";
 					const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0d2h3dmFmeXd3ZWtma3Zza2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTU1NDgsImV4cCI6MjA4NDI3MTU0OH0.tSCRz7ENeCT3NXt891equmSBfW_UsXHUdKSVMoxveKQ";
-
 					// 获取 uid
 					const uid = Number(currentPath.split('/')[2]);
-
 					// 拼接 Supabase 原生 REST API 地址
 					const apiUrl = `${SUPABASE_URL}/rest/v1/user_status?uid=eq.${uid}&select=*`;
 					// console.log(apiUrl,uid,SUPABASE_ANON_KEY);
@@ -7589,10 +7441,8 @@ async function all() {
 				try {
 					const SUPABASE_URL = "https://ktwhwvafywwekfkvskbk.supabase.co";
 					const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0d2h3dmFmeXd3ZWtma3Zza2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTU1NDgsImV4cCI6MjA4NDI3MTU0OH0.tSCRz7ENeCT3NXt891equmSBfW_UsXHUdKSVMoxveKQ";
-
 					// 获取 uid
 					const uid = getCurrentUserId();
-
 					// 拼接 Supabase 原生 REST API 地址
 					const apiUrl = `${SUPABASE_URL}/rest/v1/user_status?uid=eq.${uid}&select=*`;
 					console.log(apiUrl, uid, SUPABASE_ANON_KEY);
@@ -7679,7 +7529,7 @@ async function all() {
 			) {
 				const parser = new DOMParser();
 				const doc = parser.parseFromString(
-					`<button class="aml-problem-random-button solid lform-size-middle aml-random-problem-btn" style="background-color: rgba(var(--l-button--real-color), 1);color: #fff;scroll-margin-top: 3.5rem;--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));    display: inline-block;outline: none;cursor: pointer;font-weight: inherit;line-height: 1.5;text-align: center;vertical-align: middle;border-radius: 3px;border: 1px solid rgb(var(--l-button--real-color));background: rgba(var(--l-button--real-color), 0) none;color: rgb(var(--l-button--real-color));" type="button">随机跳题<!----></button>`,
+					`<button class="aml-problem-random-button solid lform-size-middle aml-random-problem-btn" style="background-color: rgba(var(--l-button--real-color), 1);color: #fff;scroll-margin-top: 3.5rem;--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));    display: inline-block;outline: none;cursor: pointer;font-weight: inherit;line-height: 1.5;text-align: center;vertical-align: middle;border-radius: 3px;border: 1px solid rgb(var(--l-button--real-color));background: rgba(var(--l-button--real-color), 0) none;color: rgb(var(--l-button--real-color));" type="button">随机跳题</button>`,
 					"text/html",
 				).body.firstElementChild;
 				doc.onclick = async function () {
@@ -7805,7 +7655,6 @@ async function all() {
 			}
 			if (currentAMLSettings.chatMarkdown && currentPath.startsWith("/chat")) {
 				GM_addStyle(`
-			/* Markdown + Katex 渲染承接容器 */
 			.aml-luogu-md-rendered {
 				font-family: LXGW WenKai Screen;
 				word-wrap: break-word;
@@ -7844,7 +7693,6 @@ async function all() {
 				background-color: #fff !important;
 				font-family: LXGW WenKai Screen !important;
 			}
-			/* Katex 样式 */
 			.katex-display {
 				overflow-x: auto;
 				overflow-y: auto;
@@ -7951,7 +7799,6 @@ async function all() {
 								console.log("✅ 请求成功");
 								console.log("状态码：", response.status);
 								console.log("返回数据：", response.responseText);
-
 								// 如果返回的是JSON数据，可以直接解析
 								try {
 									const data = JSON.parse(response.responseText);
@@ -7977,18 +7824,15 @@ async function all() {
 			}
 			if (currentAMLSettings.problemColors) {
 				console.log(Date.now(), "Starting to set up problem color map...");
-
 				// 缓存配置：有效期 30 天（单位：毫秒）
 				const CACHE_TTL = 30 * 24 * 60 * 60 * 1000;
 				// 缓存存储键名
 				const CACHE_KEY = 'AMLG_PROBLEM_COLORS_CACHED';
-
 				// 1. 读取缓存数据
-				const cachedData = GM_getValue(CACHE_KEY, {expireTime: 0, colorEntries: [], version: "0.9.4"});
+				const cachedData = GM_getValue(CACHE_KEY, { expireTime: 0, colorEntries: [], version: "0.9.4" });
 				let problemColorMap;
-
 				// 2. 判断缓存是否有效（存在 + 未过期）
-				if ((cachedData && Date.now() < cachedData.expireTime || cachedData.colorEntries.length==0)&&(cachedData.version=="0.9.4")) {
+				if (cachedData && Date.now() < cachedData.expireTime && cachedData.colorEntries.length != 0 && cachedData.version == "0.9.4") {
 					// 直接使用缓存，快速恢复 Map
 					problemColorMap = new Map(cachedData.colorEntries);
 					console.log(Date.now(), "Using cached problem color map (valid for 30d)");
@@ -7998,17 +7842,15 @@ async function all() {
 					const colorEntries = rawColors
 						.map(p => [p.id, `rgb(${difficultyColors[Number(p.difficulty)]?.join(',')})`])
 						.filter(Boolean);
-					
 					// 生成 Map
 					problemColorMap = new Map(colorEntries);
-
 					// 4. 写入新缓存（带过期时间）
 					GM_setValue(CACHE_KEY, {
 						colorEntries: colorEntries, // 存储可序列化的数组，Map 无法直接存储
 						expireTime: Date.now() + CACHE_TTL, // 30天后过期
-						createTime: Date.now()
+						createTime: Date.now(),
+						version: "0.9.4"
 					});
-					
 					console.log(Date.now(), "Problem color map set up & cached for 30 days.");
 				}
 				let lgbot2Visited = false;
@@ -8805,28 +8647,22 @@ async function all() {
 				}
 			}
 			if (currentAMLSettings.emojiRenderingEnabled) {
-				// ========== 新代码核心常量 & 工具函数 ==========
 				var R = "color: #E67E22;";
-				// 控制台日志工具
 				function s(e, ...t) {
 					console.log(`%c[lgse] ${e}`, R, ...t);
 				}
-
-				// 页面匹配规则（决定哪些区域需要渲染表情）
 				var d = [
 					[".am-comment-bd", [/^\/$/]],
 					[".collapsed-wrapper", [/^\/discuss\/.*$/]],
 					[".content", [/^\/user\/.*$/]],
 					[".message", [/^\/chat.*$/]],
 				];
-				// 判断当前页面是否需要渲染表情
 				function V() {
 					for (let e = 0; e < d.length; e++)
 						for (let t = 0; t < d[e][1].length; t++)
 							if (d[e][1][t].test(document.location.pathname)) return !0;
 					return !1;
 				}
-				// 获取需要渲染表情的DOM元素
 				function U() {
 					let e = [];
 					for (let t = 0; t < d.length; t++)
@@ -8835,9 +8671,6 @@ async function all() {
 								(e[e.length] = document.querySelectorAll(d[t][0]));
 					return e;
 				}
-
-				// ========== 新代码表情数据（核心） ==========
-				// 表情ID-描述映射（新数据）
 				var r = [
 					["aini", "\u7231\u4F60"],
 					["aiq", "\u7231\u60C5"],
@@ -9018,13 +8851,9 @@ async function all() {
 					["zuotj", "\u5DE6\u592A\u6781"],
 					["zyj", "\u7728\u773C\u775B"],
 				];
-				// 表情渲染正则模板
 				var A = "/%EMOJI%([^<A-Za-z][^>]*<)",
 					E =
 						'<span style="color: #c8c8c8; font-size: 0.3em;">/%EMOJI%</span><img src="%SOURCE%" alt="%NAME%" title="%NAME%" class="lgse-emoji-image" width="28px" height="28px">$1';
-
-				// ========== 新代码核心渲染逻辑 ==========
-				// 递归渲染DOM中的表情
 				function M(e) {
 					if (e.nodeType === 1) {
 						if (e.tagName === "A" || e.tagName === "CODE")
@@ -9050,7 +8879,6 @@ async function all() {
 					}
 					return [!1, ""];
 				}
-				// 批量渲染表情（替代旧的scanAndReplace）
 				function q() {
 					let e = U(),
 						t = !1;
@@ -9062,40 +8890,32 @@ async function all() {
 							}
 					t && s("Replaced");
 				}
-
-				// ========== 旧代码面板相关常量（保留） ==========
 				const SCAN_INTERVAL = 1000;
 				const SEARCH_PANEL_ID = "qq-emoji-search-panel";
 				const SEARCH_BUTTON_ID = "qq-emoji-search-toggle";
-				let emojiList = []; // 基于新数据重构
+				let emojiList = [];
 				let searchPanelOpen = false;
-
-				// ========== 新代码表情图片源配置 ==========
 				var g = [
 					"https://cdn.jsdelivr.net/gh/hyc1230/qqemoji/56x56/%EMOJI%.gif",
 					"https://mirror.ghproxy.com/https://raw.githubusercontent.com/hyc1230/qqemoji/master/56x56/%EMOJI%.gif",
 					"https://qqemoji.heyc.eu.org/56x56/%EMOJI%.gif",
 					"https://qqemoji.netlify.app/56x56/%EMOJI%.gif",
 				];
-				// 默认设置
 				var T = {
 					"rep-emj": !0,
 					"srh-emj": !0,
-					"img-src": 2, // 默认使用第三个图片源
+					"img-src": 2,
 					"chk-upd": !0,
 				};
 				var m = ["rep-emj", "srh-emj", "img-src", "chk-upd"];
-				var o = T; // 全局设置对象
-
-				// ========== 适配旧面板的表情列表构建 ==========
+				var o = T;
 				function buildEmojiList() {
 					const list = [];
-					// 基于新的r数组构建表情列表
 					r.forEach(([id, describe]) => {
 						list.push({
 							id: id,
 							describe: describe,
-							isGif: true, // 新表情均为GIF
+							isGif: true,
 							isGif2: false,
 							isSpecial: false,
 							type: "Dynamic (Non-Numeric)",
@@ -9103,8 +8923,6 @@ async function all() {
 					});
 					return list;
 				}
-
-				// ========== 旧代码面板相关函数（适配新数据） ==========
 				function toggleSearchPanel() {
 					const panel = document.getElementById(SEARCH_PANEL_ID);
 					if (panel) {
@@ -9119,7 +8937,6 @@ async function all() {
 						}
 					}
 				}
-
 				function displaySearchResults(query) {
 					const resultsDiv = document.getElementById("qq-emoji-search-results");
 					if (!resultsDiv) return;
@@ -9150,7 +8967,6 @@ async function all() {
 							item.style.border = "1px solid #eee";
 							item.style.borderRadius = "3px";
 							item.style.cursor = "pointer";
-							// 点击插入表情代码
 							item.onclick = () => {
 								const activeElement = document.activeElement;
 								if (
@@ -9169,7 +8985,6 @@ async function all() {
 									);
 								}
 							};
-							// 适配新的图片源
 							const imgSrc = g[o["img-src"]].replace(/%EMOJI%/g, emoji.id);
 							item.innerHTML = `
 								<img src="${imgSrc}" style="width: 48px; height: 48px; vertical-align: middle;">
@@ -9184,12 +8999,10 @@ async function all() {
 							'<p style="text-align: center;">未找到匹配的表情。</p>';
 					}
 				}
-
 				function initSearchPanelAndButton() {
 					if (document.getElementById(SEARCH_BUTTON_ID)) {
 						return;
 					}
-					// 创建搜索按钮（旧样式保留）
 					const button = document.createElement("button");
 					button.id = SEARCH_BUTTON_ID;
 					button.innerHTML = `<img src="${g[o["img-src"]].replace(/%EMOJI%/g, "tiao")}" width="32" height="32">`;
@@ -9205,11 +9018,9 @@ async function all() {
 					button.style.cursor = "pointer";
 					button.onclick = toggleSearchPanel;
 					document.body.appendChild(button);
-
 					if (document.getElementById(SEARCH_PANEL_ID)) {
 						return;
 					}
-					// 创建搜索面板（旧样式保留）
 					const panel = document.createElement("div");
 					panel.id = SEARCH_PANEL_ID;
 					panel.style.cssText = `
@@ -9234,7 +9045,6 @@ async function all() {
 						<button id="qq-emoji-search-close" style="margin-top: 10px; padding: 5px 10px;">关闭</button>
 					`;
 					document.body.appendChild(panel);
-
 					const input = document.getElementById("qq-emoji-search-input");
 					const closeBtn = document.getElementById("qq-emoji-search-close");
 					input.addEventListener("input", () => {
@@ -9246,7 +9056,6 @@ async function all() {
 							toggleSearchPanel();
 						}
 					});
-					// 快捷键支持（旧逻辑保留）
 					document.addEventListener("keydown", (e) => {
 						if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "e") {
 							e.preventDefault();
@@ -9254,8 +9063,6 @@ async function all() {
 						}
 					});
 				}
-
-				// ========== 初始化逻辑（整合新旧） ==========
 				function loadSettings() {
 					try {
 						let e = GM_getValue(`LGSE_settings`, "{}");
@@ -9266,33 +9073,23 @@ async function all() {
 						s("Using default settings");
 						o = T;
 					}
-					// 补全缺失的设置项
 					for (let e = 0; e < m.length; e++)
 						o[m[e]] == null && (o[m[e]] = T[m[e]]);
-					// 初始化表情渲染模板的图片源
 					E = E.replace(/%SOURCE%/g, g[o["img-src"]]);
 				}
-
 				async function init() {
 					try {
-						// 加载设置
 						loadSettings();
-						// 构建基于新数据的表情列表
 						emojiList = buildEmojiList();
-						// 初始化搜索面板
 						initSearchPanelAndButton();
-						// 启动定时渲染（替代旧的scanAndReplace）
 						if (o["rep-emj"] && V()) {
 							setInterval(q, SCAN_INTERVAL);
-							// 首次立即执行一次
 							q();
 						}
 					} catch (error) {
 						s("初始化失败:", error);
 					}
 				}
-
-				// ========== 入口执行 ==========
 				if (document.readyState === "loading") {
 					document.addEventListener("DOMContentLoaded", init);
 				} else {
@@ -9384,9 +9181,9 @@ async function all() {
 					{
 						name: "jsDmirror",
 						versionUrl:
-							"https://cdn.jsdmirror.cn/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/versions.json",
+							"https://fastly.jsdelivr.net/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/versions.json",
 						downloadUrl:
-							"https://cdn.jsdmirror.cn/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/index.user.js",
+							"https://fastly.jsdelivr.net/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/index.user.js",
 					},
 					{
 						name: "jsDelivr",
@@ -9490,7 +9287,7 @@ async function all() {
 					}
 				}
 				for (const result of results) {
-					if(result.priority) {
+					if (result.priority) {
 						latestVersion = result.version || latestVersion;
 						downloadUrl = result.downloadUrl || downloadUrl;
 						sourceUsed = result.sourceName || sourceUsed;
@@ -9524,11 +9321,8 @@ async function all() {
 				}
 			}
 			setTimeout(checkScriptVersion(1), 1500);
-			// ================= 专注模式核心逻辑 (替换原有 if (currentAMLSettings.focusModeEnabled) 块) =================
 			if (currentAMLSettings.focusModeEnabled) {
 				const path = window.location.pathname;
-
-				// 1. 页面禁用逻辑 (总开关: focusModeHidePage)
 				if (currentAMLSettings.focusModeHidePage) {
 					const hidePagePaths = {
 						focusModeHideChat: "/chat",
@@ -9586,12 +9380,10 @@ async function all() {
 									}, 500);
 								}
 							}, 1000);
-							return; // 直接结束脚本运行
+							return;
 						}
 					}
 				}
-
-				// 2. 导航栏链接/按钮隐藏 (总开关: focusModeHideLinksButtons)
 				if (currentAMLSettings.focusModeHideLinksButtons) {
 					const hideButtonPaths = {
 						focusModeHideChat: "/chat",
@@ -9617,15 +9409,12 @@ async function all() {
 								if (button) button.remove();
 							}
 						}
-						// 特殊处理 ELO 排名
 						if (currentAMLSettings.focusModeHideRank) {
 							const eloLink = document.querySelector('a[href="/ranking/elo"]');
 							if (eloLink) eloLink.remove();
 						}
 					}, 200);
 				}
-
-				// 3. 左侧边栏隐藏 (总开关: focusModeHideSidebarLeft)
 				if (currentAMLSettings.focusModeHideSidebarLeft) {
 					let tmp = document.querySelector("nav.sidebar");
 					if (tmp) {
@@ -9633,8 +9422,6 @@ async function all() {
 						if (targetdiv.length > 3) targetdiv[3].remove();
 					}
 				}
-
-				// 4. 右侧边栏隐藏 (总开关: focusModeHideSidebarRight)
 				if (currentAMLSettings.focusModeHideSidebarRight) {
 					setInterval(function () {
 						let tmp = document.querySelector("div.rside");
@@ -9671,11 +9458,8 @@ async function all() {
 						}
 					}, 300);
 				}
-
-				// 5. 首页内容隐藏 (总开关: focusModeHideHome)
 				if (path == "/" && currentAMLSettings.focusModeHideHome) {
 					setTimeout(() => {
-						// 广告与运势
 						if (
 							currentAMLSettings.focusModeHideAD &&
 							!currentAMLSettings.focusModeHidePunchAndAd
@@ -9693,8 +9477,6 @@ async function all() {
 							if (targetdiv)
 								targetdiv.style.setProperty("display", "none", "important");
 						}
-
-						// 右侧公告/友情链接
 						let targetdiv = document.querySelector("div.lg-right");
 						if (targetdiv) {
 							let lgArticles = targetdiv.querySelectorAll(".lg-article");
@@ -9710,8 +9492,6 @@ async function all() {
 								tmp.style.setProperty("display", "none", "important");
 							}
 						}
-
-						// 犇犇区域
 						let targetdiv2 = document.querySelector("div.lg-index-benben");
 						if (targetdiv2) {
 							let lgArticles = targetdiv2.querySelectorAll(".lg-article");
@@ -9726,33 +9506,26 @@ async function all() {
 								let tmp = lgArticles[1];
 								tmp.style.setProperty("display", "none", "important");
 							}
-							// 隐藏犇犇列表本身
 							if (currentAMLSettings.focusModeHideBenben) {
 								let isaml = currentAMLSettings.memoEnabled ? 1 : 0;
-								// 隐藏输入框、按钮块等
 								let tmp2 = lgArticles[2 + isaml];
 								if (tmp2) tmp2.style.setProperty("display", "none", "important");
 								let tmp3 = lgArticles[3 + isaml];
 								if (tmp3) tmp3.style.setProperty("display", "none", "important");
 								let tmp4 = lgArticles[4 + isaml];
 								if (tmp4) tmp4.style.setProperty("display", "none", "important");
-
 								const benbenList = document.querySelector("ul.am-comments-list");
 								if (benbenList) benbenList.remove();
 							}
 						}
 					}, 200);
 				}
-
-				// 全局 CSS 隐藏 (犇犇展开按钮)
 				if (
 					currentAMLSettings.focusModeHideBenbenMore ||
 					currentAMLSettings.focusModeHideBenben
 				) {
 					GM_addStyle(`#feed-more { display: none !important; }`);
 				}
-
-				// 6. 页脚隐藏 (总开关: focusModeHideFooter)
 				if (currentAMLSettings.focusModeHideFooter) {
 					GM_addStyle(`
 				.weixin,
@@ -9763,9 +9536,6 @@ async function all() {
 				}
 			`);
 				}
-
-				// 7. 【新增】题目详情页隐藏逻辑 (路径: /problem/Pxxx)
-				// 排除题解页、统计页等子页面
 				if (
 					path.startsWith("/problem/") &&
 					!path.startsWith("/problem/solution") &&
@@ -9774,18 +9544,15 @@ async function all() {
 				) {
 					setTimeout(function () {
 						setInterval(function () {
-							// A. 隐藏右侧卡片中的链接 (题解、反馈)
 							let targetdiv = document.querySelector("div.l-card");
 							if (targetdiv) {
 								let links = targetdiv.querySelectorAll("a");
-								// 隐藏题解 (需开启 focusModeHideProblemSolutions)
 								if (currentAMLSettings.focusModeHideProblemSolutions) {
 									links.forEach((link) => {
 										if (link.innerText.includes("题解"))
 											link.style.setProperty("display", "none", "important");
 									});
 								}
-								// 隐藏反馈 (需开启 focusModeHideProblemTickets)
 								if (currentAMLSettings.focusModeHideProblemTickets) {
 									links.forEach((link) => {
 										if (
@@ -9795,8 +9562,6 @@ async function all() {
 											link.style.setProperty("display", "none", "important");
 									});
 								}
-
-								// 隐藏提供者 (需开启 focusModeHideProblemProviders)
 								if (currentAMLSettings.focusModeHideProblemProviders) {
 									let infoRows = targetdiv.querySelectorAll(
 										"div.l-flex-info-row",
@@ -9805,8 +9570,6 @@ async function all() {
 										infoRows[1].style.setProperty("display", "none", "important");
 								}
 							}
-
-							// B. 隐藏提交/通过统计 (需开启 focusModeHideProblemStats)
 							if (currentAMLSettings.focusModeHideProblemStats) {
 								let statsDiv = document.querySelector("div.color-inv");
 								if (statsDiv) {
@@ -9816,8 +9579,6 @@ async function all() {
 									);
 								}
 							}
-
-							// C. 隐藏复制题目按钮
 							let copyBtns = document.querySelectorAll(
 								"button.lform-size-middle",
 							);
@@ -9825,8 +9586,6 @@ async function all() {
 								if (btn.innerText.includes("复制"))
 									btn.style.setProperty("display", "none", "important");
 							});
-
-							// D. 隐藏加入题单 (需开启对应开关)
 							if (
 								currentAMLSettings.focusModeHideProblemPersonalList ||
 								currentAMLSettings.focusModeHideProblemTeamList
@@ -9847,8 +9606,6 @@ async function all() {
 										tLabel.style.setProperty("display", "none", "important");
 								}
 							}
-
-							// E. 隐藏讨论区、标签卡片 (需开启对应开关)
 							let cards = document.querySelectorAll("div.l-card");
 							cards.forEach((card) => {
 								let text = card.innerText;
@@ -9868,8 +9625,6 @@ async function all() {
 						}, 500);
 					}, 50);
 				}
-
-				// 8. 题单页隐藏逻辑 (总开关: focusModeHideTrainingStats/Operations)
 				if (
 					path.startsWith("/training/") &&
 					(currentAMLSettings.focusModeHideTrainingStats ||
@@ -9893,8 +9648,6 @@ async function all() {
 						}, 500);
 					}, 50);
 				}
-
-				// 9. 记录页隐藏逻辑 (总开关: focusModeHideRecordFilters)
 				if (
 					path.startsWith("/record/list") &&
 					currentAMLSettings.focusModeHideRecordFilters
@@ -9908,14 +9661,12 @@ async function all() {
 			}
 		})(window.jQuery.noConflict());
 	}
-
 	main();
 	if (supabaseRunned) return;
 	supabaseRunned = true;
 	const SUPABASE_URL = "https://ktwhwvafywwekfkvskbk.supabase.co";
 	const SUPABASE_ANON_KEY =
 		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0d2h3dmFmeXd3ZWtma3Zza2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTU1NDgsImV4cCI6MjA4NDI3MTU0OH0.tSCRz7ENeCT3NXt891equmSBfW_UsXHUdKSVMoxveKQ";
-
 	function getCurrentUserId() {
 		let login = document.querySelector("[href='/auth/login']");
 		if (login) return null;
@@ -9945,6 +9696,7 @@ async function all() {
 		autoSaveDiscussEnabled: GM_getValue("amlAutoSaveDiscussEnabled", false),
 		showUserIntroductionEnabled: GM_getValue("amlShowUserIntroductionEnabled", true),
 		benbenctrlenterEnabled: GM_getValue("amlBenbenctrlenterEnabled", true),
+		OCRCaptchaEnabled: GM_getValue("amlOCRCaptchaEnabled", true),
 		autoO2Enabled: GM_getValue("amlAutoO2Enabled", false),
 		slogenTimeFormat: GM_getValue("amlSlogenTimeFormat", "{time} || {slogan}"),
 		slogenTimeEnabled: GM_getValue("amlSlogenTimeEnabled", false),
@@ -10071,14 +9823,10 @@ async function all() {
 			let updated1 = false;
 			let introdution;
 			let registerSuccess = false;
-
 			try {
-				// 1. 获取用户原始简介
 				const api_response = await fetch("https://www.luogu.com.cn/api/user/info/" + uid);
 				const api_data = await api_response.json();
 				introdution = api_data.user.introduction || "";
-
-				// 2. 临时修改简介（标记验证中）
 				const edit_introdution_1 = await fetch("https://www.luogu.com.cn/api/user/updateIntroduction", {
 					method: "POST",
 					headers: {
@@ -10089,14 +9837,12 @@ async function all() {
 						introduction: "Amazing Luogu Verifying: " + uid + "\n" + introdution,
 					}),
 				});
-
 				if (!edit_introdution_1.ok) {
 					throw new Error("首次修改简介失败");
 				}
 				updated1 = true;
-				GM_setValue("Intro2Verify_" + uid, introdution); // 记录原简介以便恢复
-				GM_setValue("Intro2Restore_" + uid, true); // 标记需要恢复简介
-				// 3. 执行register请求（无论成败，后续都会恢复简介）
+				GM_setValue("Intro2Verify_" + uid, introdution);
+				GM_setValue("Intro2Restore_" + uid, true);
 				const result = await new Promise((resolve, reject) => {
 					GM_xmlhttpRequest({
 						method: "POST",
@@ -10126,19 +9872,15 @@ async function all() {
 						}
 					});
 				});
-
-				// 4. 仅当register请求成功时，保存用户信息
 				if (result.success) {
 					GM_setValue("amlgEmail_" + uid, result.luoguInfo.email);
 					GM_setValue("amlgPassword_" + uid, result.temporaryPassword);
 					registerSuccess = true;
 				}
-
 			} catch (e) {
 				console.error("注册过程出错:", e);
 			} finally {
-				// 5. 最终必执行：恢复用户原始简介（无论前面成功/失败）
-				if (updated1) { // 只有首次修改简介成功，才需要恢复
+				if (updated1) {
 					try {
 						const edit_introdution_2 = await fetch("https://www.luogu.com.cn/api/user/updateIntroduction", {
 							method: "POST",
@@ -10153,14 +9895,12 @@ async function all() {
 						if (!edit_introdution_2.ok) {
 							throw new Error("恢复简介失败");
 						}
-						GM_setValue("Intro2Restore_" + uid, false); // 标记已恢复简介
+						GM_setValue("Intro2Restore_" + uid, false);
 					} catch (restoreErr) {
 						console.error("恢复简介时发生异常:", restoreErr);
 					}
 				}
 			}
-
-			// 6. 返回最终结果（仅当register请求成功时返回true）
 			return registerSuccess;
 		}
 		async function supabaseUpsert(uid) {
@@ -10169,22 +9909,18 @@ async function all() {
 				GM_xmlhttpRequest({
 					method: "POST",
 					url: "https://online.amlg.top/api/update",
-					// 请求体（和原代码一致）
 					data: JSON.stringify({
 						email: GM_getValue("amlgEmail_" + uid, ""),
 						password: GM_getValue("amlgPassword_" + uid, ""),
 						format: GM_getValue("amlSlogenTimeFormat", "{time} || {slogan}"),
 					}),
-					// 成功回调
 					onload: function (response) {
-						// 模拟 fetch 的 ok 逻辑（状态码 2xx 为成功）
 						if (response.status >= 200 && response.status < 300) {
-							resolve(response); // 成功则 resolve
+							resolve(response);
 						} else {
-							reject(new Error("HTTP " + response.status + " " + response.response)); // 非 2xx 抛错
+							reject(new Error("HTTP " + response.status + " " + response.response));
 						}
 					},
-					// 网络错误/超时回调
 					onerror: function (error) {
 						reject(new Error("Network error: " + error.message));
 					},
@@ -10194,7 +9930,6 @@ async function all() {
 				});
 			});
 		}
-
 		async function reportActive(uid) {
 			try {
 				await supabaseUpsert(uid);
@@ -10226,13 +9961,10 @@ async function all() {
 					return;
 				}
 			} else {
-				// console.log(GM_getValue("amlgEmail_"+uid));
-				// console.log(GM_getValue("amlgPassword_"+uid));
 			}
 			checkUpdate(uid);
 			if (heartbeatInterval) clearInterval(heartbeatInterval);
 			heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
-
 		}
 		initOnlineModule();
 	}
@@ -10241,7 +9973,6 @@ async function all() {
 	const raw = {};
 	["log", "warn", "error", "info", "debug"].forEach(type => {
 		raw[type] = console[type];
-
 		unsafeWindow.console[type] = function (...args) {
 			const record = {
 				type,
@@ -10249,13 +9980,11 @@ async function all() {
 				time: new Date().toISOString(),
 				stack: new Error().stack
 			};
-
 			unsafeWindow.dispatchEvent(new CustomEvent("console-capture", { detail: record }));
 			raw[type].apply(console, args);
 		};
 	});
 })();
-
 window.addEventListener("load", function () {
 	setTimeout(follow, 1000);
 	setTimeout(all, 1000);
@@ -10278,14 +10007,10 @@ function hashreload() {
 }
 setInterval(hashreload, 500);
 function patchXHR(eventName = 'luogu-xhr-intercept') {
-
-	// 保存原生方法
 	const originalOpen = XMLHttpRequest.prototype.open;
 	const originalSend = XMLHttpRequest.prototype.send;
 	const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
-
-	// 重写 open：存储基础请求信息
-	XMLHttpRequest.prototype.open = function(method, url) {
+	XMLHttpRequest.prototype.open = function (method, url) {
 		this._interceptData = {
 			method: method,
 			url: url,
@@ -10294,33 +10019,24 @@ function patchXHR(eventName = 'luogu-xhr-intercept') {
 		};
 		return originalOpen.apply(this, arguments);
 	};
-
-	// 重写请求头
-	XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+	XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
 		if (this._interceptData) {
 			this._interceptData.requestHeaders[header] = value;
 		}
 		return originalSetRequestHeader.apply(this, arguments);
 	};
-
-	// 重写 send：捕获请求体 + 响应后派发事件
-	XMLHttpRequest.prototype.send = function(body) {
+	XMLHttpRequest.prototype.send = function (body) {
 		if (this._interceptData && body !== undefined) {
 			this._interceptData.requestBody = body;
 		}
-
-		// 请求完成
 		this.addEventListener('load', () => {
 			try {
-				// 解析响应
 				let responseData;
 				try {
 					responseData = JSON.parse(this.responseText);
 				} catch {
 					responseData = this.responseText || null;
 				}
-
-				// 构造完整数据
 				const result = {
 					xhr: this,
 					request: this._interceptData,
@@ -10331,36 +10047,25 @@ function patchXHR(eventName = 'luogu-xhr-intercept') {
 						raw: this.responseText
 					}
 				};
-
-				// ✅ 派发自定义事件
 				const event = new CustomEvent(eventName, { detail: result });
 				window.dispatchEvent(event);
 			} catch (err) {
 				console.error('XHR拦截解析失败：', err);
 			}
 		});
-
 		return originalSend.apply(this, arguments);
 	};
-
 	console.log(`✅ XHR 拦截已启动，事件名：${eventName}`);
 }
-
 patchXHR();
-
-// ==============================================
-// 新增：自动监听事件并替换 #lentille-context 内容
-// ==============================================
 window.addEventListener('luogu-xhr-intercept', (e) => {
-  const { data } = e.detail.response;
-
-  // 只处理满足条件的响应数据
-  if (data && data.instance && data.template && data.status) {
-    const target = document.getElementById('lentille-context');
-    if (target) {
-      console.log('✅ 找到 lentille-context，开始替换内容');
-      target.innerHTML = JSON.stringify(data, null, 2);
-	  console.log('✅ 替换完成，新的内容：', target.innerHTML);
-    }
-  }
+	const { data } = e.detail.response;
+	if (data && data.instance && data.template && data.status) {
+		const target = document.getElementById('lentille-context');
+		if (target) {
+			console.log('✅ 找到 lentille-context，开始替换内容');
+			target.innerHTML = JSON.stringify(data, null, 2);
+			console.log('✅ 替换完成，新的内容：', target.innerHTML);
+		}
+	}
 });
