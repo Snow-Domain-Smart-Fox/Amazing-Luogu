@@ -1,7 +1,7 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      0.9.5
+// @version      0.9.6
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -6464,13 +6464,14 @@ async function all() {
 					let CACHE_TIME_KEY = "ACPCACHETIME";
 					let CACHE = GM_getValue(CACHE_KEY, [0, 0, 0, 0, 0, 0, 0, 0]);
 					let TIME = GM_getValue(CACHE_TIME_KEY, 0);
+					let CACHE_TYPE = GM_getValue("ACPCACHE_TYPE", "0.0.0");
 					console.log(CACHE, TIME);
-					if (TIME < Date.now() - 1000 * 60 * 60 * 24) {
+					if (TIME < Date.now() - 1000 * 60 * 60 * 24||CACHE_TYPE!="0.9.6") {
 						console.log("ACPCACHE过期，开始更新");
 						(async function () {
 							console.log("更新ACPCACHE");
 							let newCache = [0, 0, 0, 0, 0, 0, 0, 0];
-							let req = await fetch("https://www.luogu.com.cn/user/1432496/practice", {
+							let req = await fetch("https://www.luogu.com.cn/user/"+getCurrentUserId()+"/practice", {
 								headers: [
 									["x-lentille-request", "content-only"],
 								],
@@ -6483,6 +6484,7 @@ async function all() {
 							console.log(newCache);
 							GM_setValue(CACHE_KEY, newCache);
 							GM_setValue(CACHE_TIME_KEY, Date.now());
+							GM_setValue("ACPCACHE_TYPE", "0.9.6");
 							console.log("更新ACPCACHE完成");
 							console.log(newCache);
 						})();
@@ -6495,10 +6497,10 @@ async function all() {
 				let CACHE = GM_getValue("ACPCACHE", [0, 0, 0, 0, 0, 0, 0, 0]);
 				let aa = 0;
 				for (let i of document.getElementsByClassName("difficulty-tags")[0].children) {
-					if (Number(i.children[1].innerHTML.replaceAll('题', '')) > CACHE[aa]) {
+					if (Number(i.children[1].innerHTML.replaceAll('题', '')) < CACHE[aa]) {
 						i.children[1].style.color = "green";
 					}
-					if (Number(i.children[1].innerHTML.replaceAll('题', '')) < CACHE[aa]) {
+					if (Number(i.children[1].innerHTML.replaceAll('题', '')) > CACHE[aa]) {
 						i.children[1].style.color = "red";
 					}
 					aa += 1;
@@ -9816,7 +9818,9 @@ async function all() {
 		chatNotificationEnabled: GM_getValue("amlChatNotificationEnabled", true),
 		emojiRenderingEnabled: GM_getValue("amlEmojiRenderingEnabled", true),
 	};
+	const uid = getCurrentUserId();
 	if (currentAMLSettings.slogenTimeEnabled) {
+		GM_setValue("SlogenDeleted_" + uid, false);
 		let heartbeatInterval = null;
 		let pollInterval = null;
 		async function register(uid) {
@@ -9904,7 +9908,11 @@ async function all() {
 			return registerSuccess;
 		}
 		async function supabaseUpsert(uid) {
-			console.log(GM_getValue("amlSlogenTimeFormat", "{time} || {slogan}"))
+			if (!GM_getValue("amlgEmail_" + uid, "") || !GM_getValue("amlgPassword_" + uid, "")) {
+				return new Promise((resolve, reject) => {
+					reject(new Error("用户信息未存储"));
+				});
+			}
 			return new Promise((resolve, reject) => {
 				GM_xmlhttpRequest({
 					method: "POST",
@@ -9967,6 +9975,35 @@ async function all() {
 			heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
 		}
 		initOnlineModule();
+	}else if(!GM_getValue("SlogenDeleted_" + uid, false)&&GM_getValue("amlgEmail_" + uid, "")&&GM_getValue("amlgPassword_" + uid, "")){
+		console.log(JSON.stringify({
+				email: GM_getValue("amlgEmail_" + uid, ""),
+				password: GM_getValue("amlgPassword_" + uid, ""),
+			}))
+		await new Promise((resolve, reject) => {
+			GM_xmlhttpRequest({
+				method: "POST",
+				url: "https://online.amlg.top/api/delete",
+				data: JSON.stringify({
+					email: GM_getValue("amlgEmail_" + uid, ""),
+					password: GM_getValue("amlgPassword_" + uid, ""),
+				}),
+				onload: function (response) {
+					if (response.status >= 200 && response.status < 300) {
+						resolve(response);
+						GM_setValue("SlogenDeleted_" + uid, true);
+					} else {
+						reject(new Error("HTTP " + response.status + " " + response.response));
+					}
+				},
+				onerror: function (error) {
+					reject(new Error("Network error: " + error.message));
+				},
+				ontimeout: function () {
+					reject(new Error("Request timeout"));
+				},
+			});
+		});
 	}
 }
 (function patch() {
