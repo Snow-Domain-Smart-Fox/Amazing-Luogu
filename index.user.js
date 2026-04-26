@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      0.9.7
+// @version      0.9.8
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -3827,20 +3827,9 @@ async function all() {
 									}
 									return null;
 								}
-								fetch(
-									"https://www.luogu.com.cn/api/user/info/" + getCurrentUserId(),
-									{},
-								)
-									.then((response) => response.json())
-									.then((data) => {
-										if (data && data.user && data.user.slogan) {
-											GM_setValue("amlSlogenTimeFormat", data.user.slogan);
-										} else {
-											GM_setValue("amlSlogenTimeFormat", "{time} || {slogan}");
-										}
-										document.querySelector("#aml-slogen-time-format").value =
-											GM_getValue("amlSlogenTimeFormat");
-									});
+								GM_setValue("amlSlogenTimeFormat", "{time} || {slogan}");
+								document.querySelector("#aml-slogen-time-format").value =
+									GM_getValue("amlSlogenTimeFormat");
 							}
 							if (feature.key === "customFontEnabled") {
 								const customfontSection = document.getElementById(
@@ -5850,6 +5839,10 @@ async function all() {
 				[data-v-fdcd5a58] {
 					display: none;
 				}
+				[data-v-12b24cc3]
+				[data-v-ce0b4304] {
+					display: none;
+				}
 				@font-face {
 					font-family: 'Caveat';
 					src: url('https://fastly.jsdelivr.net/gh/googlefonts/caveat/fonts/ttf/Caveat-Regular.ttf') format('truetype');
@@ -7415,14 +7408,20 @@ async function all() {
 								).replace("{slogan}", slogan);
 								console.log(newslogan);
 								try {
-									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[2].data)
+									console.log("checking 2");
+									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[2].data){
+										console.log(true);
 										document.getElementsByClassName("lfe-caption slogan")[0].childNodes[2].data = newslogan;
+									}
 								} catch (e) {
 									console.error(e);
 								}
 								try {
-									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[1].data)
+									console.log("checking 1");
+									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[1].data){
+										console.log(true);
 										document.getElementsByClassName("lfe-caption slogan")[0].childNodes[1].data = newslogan;
+									}
 								} catch (e) {
 									console.error(e);
 								}
