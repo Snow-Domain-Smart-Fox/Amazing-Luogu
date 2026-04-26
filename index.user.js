@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      0.9.6
+// @version      0.9.7
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1218,8 +1218,8 @@ async function all() {
 				},
 				{
 					key: "autoSaveDiscussEnabled",
-					label: "在讨论页面添加保存按钮",
-					desc: "在讨论页面添加保存按钮用于保存当前查看的讨论到 luogu.store",
+					label: "在讨论页面按下 Ctrl+S 保存当前讨论",
+					desc: "在讨论页面按下 Ctrl+S 来保存当前查看的讨论到 luogu.store",
 					tag: "功能",
 					status: "stable"
 				},
@@ -6634,86 +6634,85 @@ async function all() {
 				}
 			}
 			if (currentAMLSettings.autoSaveDiscussEnabled && location.pathname.startsWith("/discuss/")) {
-				let discussId = location.pathname.split("/discuss/")[1].split("/")[0];
-				let parser = new DOMParser();
-				let doc = parser.parseFromString(`<button data-v-505b6a97="" data-v-216447b8="" class="lform-size-middle lcolor-var-green-3" type="button">保存</button>`, 'text/html').body.firstElementChild;
-				doc.onclick = function () {
-					try {
-						const url = 'https://luogu.store/';
-						GM_xmlhttpRequest({
-							method: 'POST',
-							url: url,
-							headers: {
-								'accept': 'text/x-component',
-								'accept-encoding': 'gzip, deflate, br, zstd',
-								'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-								'content-type': 'text/plain;charset=UTF-8',
-								'next-action': '406ba16943dc068f983622e6001d07cd2c45e7aea5',
-								'next-router-state-tree': '%5B%22%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2Cnull%2Cnull%5D%2C%22modal%22%3A%5B%22__DEFAULT__%22%2C%7B%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%2Ctrue%5D'
-							},
-							data: '[' + discussId + ']',
-							onload: function (response) {
-								if (response.status >= 200 && response.status < 300) {
-									console.log('请求成功，返回数据：', response.responseText);
-									Swal.fire({
-										title: "保存成功",
-										html: "讨论数据已保存到 luogu.store ！",
-										showCancelButton: false,
-										confirmButtonText: "确定",
-										icon: "success",
-									});
-								} else {
-									console.error(`HTTP error! Status: ${response.status}`);
-									Swal.fire({
-										title: "保存失败",
-										html: "保存到 luogu.store 时发生错误！",
-										showCancelButton: false,
-										confirmButtonText: "确定",
-										icon: "error",
-									});
-								}
-							},
-							onerror: function (error) {
-								Swal.fire({
-									title: "保存失败",
-									html: "保存到 luogu.store 时发生错误！",
-									showCancelButton: false,
-									confirmButtonText: "确定",
-									icon: "error",
-								});
-							},
-							ontimeout: function () {
-								console.error('请求超时');
-								Swal.fire({
-									title: "保存失败",
-									html: "保存到 luogu.store 时发生错误！",
-									showCancelButton: false,
-									confirmButtonText: "确定",
-									icon: "error",
-								});
-							},
-							timeout: 10000
-						});
-					} catch (error) {
-						Swal.fire({
-							title: "保存失败",
-							html: "保存到 luogu.store 时发生错误！",
-							showCancelButton: false,
-							confirmButtonText: "确定",
-							icon: "error",
-						});
-					}
-				}
-				let area = document.getElementsByClassName("btn-actions")[0];
-				area.lastElementChild.after(doc);
-			}
+                let discussId = location.pathname.split("/discuss/")[1].split("/")[0];
+                $(document).on("keydown", function(e) {
+                    if (e.ctrlKey && e.key === "s") {
+                        e.preventDefault();
+                        try {
+                            const url = 'https://luogu.store/';
+                            GM_xmlhttpRequest({
+                                method: 'POST',
+                                url: url,
+                                headers: {
+                                    'accept': 'text/x-component',
+                                    'accept-encoding': 'gzip, deflate, br, zstd',
+                                    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+                                    'content-type': 'text/plain;charset=UTF-8',
+                                    'next-action': '406ba16943dc068f983622e6001d07cd2c45e7aea5',
+                                    'next-router-state-tree': '%5B%22%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2Cnull%2Cnull%5D%2C%22modal%22%3A%5B%22__DEFAULT__%22%2C%7B%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%2Ctrue%5D'
+                                },
+                                data: '[' + discussId + ']',
+                                onload: function (response) {
+                                    if (response.status >= 200 && response.status < 300) {
+                                        console.log('请求成功，返回数据：', response.responseText);
+                                        Swal.fire({
+                                            title: "保存成功",
+                                            html: "讨论数据已保存到 luogu.store ！",
+                                            showCancelButton: false,
+                                            confirmButtonText: "确定",
+                                            icon: "success",
+                                        });
+                                    } else {
+                                        console.error(`HTTP error! Status: ${response.status}`);
+                                        Swal.fire({
+                                            title: "保存失败",
+                                            html: "保存到 luogu.store 时发生错误！",
+                                            showCancelButton: false,
+                                            confirmButtonText: "确定",
+                                            icon: "error",
+                                        });
+                                    }
+                                },
+                                onerror: function (error) {
+                                    Swal.fire({
+                                        title: "保存失败",
+                                        html: "保存到 luogu.store 时发生错误！",
+                                        showCancelButton: false,
+                                        confirmButtonText: "确定",
+                                        icon: "error",
+                                    });
+                                },
+                                ontimeout: function () {
+                                    console.error('请求超时');
+                                    Swal.fire({
+                                        title: "保存失败",
+                                        html: "保存到 luogu.store 时发生错误！",
+                                        showCancelButton: false,
+                                        confirmButtonText: "确定",
+                                        icon: "error",
+                                    });
+                                },
+                                timeout: 10000
+                            });
+                        } catch (error) {
+                            Swal.fire({
+                                title: "保存失败",
+                                html: "保存到 luogu.store 时发生错误！",
+                                showCancelButton: false,
+                                confirmButtonText: "确定",
+                                icon: "error",
+                            });
+                        }
+                    }
+                });
+            }
 			if (currentAMLSettings.discussListLengthEnabled && location.pathname == '/') {
 				let removenum = 16 - currentAMLSettings.discussListLength;
 				for (let i = 0; i < removenum; i++) {
 					document.getElementsByClassName("am-panel lg-index-contest am-panel-primary")[document.getElementsByClassName("am-panel lg-index-contest am-panel-primary").length - 1].remove();
 				}
 			}
-			if (currentAMLSettings.vscodeLuoguEnabled && location.pathname.startsWith("/problem/") && location.pathname.replaceAll('/', '') != 'problemlist' && !location.hash) {
+			if (currentAMLSettings.vscodeLuoguEnabled && location.pathname.startsWith("/problem/") && location.pathname.split('/').length==3&&location.pathname.replaceAll('/', '') != 'problemlist' && !location.hash) {
 				let search = new URLSearchParams(location.search);
 				let cpbtn = document.querySelector("[data-v-f265fec6]").querySelector("[data-v-f265fec6]").querySelector("[data-v-f265fec6]").lastChild.firstChild.lastChild;
 				const parser = new DOMParser();
