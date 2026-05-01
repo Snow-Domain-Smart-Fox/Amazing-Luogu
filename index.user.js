@@ -1343,7 +1343,7 @@ async function all() {
 					label: "犇犇优化",
 					desc: "首页犇犇自动展开与屏蔽特定用户",
 					tag: "功能",
-					status: "beta",
+					status: "stable",
 				},
 				{
 					key: "buttonUnlocker",
@@ -1406,7 +1406,7 @@ async function all() {
 					label: "代码折叠与扫描",
 					desc: "自动折叠过长的代码块以便阅读并自动识别危险代码",
 					tag: "功能",
-					status: "beta",
+					status: "stable",
 				},
 			];
 			GM_addStyle(`
