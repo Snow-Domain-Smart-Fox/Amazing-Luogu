@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      0.9.8
+// @version      0.9.9
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -24,6 +24,7 @@
 // @connect      kr1-proxy.gitwarp.com
 // @connect      proxy.gitwarp.com
 // @connect      jp1-proxy.gitwarp.com
+// @connect      core.benben.sbs
 // @connect      gh.halonice.com
 // @connect      hk-yd-proxy.gitwarp.com
 // @connect      zym2013.dpdns.org
@@ -233,6 +234,7 @@ a[href="/user/1393230"][target="_blank"]:not(:has(> .luogu-username:first-child)
 `);
 let benbenctrlenterInited = false;
 let slogenFunctionRunned = false;
+let FullBenBenInited = false;
 let nbnhhshInited = false;
 let chatWSRD = false;
 let Notificationaaaaaaa = null;
@@ -475,14 +477,18 @@ async function all() {
 		window.jQuery.noConflict()(document).off();
 		window.jQuery.noConflict()(window).off();
 		window.jQuery
-			.noConflict()("style")
+			.noConflict()("*")
 			.each(function () {
-				if (
-					(this.innerHTML && this.className.includes("aml-")) ||
-					this.className.includes("searchAnywhere") ||
-					this.className.includes("welcomeContainer")
-				) {
-					this.remove();
+				try {
+					if (
+						((this.innerHTML && this.className.includes("aml-")) ||
+							this.className.includes("searchAnywhere") ||
+							this.className.includes("welcomeContainer")) &&
+						!this.className.includes("aml-code")
+					) {
+						this.remove();
+					}
+				} catch (err) {
 				}
 			});
 		document
@@ -911,6 +917,8 @@ async function all() {
 				showUserIntroductionEnabled: GM_getValue("amlShowUserIntroductionEnabled", true),
 				extendTaskEnabled: GM_getValue("amlExtendTaskEnabled", true),
 				benbenctrlenterEnabled: GM_getValue("amlBenbenctrlenterEnabled", true),
+				fullBenBenEnabled: GM_getValue("amlFullBenBenEnabled", true),
+				contestReplayEnabled: GM_getValue("amlContestReplayEnabled", true),
 				OCRCaptchaEnabled: GM_getValue("amlOCRCaptchaEnabled", true),
 				acceptedProblemCmpEnabled: GM_getValue("amlAcceptedProblemCmpEnabled", true),
 				autoO2Enabled: GM_getValue("amlAutoO2Enabled", false),
@@ -922,7 +930,7 @@ async function all() {
 				slogenTimeEnabled: GM_getValue("amlSlogenTimeEnabled", false),
 				nbnhhshEnabled: GM_getValue("amlNbnhhshEnabled", true),
 				problemRandom: GM_getValue("amlProblemRandom", true),
-				useLuoguMe: GM_getValue("amlUseLuoguMe", false),
+				useAMLGTOP: GM_getValue("amlUseAMLGTOP", false),
 				isOpen: GM_getValue("amlPanelOpen", true),
 				chatMarkdown: GM_getValue("amlChatMarkdown", true),
 				problemColors: GM_getValue("amlProblemColors", true),
@@ -1073,6 +1081,8 @@ async function all() {
 				showUserIntroductionEnabled: "amlShowUserIntroductionEnabled",
 				extendTaskEnabled: "amlExtendTaskEnabled",
 				benbenctrlenterEnabled: "amlBenbenctrlenterEnabled",
+				fullBenBenEnabled: "amlFullBenBenEnabled",
+				contestReplayEnabled: "amlContestReplayEnabled",
 				OCRCaptchaEnabled: "amlOCRCaptchaEnabled",
 				acceptedProblemCmpEnabled: "amlAcceptedProblemCmpEnabled",
 				autoO2Enabled: "amlAutoO2Enabled",
@@ -1082,7 +1092,7 @@ async function all() {
 				discussListLengthEnabled: "amlDiscussListLengthEnabled",
 				nbnhhshEnabled: "amlNbnhhshEnabled",
 				problemRandom: "amlProblemRandom",
-				useLuoguMe: "amlUseLuoguMe",
+				useAMLGTOP: "amlUseAMLGTOP",
 				isOpen: "amlPanelOpen",
 				chatMarkdown: "amlChatMarkdown",
 				problemColors: "amlProblemColors",
@@ -1168,6 +1178,13 @@ async function all() {
 					status: "stable",
 				},
 				{
+					key: "fullBenBenEnabled",
+					label: "全网犇犇",
+					desc: "在首页显示全网犇犇，仅 100 条",
+					tag: "功能",
+					status: "stable",
+				},
+				{
 					key: "discussListLengthEnabled",
 					label: "限制首页讨论列表长度",
 					desc: "限制首页讨论列表长度，默认 16 条",
@@ -1182,6 +1199,13 @@ async function all() {
 					status: "stable",
 				},
 				{
+					key: "contestReplayEnabled",
+					label: "创建重现赛",
+					desc: "在比赛页面添加创建重现赛功能",
+					tag: "功能",
+					status: "stable",
+				},
+				{
 					key: "OCRCaptchaEnabled",
 					label: "自动填充字母识别验证码",
 					desc: "自动填充字母识别验证码",
@@ -1191,7 +1215,7 @@ async function all() {
 				{
 					key: "acceptedProblemCmpEnabled",
 					label: "题目数量对比",
-					desc: "在他人主页显示做题数量对比，红色为更少，绿色为更多",
+					desc: "在他人主页显示做题数量对比，红色为你的题数更少，绿色为你的题数更多，并显示为 你的题数 / 用户的题数",
 					tag: "功能",
 					status: "stable"
 				},
@@ -1252,11 +1276,11 @@ async function all() {
 					status: "stable",
 				},
 				{
-					key: "useLuoguMe",
+					key: "useAMLGTOP",
 					label: "保存站更换",
-					desc: "使用 luogu.me 作为保存站网址",
+					desc: "使用 luogu.amlg.top 作为保存站网址",
 					tag: "设置",
-					status: "stable",
+					status: "beta",
 				},
 				{
 					key: "copyMarkdownEnabled",
@@ -1359,7 +1383,7 @@ async function all() {
 				{
 					key: "problemColors",
 					label: "难度颜色",
-					desc: "在题目列表中显示题目难度颜色",
+					desc: "在题目列表中显示题目难度颜色，缓存时间一个月",
 					tag: "阅读",
 					status: "stable",
 				},
@@ -1379,9 +1403,9 @@ async function all() {
 				},
 				{
 					key: "codeFolding",
-					label: "代码折叠",
-					desc: "自动折叠过长的代码块以便阅读",
-					tag: "阅读",
+					label: "代码折叠与扫描",
+					desc: "自动折叠过长的代码块以便阅读并自动识别危险代码",
+					tag: "功能",
 					status: "beta",
 				},
 			];
@@ -2725,11 +2749,6 @@ async function all() {
 						<div class="announcement-section aml-home-card">
 							<h5><i class="fas fa-bullhorn"></i> 重要公告</h5>
 							<div class="announcement-content">
-								<p><strong>新版外观</strong></p>
-								<p>新版外观怎么样呢？有任何建议都可以私信 zhangyimin12345！</p>
-								<p>目前新版外观只写完了框架与首页，其它外观的将在接下来的版本中陆续更换！</p>
-							</div>
-							<div class="announcement-content">
 								<p><strong>广告位招租</strong></p>
 								<p>Amazing Luogu 有新板块“探索”啦！支持公益学术/开发项目广告！</p>
 								<p>审核较严格，目的是让其是“探索”而不是广告。</p>
@@ -3202,143 +3221,6 @@ async function all() {
 						GM_setValue("aml-username", username);
 					}
 				})();
-				const defaultSettings = {
-					amlAutoSaveDiscussEnabled: false,
-					amlShowUserIntroductionEnabled: true,
-					amlExtendTaskEnabled: true,
-					amlSlogenTimeEnabled: true,
-					amlDiscussListLengthEnabled: false,
-					amlAutoO2Enabled: false,
-					amlVscodeLuoguEnabled: false,
-					amlCodeforcesOriginDifEnabled: true,
-					amlBenbenctrlenterEnabled: true,
-					amlOCRCaptchaEnabled: true,
-					amlAcceptedProblemCmpEnabled: true,
-					amlNbnhhshEnabled: true,
-					amlProblemRandom: true,
-					amlUseLuoguMe: false,
-					amlPanelOpen: true,
-					amlChatMarkdown: true,
-					amlProblemColors: true,
-					amlCoverRemoval: false,
-					amlCaptchaAutofill: false,
-					amlProblemJumper: true,
-					amlSaveStationJumper: true,
-					amlCodeFolding: true,
-					amlAutoCheckIn: true,
-					amlCaptchaOCREndpoint: "http://8.140.166.24:44963/?base64=",
-					amlColorUpdateInterval: 300,
-					amlVscodePort: 1145,
-					amlDiscussListLength: 16,
-					amlMemoContent: "关注 zhangyimin12345 谢谢啦！",
-					amlMemoEnabled: true,
-					amlButtonUnlocker: true,
-					amlProblemJumpStyling: true,
-					amlUserSearchEnabled: true,
-					amlAutoExpandBenben: true,
-					amlBenbenBlockedUids: [""],
-					amlCopyMarkdownEnabled: true,
-					amlDiscussCopyButtonEnabled: true,
-					amlCustomCSS: "",
-					amlCustomCSSPosition: "head",
-					amlCustomFontURL: "",
-					amlCustomFontEnabled: true,
-					amlCustomStyleEnabled: true,
-					amlDefaultCodeEnabled: true,
-					amlDefaultCodeContent: "",
-					amlAutoReplyEnabled: false,
-					amlAutoReplyFocusModeMessage:
-						"该用户开启了专注模式认真学术，可能暂时无法回复您的私信！",
-					amlAutoReplyNormalMessage: "已经提示该用户，请耐心等待 TA 的回复！",
-					amlUserFinderEnabled: false,
-					amlFocusModeEnabled: false,
-					amlFocusModeHideChat: true,
-					amlFocusModeHideNotification: true,
-					amlFocusModeHideArticle: true,
-					amlFocusModeHidePaste: true,
-					amlFocusModeHideSolution: true,
-					amlFocusModeHideContest: false,
-					amlFocusModeHideUser: true,
-					amlFocusModeHideTicket: true,
-					amlFocusModeHideHelp: true,
-					amlFocusModeHideFooter: true,
-					amlFocusModeHideHome: true,
-					amlFocusModeHideAD: true,
-					amlFocusModeHidePunchAndAd: false,
-					amlFocusModeHidediscuss: true,
-					amlFocusModeHideFriendLinks: true,
-					amlFocusModeHideTeam: true,
-					amlFocusModeHideTag: true,
-					amlFocusModeHideThemeList: true,
-					amlFocusModeHideImageHosting: true,
-					amlFocusModeHideRank: true,
-					amlFocusModeHideJudgement: true,
-					amlFocusModeHidePage: true,
-					amlFocusModeHideLinksButtons: true,
-					amlFocusModeHideSidebarLeft: true,
-					amlFocusModeHideSidebarRight: true,
-					amlFocusModeHideBenben: true,
-					amlFocusModeHideBenbenInput: true,
-					amlFocusModeHideBenbenMore: true,
-					amlFocusModeHideProblemStats: true,
-					amlFocusModeHideProblemSolutions: true,
-					amlFocusModeHideProblemTickets: true,
-					amlFocusModeHideProblemProviders: true,
-					amlFocusModeHideProblemPersonalList: true,
-					amlFocusModeHideProblemTeamList: true,
-					amlFocusModeHideProblemDiscuss: true,
-					amlFocusModeHideProblemTags: true,
-					amlFocusModeHideTrainingStats: true,
-					amlFocusModeHideTrainingOperations: true,
-					amlFocusModeHideRecordFilters: true,
-					amlChatNotificationEnabled: true,
-					amlEmojiRenderingEnabled: true,
-				};
-				function exportSettings() {
-					const settings_ = getAMLSettings();
-					const settings = defaultSettings;
-					for (const key in settings) {
-						if (!settings_[key]) {
-							settings[key] = settings_[key];
-						}
-					}
-					const dataStr = JSON.stringify(settings, null, 2);
-					const dataBlob = new Blob([dataStr], { type: "application/json" });
-					const url = URL.createObjectURL(dataBlob);
-					const link = document.createElement("a");
-					link.href = url;
-					link.download = "aml_settings_backup.json";
-					link.click();
-					URL.revokeObjectURL(url);
-				}
-				document.addEventListener("exportsettings", function (e) {
-					exportSettings();
-				});
-			} else {
-				const Event = new CustomEvent("giveuid", {
-					detail: { type: "data", content: GM_getValue("aml-uid") },
-				});
-				document.dispatchEvent(Event);
-				const Event2 = new CustomEvent("giveusername", {
-					detail: { type: "data", content: GM_getValue("aml-username") },
-				});
-				document.dispatchEvent(Event2);
-				const allGM = {};
-				GM_listValues().forEach((k) => (allGM[k] = GM_getValue(k)));
-				const Event3 = new CustomEvent("givesettings", {
-					detail: { type: "data", content: allGM },
-				});
-				document.dispatchEvent(Event3);
-				document.addEventListener("pageMessage", function (e) {
-					GM_settings = e.detail.data;
-					if (GM_settings) {
-						for (const key in GM_settings) {
-							if (GM_settings.hasOwnProperty(key)) {
-								GM_setValue(key, GM_settings[key]);
-							}
-						}
-					}
-				});
 			}
 			if (!window.location.href.includes("www.luogu.com")) return;
 			function getAMLSettings() {
@@ -4056,6 +3938,7 @@ async function all() {
 			width: 100%;
 			height: 100%;
 			overflow: hidden;
+			z-index: 1000;
 		}
 		.welcomeLeft {
 			flex: 2;
@@ -4622,7 +4505,7 @@ async function all() {
 			background: #aaa;
 		}
 		.searchAnywhereEntrance {
-			z-index: 99;
+			z-index: 1001;
 			background: white;
 			display: grid;
 			place-items: center;
@@ -4655,7 +4538,7 @@ async function all() {
 			width: 350px; height: 100%;
 			background: #fff;
 			box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-			z-index: 10001;
+			z-index: 1001;
 			transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 			display: flex; flex-direction: column;
 			border-left: 1px solid #e2e8f0;
@@ -4688,7 +4571,8 @@ async function all() {
 		.aml-notif-time { font-size: 12px; color: #94a3b8; }
 		.aml-notification-modal {
 			position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-			background: rgba(0,0,0,0.5); z-index: 10002;
+			background: rgba(0,0,0,0.5); 
+			z-index: 1002;
 			display: flex; justify-content: center; align-items: center;
 			opacity: 0; transition: opacity 0.3s;
 		}
@@ -5630,7 +5514,8 @@ async function all() {
 			`);
 			if (
 				currentAMLSettings.codeFolding &&
-				!window.location.pathname.includes("/record/")
+				!window.location.pathname.includes("/record/") &&
+				!(window.location.pathname.includes("/problem/") && window.location.pathname.split('/').length == 3)
 			) {
 				const threshold = 1500;
 				function wrapPreInFoldable(preElement) {
@@ -5752,9 +5637,63 @@ async function all() {
 						} catch (e) { }
 					});
 				}
+				const MALICIOUS_RULES = {
+					high: [
+						/rm\s+-rf\s*\/?/i, /format\s+[a-z]:/i, /del\s+\/f.*\/s.*\/q/i,
+						/rd\s+\/s.*\/q/i, /shutdown\s*/i, /net\s+user/i, /reg\s+add/i,
+						/bcdedit/i, /diskpart/i, /taskkill.*\/f.*im/i, /lockworkstation/i,
+						/ExitWindowsEx/i, /FormatVolume/i, /DeleteFile/i, /RemoveDirectory/i,
+						/dd if=\/dev\/zero/i, /mkfs/i
+					],
+					med: [
+						/system\s*/i, /os\.system/i, /subprocess/i, /taskkill/i,
+						/SetCursorPos/i, /mouse_event/i, /keybd_event/i, /FindWindow/i
+					],
+					low: [
+						/windows\.h/i, /winuser\.h/i, /encode/i, /decode/i,
+						/base64/i, /exec/i, /popen/i, /CreateFile/i, /WriteFile/i
+					],
+					exclude: [/System\.out/i, /System\.gc/i, /import java/i]
+				};
+				function checkMalicious(code) {
+					const res = { high: [], med: [], low: [] };
+					for (const r of MALICIOUS_RULES.exclude) if (r.test(code)) return null;
+					for (const r of MALICIOUS_RULES.high) if (r.test(code)) res.high.push(r);
+					for (const r of MALICIOUS_RULES.med) if (r.test(code)) res.med.push(r);
+					for (const r of MALICIOUS_RULES.low) if (r.test(code)) res.low.push(r);
+					return (res.high.length || res.med.length || res.low.length) ? res : null;
+				}
+				function addWarningBadge(codeEl, level) {
+					if (codeEl.closest('.malicious-warning')) return;
+					const color = { high: '#dd514c', med: '#ff5722', low: '#8c8c8c' }[level];
+					const text = { high: '高危代码', med: '危险代码', low: '可疑代码' }[level];
+					const badge = document.createElement('span');
+					badge.className = 'malicious-warning';
+					badge.style.cssText = `display:inline-block;padding:2px 6px;background:${color};color:#fff;border-radius:3px;font-size:12px;margin-left:8px;font-weight:bold;line-height:1.2;`;
+					badge.innerText = text;
+					const title = codeEl.closest('.aml-code-foldable-wrapper')?.querySelector('.aml-code-title');
+					if (title) title.after(badge);
+				}
+				function scanAllCodeBlocks() {
+					document.querySelectorAll('code').forEach(code => {
+						code.dataset.scanned = 'true';
+						const r = checkMalicious(code.textContent.trim());
+						const title = code.closest('.aml-code-foldable-wrapper')?.querySelector('.aml-code-fold-header');
+						if (!title) {
+							return;
+						}
+						if (title.querySelector('.malicious-warning')) {
+							title.querySelector('.malicious-warning').remove();
+						}
+						if (!r) return;
+						if (r.high.length) addWarningBadge(code, 'high');
+						else if (r.med.length) addWarningBadge(code, 'med');
+						else addWarningBadge(code, 'low');
+					});
+				}
 				GM_addStyle(`
 					.aml-code-foldable-wrapper {
-						margin: 0;
+						margin: 1rem 0 !important;
 						border: 1px solid #e0e0e0;
 						border-radius: 8px;
 						overflow: hidden;
@@ -5769,7 +5708,7 @@ async function all() {
 					}
 					.aml-code-fold-header {
 						display: flex;
-						justify-content: space-between;
+						justify-content: flex-start;
 						align-items: center;
 						padding: 10px 14px;
 						background: #fdfdfd;
@@ -5786,6 +5725,7 @@ async function all() {
 						color: #666;
 					}
 					.aml-toggle-icon-wrapper {
+						margin-left: auto;
 						display: inline-flex;
 						align-items: center;
 						justify-content: center;
@@ -5812,14 +5752,33 @@ async function all() {
 						margin: 0 !important;
 					}
 				`);
+				function CheckAndDelete() {
+					document.querySelectorAll('.aml-code-content.aml-expanded').forEach(code => {
+						if (code.innerHTML.trim() == '') {
+							code.parentElement.remove();
+						}
+					});
+				}
 				processNewCodeBlocks();
-				const foldingInterval = setInterval(processNewCodeBlocks, 1000);
+				scanAllCodeBlocks();
+				CheckAndDelete();
+				let foldingInterval = setInterval(() => {
+					processNewCodeBlocks();
+					scanAllCodeBlocks();
+					CheckAndDelete();
+				}, 500);
 				document.addEventListener("visibilitychange", () => {
 					if (document.hidden) {
 						clearInterval(foldingInterval);
 					} else {
-						setInterval(processNewCodeBlocks, 50);
+						foldingInterval = setInterval(() => {
+							processNewCodeBlocks();
+							scanAllCodeBlocks();
+							CheckAndDelete();
+						}, 500);
 						processNewCodeBlocks();
+						scanAllCodeBlocks();
+						CheckAndDelete();
 					}
 				});
 			}
@@ -5839,8 +5798,16 @@ async function all() {
 				[data-v-fdcd5a58] {
 					display: none;
 				}
-				[data-v-12b24cc3]
-				[data-v-ce0b4304] {
+				[data-v-ce0b4304][data-v-0b63fe2e][data-v-754e1ea4-s] {
+					display: none;
+				}
+				[data-v-ce0b4304][data-v-1b6544ef][data-v-754e1ea4-s] {
+					display: none;
+				}
+				[data-v-1351fcdc][data-v-5d32e576] {
+					display: none;
+				}
+				[data-v-ce0b4304][data-v-216447b8][data-v-754e1ea4-s] {
 					display: none;
 				}
 				@font-face {
@@ -6212,12 +6179,6 @@ async function all() {
 							callback(element);
 						} else if (Date.now() - startTime > timeout) {
 							clearInterval(interval);
-							Swal.fire({
-								title: "错误",
-								text: "超时",
-								icon: "error",
-								confirmButtonText: "确定",
-							});
 						}
 					}, 100);
 				}
@@ -6432,8 +6393,6 @@ async function all() {
 				const urlObserver = new MutationObserver(() => {
 					if (location.href !== lastUrl) {
 						lastUrl = location.href;
-						if (window.location.pathname.startsWith("/discuss/"))
-							location.reload();
 						processMainContent();
 						processReplies();
 					}
@@ -6459,12 +6418,12 @@ async function all() {
 					let TIME = GM_getValue(CACHE_TIME_KEY, 0);
 					let CACHE_TYPE = GM_getValue("ACPCACHE_TYPE", "0.0.0");
 					console.log(CACHE, TIME);
-					if (TIME < Date.now() - 1000 * 60 * 60 * 24||CACHE_TYPE!="0.9.6") {
+					if (TIME < Date.now() - 1000 * 60 * 60 * 24 || CACHE_TYPE != "0.9.6") {
 						console.log("ACPCACHE过期，开始更新");
 						(async function () {
 							console.log("更新ACPCACHE");
 							let newCache = [0, 0, 0, 0, 0, 0, 0, 0];
-							let req = await fetch("https://www.luogu.com.cn/user/"+getCurrentUserId()+"/practice", {
+							let req = await fetch("https://www.luogu.com.cn/user/" + getCurrentUserId() + "/practice", {
 								headers: [
 									["x-lentille-request", "content-only"],
 								],
@@ -6490,21 +6449,26 @@ async function all() {
 				let CACHE = GM_getValue("ACPCACHE", [0, 0, 0, 0, 0, 0, 0, 0]);
 				let aa = 0;
 				for (let i of document.getElementsByClassName("difficulty-tags")[0].children) {
+					if (Number(i.children[1].innerHTML.replaceAll('题', '')) == NaN) {
+						continue;
+					}
 					if (Number(i.children[1].innerHTML.replaceAll('题', '')) < CACHE[aa]) {
 						i.children[1].style.color = "green";
 					}
 					if (Number(i.children[1].innerHTML.replaceAll('题', '')) > CACHE[aa]) {
 						i.children[1].style.color = "red";
 					}
+					i.children[1].innerHTML = `${CACHE[aa]} 题 / ${Number(i.children[1].innerHTML.replaceAll('题', ''))} 题`;
 					aa += 1;
 				}
 			}
-			if(currentAMLSettings.OCRCaptchaEnabled&&!ocrInitialized){
+			if (currentAMLSettings.OCRCaptchaEnabled && !ocrInitialized) {
 				(async function () {
 					const OCR_API = "https://captcha.amlg.top/ocr";
 					const CONFIGS = [
 						{ img: "div.img[data-v-d0ac2ee6] img", input: "input.lform-size-middle[data-v-62a70fee][placeholder*='图形验证码']" },
-						{ img: "#--swal-problem-submit-captcha", input: ".swal2-input[placeholder*='输入上面的验证码']" }
+						{ img: "#--swal-problem-submit-captcha", input: ".swal2-input[placeholder*='输入上面的验证码']" },
+						{ img: '#--swal-image-hosting-upload-captcha', input: "body > div.swal2-container.swal2-center.swal2-fade.swal2-shown > div > div.swal2-content > input.swal2-input" }
 					];
 					let lastBase64 = "";
 					let isWatching = false;
@@ -6560,6 +6524,21 @@ async function all() {
 									const result = JSON.parse(res.responseText);
 									if (result.code === 0) {
 										const code = result.data.trim();
+										if (!code.trim()) {
+											console.log("⚠️ 不合规，刷新 | 结果：", code.trim());
+											return;
+										}
+										const invalidChars = /[!@#$%^&*()\/\\_+=<>?]/;
+										const validLength = code.trim().length === 4;
+										const hasInvalidChar = invalidChars.test(code.trim());
+										const isLegalCode = /^[0-9a-zA-Z]{4}$/.test(code.trim());
+										if (hasInvalidChar || !validLength || !isLegalCode) {
+											console.log("⚠️ 不合规，刷新 | 结果：", code.trim());
+											input.value = "";
+											lastBase64 = "";
+											img.click();
+											return;
+										}
 										input.value = code;
 										input.dispatchEvent(new Event('input', { bubbles: true }));
 										input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -6572,6 +6551,192 @@ async function all() {
 						});
 					}
 				})();
+			}
+			if (currentAMLSettings.contestReplayEnabled && location.pathname.split('/')[1] == 'contest') {
+				let cpbtn = document.getElementsByClassName("title lfe-h2")[0];
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(`<button data-v-7ade990c="" data-v-9f9431e6="" type="button" class="aml-vscode lfe-form-sz-middle" data-v-2dfcfd35="" style="
+    font-size: small;
+    border: 1px solid;
+    border-color: rgb(52, 152, 219);
+    background-color: rgb(52, 152, 219);
+    display: inline-block;
+    flex: none;
+    outline: 0;
+    cursor: pointer;
+    color: #fff;
+    font-weight: inherit;
+    line-height: 1.5;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 3px;
+    ">创建重现赛</button>`, 'text/html').body.firstChild;
+				const spaceNode = parser.parseFromString(
+					'<l class="aml-space">&nbsp;</l>',
+					"text/html",
+				).body.firstElementChild;
+				doc.onclick = async function () {
+					const { value: NewStartTime } = await Swal.fire({
+						title: "创建重现赛",
+						input: "datetime-local",
+						inputLabel: "开始时间",
+						inputPlaceholder: "请选择开始时间"
+					});
+					console.log(NewStartTime);
+					if (NewStartTime) {
+						try {
+							if (JSON.parse(document.getElementById("lentille-context").innerHTML).data.contestProblems) {
+								throw new Error();
+							}
+							const contest = JSON.parse(document.getElementById("lentille-context").innerHTML).data;
+							const response = await fetch(
+								"https://www.luogu.com.cn/fe/api/contest/new",
+								{
+									method: "POST",
+									headers: {
+										"Content-Type": "application/json",
+										"x-csrf-token": gettoken()
+									},
+									body: JSON.stringify({
+										settings: {
+											description: contest.contest.description,
+											name: contest.contest.name + " 的重现赛",
+											ruleType: contest.contest.method,
+											rated: false,
+											visibilityType: 5,
+											invitationCodeType: 1,
+											ratingGroup: null,
+											startTime: new Date(NewStartTime).getTime() / 1000,
+											endTime: (new Date(NewStartTime).getTime() / 1000 + contest.contest.endTime - contest.contest.startTime)
+										}
+									})
+								}
+							);
+							if (response.ok) {
+								const result = await response.json();
+								let scores = {};
+								for (let pid of contest.contestProblems) {
+									scores[pid.problem.pid] = pid.problem.fullScore || 100;
+								}
+								const response2 = await fetch(
+									"https://www.luogu.com.cn/fe/api/contest/editProblem/" + result.id,
+									{
+										method: "POST",
+										headers: {
+											"Content-Type": "application/json",
+											"x-csrf-token": gettoken()
+										},
+										body: JSON.stringify({
+											pids: contest.contestProblems.map(pid => pid.problem.pid),
+											scores
+										})
+									}
+								);
+								if (response2.ok) {
+									Swal.fire("创建成功", "重现赛已创建<a href=\"https://www.luogu.com.cn/contest/" + result.id + "\">点击跳转</a>", "success");
+								} else {
+									Swal.fire("创建失败", "请稍后重试", "error");
+								}
+							} else {
+								Swal.fire("创建失败", "请稍后重试", "error");
+							}
+						} catch (e) {
+							console.error("❌ 创建失败", e);
+							Swal.fire("创建失败", "请稍后重试", "error");
+						}
+					}
+				}
+				cpbtn.appendChild(spaceNode);
+				cpbtn.appendChild(doc);
+			}
+			if (currentAMLSettings.fullBenBenEnabled && location.pathname == '/') {
+				let originalLoadFeed;
+				if (unsafeWindow.loadFeed && !originalLoadFeed && !FullBenBenInited) {
+					originalLoadFeed = unsafeWindow.loadFeed;
+					unsafeWindow.loadFeed = function () {
+						if (unsafeWindow.feedMode === 'all') {
+							loadFullBenBen();
+							return;
+						}
+						originalLoadFeed.call(unsafeWindow);
+					};
+				}
+				function loadFullBenBen() {
+					unsafeWindow.$feed.html('');
+					unsafeWindow.$("#feed-more").innerHTML = '加载中...';
+					GM_xmlhttpRequest({
+						method: "GET",
+						url: "https://core.benben.sbs/list",
+						onload: (res) => {
+							try {
+								const list = JSON.parse(res.responseText);
+								const $feed = unsafeWindow.$feed;
+								if (unsafeWindow.feedPage === 1) $feed.empty();
+								list.forEach(item => {
+									const colorMap = {
+										Red: "lg-fg-red",
+										Orange: "lg-fg-orange",
+										Blue: "lg-fg-bluelight",
+										Green: "lg-fg-green",
+										Gray: "lg-fg-gray",
+										Brown: "lg-fg-brown"
+									};
+									const colorClass = colorMap[item.userColor] || "lg-fg-black";
+									const html = `
+									<li class="am-comment am-comment-primary feed-li">
+										<div class="lg-left">
+											<a href="/user/${item.userId}" class="center">
+												<img src="https://cdn.luogu.com.cn/upload/usericon/${item.userId}.png" class="am-comment-avatar">
+											</a>
+										</div>
+										<div class="am-comment-main">
+											<header class="am-comment-hd">
+												<div class="am-comment-meta">
+													<span class="feed-username">
+														<a class="${colorClass}${colorClass != "lg-fg-bluelight" ? " lg-bold" : ""}" href="/user/${item.userId}" target="_blank">${item.username}</a>
+													</span>
+													${formatTime(item.time)}
+													<a name="feed-reply" href="javascript: scrollToId('feed-content')" data-username="${item.username}">回复</a>
+												</div>
+											</header>
+											<div class="am-comment-bd">
+												<span class="feed-comment">${marked.parse(item.content)}</span>
+											</div>
+										</div>
+									</li>`;
+									$feed.append(html);
+								});
+								unsafeWindow.$("#feed-more").children("a").text("点击查看更多...");
+								unsafeWindow.feedPage++;
+								unsafeWindow.$("[name=feed-reply]").off().click(function () {
+									const content = unsafeWindow.$(this).parents("li.feed-li").find(".feed-comment").text();
+									unsafeWindow.$("#feed-content").val(" || @" + unsafeWindow.$(this).attr('data-username') + " : " + content);
+								});
+								unsafeWindow.$("#feed-more").hide();
+							} catch (e) {
+								console.error("全网犇犇加载失败", e);
+								unsafeWindow.$("#feed-more").innerHTML = '加载失败';
+								unsafeWindow.$("#feed-more").hide();
+							}
+						}
+					});
+				}
+				function formatTime(iso) {
+					const d = new Date(iso);
+					return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, 0)}-${String(d.getDate()).padStart(2, 0)} ${String(d.getHours()).padStart(2, 0)}:${String(d.getMinutes()).padStart(2, 0)}:${String(d.getSeconds()).padStart(2, 0)}`;
+				}
+				const parser = new DOMParser();
+				const doc = parser.parseFromString('<li class="feed-selector" data-mode="all"><a style="cursor: pointer">全网犇犇</a></li>', 'text/html').body.firstChild;
+				doc.onclick = function () {
+					unsafeWindow.feedMode = 'all';
+					unsafeWindow.feedPage = 1;
+					unsafeWindow.$("#feed-more").hide();
+					unsafeWindow.$feed.html('');
+					unsafeWindow.$(".feed-selector").removeClass("am-active");
+					unsafeWindow.$(".feed-selector[data-mode=all]").addClass("am-active");
+					loadFullBenBen();
+				}
+				document.querySelector('[data-mode="my"]').after(doc);
 			}
 			if (currentAMLSettings.benbenctrlenterEnabled && !benbenctrlenterInited) {
 				benbenctrlenterInited = true;
@@ -6627,85 +6792,85 @@ async function all() {
 				}
 			}
 			if (currentAMLSettings.autoSaveDiscussEnabled && location.pathname.startsWith("/discuss/")) {
-                let discussId = location.pathname.split("/discuss/")[1].split("/")[0];
-                $(document).on("keydown", function(e) {
-                    if (e.ctrlKey && e.key === "s") {
-                        e.preventDefault();
-                        try {
-                            const url = 'https://luogu.store/';
-                            GM_xmlhttpRequest({
-                                method: 'POST',
-                                url: url,
-                                headers: {
-                                    'accept': 'text/x-component',
-                                    'accept-encoding': 'gzip, deflate, br, zstd',
-                                    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-                                    'content-type': 'text/plain;charset=UTF-8',
-                                    'next-action': '406ba16943dc068f983622e6001d07cd2c45e7aea5',
-                                    'next-router-state-tree': '%5B%22%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2Cnull%2Cnull%5D%2C%22modal%22%3A%5B%22__DEFAULT__%22%2C%7B%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%2Ctrue%5D'
-                                },
-                                data: '[' + discussId + ']',
-                                onload: function (response) {
-                                    if (response.status >= 200 && response.status < 300) {
-                                        console.log('请求成功，返回数据：', response.responseText);
-                                        Swal.fire({
-                                            title: "保存成功",
-                                            html: "讨论数据已保存到 luogu.store ！",
-                                            showCancelButton: false,
-                                            confirmButtonText: "确定",
-                                            icon: "success",
-                                        });
-                                    } else {
-                                        console.error(`HTTP error! Status: ${response.status}`);
-                                        Swal.fire({
-                                            title: "保存失败",
-                                            html: "保存到 luogu.store 时发生错误！",
-                                            showCancelButton: false,
-                                            confirmButtonText: "确定",
-                                            icon: "error",
-                                        });
-                                    }
-                                },
-                                onerror: function (error) {
-                                    Swal.fire({
-                                        title: "保存失败",
-                                        html: "保存到 luogu.store 时发生错误！",
-                                        showCancelButton: false,
-                                        confirmButtonText: "确定",
-                                        icon: "error",
-                                    });
-                                },
-                                ontimeout: function () {
-                                    console.error('请求超时');
-                                    Swal.fire({
-                                        title: "保存失败",
-                                        html: "保存到 luogu.store 时发生错误！",
-                                        showCancelButton: false,
-                                        confirmButtonText: "确定",
-                                        icon: "error",
-                                    });
-                                },
-                                timeout: 10000
-                            });
-                        } catch (error) {
-                            Swal.fire({
-                                title: "保存失败",
-                                html: "保存到 luogu.store 时发生错误！",
-                                showCancelButton: false,
-                                confirmButtonText: "确定",
-                                icon: "error",
-                            });
-                        }
-                    }
-                });
-            }
+				let discussId = location.pathname.split("/discuss/")[1].split("/")[0];
+				$(document).on("keydown", function (e) {
+					if ((event.ctrlKey || event.metaKey) && e.key === "s") {
+						e.preventDefault();
+						try {
+							const url = 'https://luogu.store/';
+							GM_xmlhttpRequest({
+								method: 'POST',
+								url: url,
+								headers: {
+									'accept': 'text/x-component',
+									'accept-encoding': 'gzip, deflate, br, zstd',
+									'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+									'content-type': 'text/plain;charset=UTF-8',
+									'next-action': '406ba16943dc068f983622e6001d07cd2c45e7aea5',
+									'next-router-state-tree': '%5B%22%22%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2Cnull%2Cnull%5D%2C%22modal%22%3A%5B%22__DEFAULT__%22%2C%7B%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%2Ctrue%5D'
+								},
+								data: '[' + discussId + ']',
+								onload: function (response) {
+									if (response.status >= 200 && response.status < 300) {
+										console.log('请求成功，返回数据：', response.responseText);
+										Swal.fire({
+											title: "保存成功",
+											html: "讨论数据已保存到 luogu.store ！",
+											showCancelButton: false,
+											confirmButtonText: "确定",
+											icon: "success",
+										});
+									} else {
+										console.error(`HTTP error! Status: ${response.status}`);
+										Swal.fire({
+											title: "保存失败",
+											html: "保存到 luogu.store 时发生错误！",
+											showCancelButton: false,
+											confirmButtonText: "确定",
+											icon: "error",
+										});
+									}
+								},
+								onerror: function (error) {
+									Swal.fire({
+										title: "保存失败",
+										html: "保存到 luogu.store 时发生错误！",
+										showCancelButton: false,
+										confirmButtonText: "确定",
+										icon: "error",
+									});
+								},
+								ontimeout: function () {
+									console.error('请求超时');
+									Swal.fire({
+										title: "保存失败",
+										html: "保存到 luogu.store 时发生错误！",
+										showCancelButton: false,
+										confirmButtonText: "确定",
+										icon: "error",
+									});
+								},
+								timeout: 10000
+							});
+						} catch (error) {
+							Swal.fire({
+								title: "保存失败",
+								html: "保存到 luogu.store 时发生错误！",
+								showCancelButton: false,
+								confirmButtonText: "确定",
+								icon: "error",
+							});
+						}
+					}
+				});
+			}
 			if (currentAMLSettings.discussListLengthEnabled && location.pathname == '/') {
 				let removenum = 16 - currentAMLSettings.discussListLength;
 				for (let i = 0; i < removenum; i++) {
 					document.getElementsByClassName("am-panel lg-index-contest am-panel-primary")[document.getElementsByClassName("am-panel lg-index-contest am-panel-primary").length - 1].remove();
 				}
 			}
-			if (currentAMLSettings.vscodeLuoguEnabled && location.pathname.startsWith("/problem/") && location.pathname.split('/').length==3&&location.pathname.replaceAll('/', '') != 'problemlist' && !location.hash) {
+			if (currentAMLSettings.vscodeLuoguEnabled && location.pathname.startsWith("/problem/") && location.pathname.split('/').length == 3 && location.pathname.replaceAll('/', '') != 'problemlist' && !location.hash) {
 				let search = new URLSearchParams(location.search);
 				let cpbtn = document.querySelector("[data-v-f265fec6]").querySelector("[data-v-f265fec6]").querySelector("[data-v-f265fec6]").lastChild.firstChild.lastChild;
 				const parser = new DOMParser();
@@ -6989,15 +7154,20 @@ async function all() {
 						);
 					};
 					const submitTran = (name) => {
-						let text = prompt(
-							"输入缩写对应文字 末尾可通过括号包裹（简略注明来源）",
-							"",
-						);
-						if (!text || !text.trim || !text.trim()) {
-							return;
-						}
-						request("POST", API_URL + "translation/" + name, { text }, () => {
-							alert("感谢对好好说话项目的支持！审核通过后这条对应将会生效");
+						Swal.fire({
+							title: '输入缩写对应文字',
+							input: 'text',
+							inputPlaceholder: '末尾可通过括号包裹（简略注明来源）',
+							showCancelButton: true,
+							confirmButtonText: '提交',
+							cancelButtonText: '取消'
+						}).then((result) => {
+							if (!result.isConfirmed || !result.value.trim()) {
+								return;
+							}
+							request("POST", API_URL + "translation/" + name, { text: result.value }, () => {
+								Swal.fire('感谢对好好说话项目的支持！', '审核通过后这条对应将会生效', 'success');
+							});
 						});
 					};
 					const transArrange = (trans) => {
@@ -7134,7 +7304,7 @@ async function all() {
 				}
 				.nbnhhsh-box-pop{
 					position: absolute;
-					z-index:99999999999;
+					z-index: 9999;
 					width: 340px;
 					background:#FFF;
 					box-shadow: 0 3px 30px -4px rgba(0,0,0,.3);
@@ -7240,9 +7410,6 @@ async function all() {
 					const it = res.user.introduction;
 					const escapedIt = it.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 					const introduction = marked.parse(escapedIt);
-					// ==============================================
-					// ✅ 1:1 还原洛谷原生 l-card 结构、属性、样式
-					// ==============================================
 					const jsCard = document.createElement('div');
 					jsCard.setAttribute('data-v-c3407962', '');
 					jsCard.setAttribute('data-v-f4fefeb2', '');
@@ -7259,14 +7426,10 @@ async function all() {
 			<div class="lfe-marked">${introduction}</div>
 			</div>
 					`.trim();
-					// ==============================================
-					// ✅ 核心安全修复：不删除任何Vue DOM，只安全插入
-					// ==============================================
 					const mainContent = document.querySelectorAll('.main')[2];
 					if (mainContent) {
 						mainContent.appendChild(jsCard);
 					}
-					// 仅渲染当前卡片内的公式
 					if (typeof katex !== 'undefined') {
 						renderMathInElement(jsCard, {
 							delimiters: [
@@ -7278,16 +7441,12 @@ async function all() {
 					}
 				}
 			}
-			// ==============================================
-			// 👇 只有注释的按钮逻辑 放到 IF 外面（全页面生效）
-			// ==============================================
 			if (location.pathname.match(/^\/user\/\d+$/) && JSON.parse(document.getElementById("lentille-context").innerHTML).data.user.uid != getCurrentUserId()) {
 				const mainContents = document.querySelectorAll('.main');
 				if (mainContents.length >= 3) {
 					const mainContent = mainContents[2];
 					const lCards = mainContent.querySelectorAll('.l-card');
 					if (lCards.length > 0) {
-						// 取第三个main里最后一个l-card（个人介绍卡片）
 						const targetCard = lCards[lCards.length - 1];
 						const cardHeader = targetCard.querySelector('.header');
 						const resData = JSON.parse(document.getElementById("lentille-context").innerHTML).data;
@@ -7295,14 +7454,12 @@ async function all() {
 						const escapedIt = it.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 						const introduction = marked.parse(escapedIt);
 						if (cardHeader) {
-							// 没有edit-tab就自动创建，带上 aml-deltab
 							let editTab = cardHeader.querySelector('span[data-v-f4fefeb2]');
 							if (!editTab) {
 								editTab = document.createElement('span');
 								editTab.className = 'edit-button edit-tab aml-deltab';
 								cardHeader.appendChild(editTab);
 							}
-							// 插入按钮
 							editTab.innerHTML += `
 			<button data-v-505b6a97="" class="lform-size-small" type="button" data-type="copy">复制</button>
 			<button data-v-505b6a97="" class="lform-size-small" type="button" data-type="render" alt="渲染为 HTML，请小心鉴别">渲染为 HTML</button>
@@ -7310,7 +7467,6 @@ async function all() {
 							const copyBtn = editTab.querySelector('button[data-type="copy"]');
 							const renderBtn = editTab.querySelector('button[data-type="render"]');
 							const renderContent = targetCard.querySelector('.lfe-marked');
-							// 复制功能
 							copyBtn.addEventListener('click', function () {
 								GM_setClipboard(it);
 								Swal.fire({
@@ -7320,7 +7476,6 @@ async function all() {
 									topLayer: true
 								});
 							});
-							// 渲染切换
 							renderBtn.onclick = function () {
 								const isHtml = renderBtn.innerHTML.includes('HTML');
 								if (isHtml) {
@@ -7370,12 +7525,8 @@ async function all() {
 				try {
 					const SUPABASE_URL = "https://ktwhwvafywwekfkvskbk.supabase.co";
 					const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0d2h3dmFmeXd3ZWtma3Zza2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTU1NDgsImV4cCI6MjA4NDI3MTU0OH0.tSCRz7ENeCT3NXt891equmSBfW_UsXHUdKSVMoxveKQ";
-					// 获取 uid
 					const uid = Number(currentPath.split('/')[2]);
-					// 拼接 Supabase 原生 REST API 地址
 					const apiUrl = `${SUPABASE_URL}/rest/v1/user_status?uid=eq.${uid}&select=*`;
-					// console.log(apiUrl,uid,SUPABASE_ANON_KEY);
-					// GM_xmlhttpRequest 请求
 					GM_xmlhttpRequest({
 						method: "GET",
 						url: apiUrl,
@@ -7409,7 +7560,7 @@ async function all() {
 								console.log(newslogan);
 								try {
 									console.log("checking 2");
-									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[2].data){
+									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[2].data) {
 										console.log(true);
 										document.getElementsByClassName("lfe-caption slogan")[0].childNodes[2].data = newslogan;
 									}
@@ -7418,7 +7569,7 @@ async function all() {
 								}
 								try {
 									console.log("checking 1");
-									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[1].data){
+									if (document.getElementsByClassName("lfe-caption slogan")[0].childNodes[1].data) {
 										console.log(true);
 										document.getElementsByClassName("lfe-caption slogan")[0].childNodes[1].data = newslogan;
 									}
@@ -7441,12 +7592,9 @@ async function all() {
 				try {
 					const SUPABASE_URL = "https://ktwhwvafywwekfkvskbk.supabase.co";
 					const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0d2h3dmFmeXd3ZWtma3Zza2JrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2OTU1NDgsImV4cCI6MjA4NDI3MTU0OH0.tSCRz7ENeCT3NXt891equmSBfW_UsXHUdKSVMoxveKQ";
-					// 获取 uid
 					const uid = getCurrentUserId();
-					// 拼接 Supabase 原生 REST API 地址
 					const apiUrl = `${SUPABASE_URL}/rest/v1/user_status?uid=eq.${uid}&select=*`;
 					console.log(apiUrl, uid, SUPABASE_ANON_KEY);
-					// GM_xmlhttpRequest 请求
 					GM_xmlhttpRequest({
 						method: "GET",
 						url: apiUrl,
@@ -7799,7 +7947,6 @@ async function all() {
 								console.log("✅ 请求成功");
 								console.log("状态码：", response.status);
 								console.log("返回数据：", response.responseText);
-								// 如果返回的是JSON数据，可以直接解析
 								try {
 									const data = JSON.parse(response.responseText);
 									if (Array.isArray(data)) {
@@ -7824,30 +7971,22 @@ async function all() {
 			}
 			if (currentAMLSettings.problemColors) {
 				console.log(Date.now(), "Starting to set up problem color map...");
-				// 缓存配置：有效期 30 天（单位：毫秒）
 				const CACHE_TTL = 30 * 24 * 60 * 60 * 1000;
-				// 缓存存储键名
 				const CACHE_KEY = 'AMLG_PROBLEM_COLORS_CACHED';
-				// 1. 读取缓存数据
 				const cachedData = GM_getValue(CACHE_KEY, { expireTime: 0, colorEntries: [], version: "0.9.4" });
 				let problemColorMap;
-				// 2. 判断缓存是否有效（存在 + 未过期）
 				if (cachedData && Date.now() < cachedData.expireTime && cachedData.colorEntries.length != 0 && cachedData.version == "0.9.4") {
-					// 直接使用缓存，快速恢复 Map
 					problemColorMap = new Map(cachedData.colorEntries);
 					console.log(Date.now(), "Using cached problem color map (valid for 30d)");
 				} else {
-					// 3. 缓存无效/不存在：重新生成颜色映射
 					const rawColors = GM_getValue('AMLG_PROBLEM_COLORS', []);
 					const colorEntries = rawColors
 						.map(p => [p.id, `rgb(${difficultyColors[Number(p.difficulty)]?.join(',')})`])
 						.filter(Boolean);
-					// 生成 Map
 					problemColorMap = new Map(colorEntries);
-					// 4. 写入新缓存（带过期时间）
 					GM_setValue(CACHE_KEY, {
-						colorEntries: colorEntries, // 存储可序列化的数组，Map 无法直接存储
-						expireTime: Date.now() + CACHE_TTL, // 30天后过期
+						colorEntries: colorEntries,
+						expireTime: Date.now() + CACHE_TTL,
 						createTime: Date.now(),
 						version: "0.9.4"
 					});
@@ -7906,24 +8045,6 @@ async function all() {
 					if (problemColorMap.has(problemPid)) {
 						return problemColorMap.get(problemPid);
 					}
-					// const url = `/problem/${problemPid}`;
-					// let htmlText;
-					// try {
-					// 	htmlText = await fetchQueue.push(url, isPriority);
-					// } catch (error) {
-					// 	return;
-					// }
-					// const parser = new DOMParser();
-					// const doc = parser.parseFromString(htmlText, "text/html");
-					// let scriptText = "";
-					// for (const script of doc.querySelectorAll("script")) {
-					// 	scriptText += script.textContent;
-					// }
-					// const difficultyMatch = scriptText.match(/"difficulty":(\d)/);
-					// if (!difficultyMatch) return;
-					// const difficulty = Number(difficultyMatch[1]);
-					// const color = `rgb(${difficultyColors[difficulty].join(",")})`;
-					// problemColorMap.set(problemPid, color);
 					return "rgb(null)";
 				}
 				function isValidProblemPid(pid) {
@@ -8168,7 +8289,7 @@ async function all() {
 						window.location.pathname.startsWith("/paste/")
 					) {
 						let newUrl = `https://luogu.amlg.top${window.location.pathname}`;
-						if (currentAMLSettings.useLuoguMe) {
+						if (!currentAMLSettings.useAMLGTOP) {
 							newUrl = `https://www.luogu.me${window.location.pathname}`;
 						}
 						window.location.replace(newUrl);
@@ -8187,7 +8308,7 @@ async function all() {
 						if (document.title == "安全访问中心 - 洛谷") {
 							const urlElement = document.querySelector("#url");
 							if (urlElement) {
-								if (currentAMLSettings.useLuoguMe) {
+								if (!currentAMLSettings.useAMLGTOP) {
 									urlElement.textContent = urlElement.textContent
 										.replace("luogu.com", "luogu.me")
 										.replace("luogu.com.cn", "luogu.me");
@@ -8201,7 +8322,7 @@ async function all() {
 								"body > div:nth-child(2) > div > p:nth-child(5) > a",
 							);
 							if (continueLink) {
-								if (currentAMLSettings.useLuoguMe) {
+								if (!currentAMLSettings.useAMLGTOP) {
 									continueLink.href = continueLink.href
 										.replace("luogu.com", "luogu.me")
 										.replace("luogu.com.cn", "luogu.me");
@@ -8374,7 +8495,7 @@ async function all() {
 							function (data) {
 								var arr = eval(data);
 								if (arr["users"][0] == null) {
-									show_alert("提示", "找不到用户");
+									Swal.fire("提示", "找不到用户", "warning");
 									return;
 								}
 								var tarid = arr["users"][0].uid;
@@ -8456,7 +8577,11 @@ async function all() {
 				const clickExpand = () => {
 					if (
 						noMoreContent ||
-						isCooldown
+						isCooldown ||
+						unsafeWindow.$("#feed-more")[0].style.display == 'none' ||
+						unsafeWindow.feedMode == 'all' ||
+						unsafeWindow.$("#feed-more")[0].textContent.trim() != '点击查看更多...' ||
+						unsafeWindow.$feed[0].childElementCount == 0
 					) {
 						return;
 					}
@@ -9009,7 +9134,7 @@ async function all() {
 					button.style.position = "fixed";
 					button.style.bottom = "20px";
 					button.style.left = "20px";
-					button.style.zIndex = "9999";
+					button.style.zIndex = "1001";
 					button.style.padding = "8px 12px";
 					button.style.backgroundColor = "#fff";
 					button.style.color = "white";
@@ -9032,7 +9157,7 @@ async function all() {
 						top: 50%;
 						left: 50%;
 						transform: translate(-50%, -50%);
-						z-index: 10000;
+						z-index: 998;
 						width: 600px;
 						max-height: 80vh;
 						overflow-y: auto;
@@ -9690,131 +9815,7 @@ async function all() {
 	}
 	console.log("当前用户 ID:", getCurrentUserId());
 	let currentAMLSettings = {
-		extendTaskEnabled: GM_getValue("amlExtendTaskEnabled", true),
-		vscodeLuoguEnabled: GM_getValue("amlVscodeLuoguEnabled", false),
-		codeforcesOriginDifEnabled: GM_getValue("amlCodeforcesOriginDifEnabled", true),
-		autoSaveDiscussEnabled: GM_getValue("amlAutoSaveDiscussEnabled", false),
-		showUserIntroductionEnabled: GM_getValue("amlShowUserIntroductionEnabled", true),
-		benbenctrlenterEnabled: GM_getValue("amlBenbenctrlenterEnabled", true),
-		OCRCaptchaEnabled: GM_getValue("amlOCRCaptchaEnabled", true),
-		autoO2Enabled: GM_getValue("amlAutoO2Enabled", false),
-		slogenTimeFormat: GM_getValue("amlSlogenTimeFormat", "{time} || {slogan}"),
-		slogenTimeEnabled: GM_getValue("amlSlogenTimeEnabled", false),
-		discussListLengthEnabled: GM_getValue("amlDiscussListLengthEnabled", false),
-		nbnhhshEnabled: GM_getValue("amlNbnhhshEnabled", true),
-		problemRandom: GM_getValue("amlProblemRandom", true),
-		useLuoguMe: GM_getValue("amlUseLuoguMe", false),
-		isOpen: GM_getValue("amlPanelOpen", true),
-		chatMarkdown: GM_getValue("amlChatMarkdown", true),
-		problemColors: GM_getValue("amlProblemColors", true),
-		coverRemoval: GM_getValue("amlCoverRemoval", false),
-		captchaAutofill: GM_getValue("amlCaptchaAutofill", false),
-		problemJumper: GM_getValue("amlProblemJumper", true),
-		saveStationJumper: GM_getValue("amlSaveStationJumper", true),
-		codeFolding: GM_getValue("amlCodeFolding", true),
-		autoCheckIn: GM_getValue("amlAutoCheckIn", true),
-		captchaOCREndpoint: GM_getValue(
-			"amlCaptchaOCREndpoint",
-			"http://8.140.166.24:44963/?base64=",
-		),
-		userSearchEnabled: GM_getValue("amlUserSearchEnabled", true),
-		vscodePort: GM_getValue("amlVscodePort", 1145),
-		discussListLength: GM_getValue("amlDiscussListLength", 16),
-		colorUpdateInterval: GM_getValue("amlColorUpdateInterval", 300),
-		memoContent: GM_getValue("amlMemoContent", "关注 zhangyimin12345 谢谢啦！"),
-		memoEnabled: GM_getValue("amlMemoEnabled", true),
-		buttonUnlocker: GM_getValue("amlButtonUnlocker", true),
-		problemJumpStyling: GM_getValue("amlProblemJumpStyling", true),
-		autoExpandBenben: GM_getValue("amlAutoExpandBenben", true),
-		benbenBlockedUids: GM_getValue("amlBenbenBlockedUids", [""]),
-		copyMarkdownEnabled: GM_getValue("amlCopyMarkdownEnabled", true),
-		discussCopyButtonEnabled: GM_getValue("amlDiscussCopyButtonEnabled", true),
-		customCSS: GM_getValue("amlCustomCSS", ""),
-		customCSSPosition: GM_getValue("amlCustomCSSPosition", "head"),
-		customFontURL: GM_getValue("amlCustomFontURL", ""),
-		customFontEnabled: GM_getValue("amlCustomFontEnabled", true),
-		customStyleEnabled: GM_getValue("amlCustomStyleEnabled", true),
-		defaultCodeEnabled: GM_getValue("amlDefaultCodeEnabled", true),
-		defaultCodeContent: GM_getValue("amlDefaultCodeContent", ""),
-		autoReplyEnabled: GM_getValue("amlAutoReplyEnabled", false),
-		autoReplyFocusModeMessage: GM_getValue(
-			"amlAutoReplyFocusModeMessage",
-			"该用户开启了专注模式认真学术，可能暂时无法回复您的私信！",
-		),
-		autoReplyNormalMessage: GM_getValue(
-			"amlAutoReplyNormalMessage",
-			"已经提示该用户，请耐心等待 TA 的回复！",
-		),
-		userFinderEnabled: GM_getValue("amlUserFinderEnabled", false),
-		focusModeEnabled: GM_getValue("amlFocusModeEnabled", false),
-		focusModeHideChat: GM_getValue("amlFocusModeHideChat", true),
-		focusModeHideNotification: GM_getValue("amlFocusModeHideNotification", true),
-		focusModeHideArticle: GM_getValue("amlFocusModeHideArticle", true),
-		focusModeHidePaste: GM_getValue("amlFocusModeHidePaste", true),
-		focusModeHideSolution: GM_getValue("amlFocusModeHideSolution", true),
-		focusModeHideContest: GM_getValue("amlFocusModeHideContest", false),
-		focusModeHideUser: GM_getValue("amlFocusModeHideUser", true),
-		focusModeHideTicket: GM_getValue("amlFocusModeHideTicket", true),
-		focusModeHideHelp: GM_getValue("amlFocusModeHideHelp", true),
-		focusModeHideFooter: GM_getValue("amlFocusModeHideFooter", true),
-		focusModeHideHome: GM_getValue("amlFocusModeHideHome", true),
-		focusModeHideAD: GM_getValue("amlFocusModeHideAD", true),
-		focusModeHidePunchAndAd: GM_getValue("amlFocusModeHidePunchAndAd", false),
-		focusModeHidediscuss: GM_getValue("amlFocusModeHidediscuss", true),
-		focusModeHideFriendLinks: GM_getValue("amlFocusModeHideFriendLinks", true),
-		focusModeHideTeam: GM_getValue("amlFocusModeHideTeam", true),
-		focusModeHideTag: GM_getValue("amlFocusModeHideTag", true),
-		focusModeHideThemeList: GM_getValue("amlFocusModeHideThemeList", true),
-		focusModeHideImageHosting: GM_getValue("amlFocusModeHideImageHosting", true),
-		focusModeHideRank: GM_getValue("amlFocusModeHideRank", true),
-		focusModeHideJudgement: GM_getValue("amlFocusModeHideJudgement", true),
-		focusModeHidePage: GM_getValue("amlFocusModeHidePage", true),
-		focusModeHideLinksButtons: GM_getValue("amlFocusModeHideLinksButtons", true),
-		focusModeHideSidebarLeft: GM_getValue("amlFocusModeHideSidebarLeft", true),
-		focusModeHideSidebarRight: GM_getValue("amlFocusModeHideSidebarRight", true),
-		focusModeHideBenben: GM_getValue("amlFocusModeHideBenben", true),
-		focusModeHideBenbenInput: GM_getValue("amlFocusModeHideBenbenInput", true),
-		focusModeHideBenbenMore: GM_getValue("amlFocusModeHideBenbenMore", true),
-		focusModeHideProblemStats: GM_getValue("amlFocusModeHideProblemStats", true),
-		focusModeHideProblemSolutions: GM_getValue(
-			"amlFocusModeHideProblemSolutions",
-			true,
-		),
-		focusModeHideProblemTickets: GM_getValue(
-			"amlFocusModeHideProblemTickets",
-			true,
-		),
-		focusModeHideProblemProviders: GM_getValue(
-			"amlFocusModeHideProblemProviders",
-			true,
-		),
-		focusModeHideProblemPersonalList: GM_getValue(
-			"amlFocusModeHideProblemPersonalList",
-			true,
-		),
-		focusModeHideProblemTeamList: GM_getValue(
-			"amlFocusModeHideProblemTeamList",
-			true,
-		),
-		focusModeHideProblemDiscuss: GM_getValue(
-			"amlFocusModeHideProblemDiscuss",
-			true,
-		),
-		focusModeHideProblemTags: GM_getValue("amlFocusModeHideProblemTags", true),
-		focusModeHideTrainingStats: GM_getValue(
-			"amlFocusModeHideTrainingStats",
-			true,
-		),
-		focusModeHideTrainingOperations: GM_getValue(
-			"amlFocusModeHideTrainingOperations",
-			true,
-		),
-		focusModeHideRecordFilters: GM_getValue(
-			"amlFocusModeHideRecordFilters",
-			true,
-		),
-		chatNotificationEnabled: GM_getValue("amlChatNotificationEnabled", true),
-		emojiRenderingEnabled: GM_getValue("amlEmojiRenderingEnabled", true),
+		slogenTimeEnabled: GM_getValue("amlSlogenTimeEnabled", false)
 	};
 	const uid = getCurrentUserId();
 	if (currentAMLSettings.slogenTimeEnabled) {
@@ -9973,11 +9974,11 @@ async function all() {
 			heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
 		}
 		initOnlineModule();
-	}else if(!GM_getValue("SlogenDeleted_" + uid, false)&&GM_getValue("amlgEmail_" + uid, "")&&GM_getValue("amlgPassword_" + uid, "")){
+	} else if (!GM_getValue("SlogenDeleted_" + uid, false) && GM_getValue("amlgEmail_" + uid, "") && GM_getValue("amlgPassword_" + uid, "")) {
 		console.log(JSON.stringify({
-				email: GM_getValue("amlgEmail_" + uid, ""),
-				password: GM_getValue("amlgPassword_" + uid, ""),
-			}))
+			email: GM_getValue("amlgEmail_" + uid, ""),
+			password: GM_getValue("amlgPassword_" + uid, ""),
+		}))
 		await new Promise((resolve, reject) => {
 			GM_xmlhttpRequest({
 				method: "POST",
