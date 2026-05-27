@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -48,25 +48,394 @@
 // @grant        GM_getResourceText
 // @grant        unsafeWindow
 // @license      CC-BY-NC-ND-4.0
-// @require      https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.js
-// @require      https://cdn.amlg.top/gh/highlightjs/cdn-release/build/highlight.min.js
-// @require      https://cdn.amlg.top/npm/marked@4.0.0/marked.min.js
-// @require      https://cdn.amlg.top/npm/dompurify@3.3.1/dist/purify.min.js
-// @require      https://cdn.amlg.top/npm/katex@0.16.27/dist/katex.min.js
-// @require      https://cdn.amlg.top/npm/katex@0.16.27/dist/contrib/auto-render.min.js
-// @require      https://cdn.amlg.top/npm/@fortawesome/fontawesome-free@7.1.0/js/all.min.js
-// @require      https://cdn.amlg.top/npm/jquery@3.7.1/dist/jquery.min.js
-// @require      https://cdn.amlg.top/npm/izitoast@1.4.0/dist/js/iziToast.min.js
-// @require      https://cdn.amlg.top/npm/clipboard@2.0.11/dist/clipboard.min.js
-// @require      https://cdn.amlg.top/npm/vue@2.6.11/dist/vue.min.js
-// @require      https://cdn.amlg.top/npm/mark.js@8.11.1/dist/mark.min.js
-// @resource     iziToastCSS https://cdn.amlg.top/npm/izitoast@1.4.0/dist/css/iziToast.min.css
-// @resource     icomoonCSS https://cdn.amlg.top/gh/marcelodolza/iziToast@master/docs/css/icomoon.css
-// @resource     hljs https://cdn.amlg.top/gh/highlightjs/cdn-release/build/styles/github.min.css
-// @resource     swal https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css
-// @resource     animate https://cdn.amlg.top/npm/animate.css@4.1.1/animate.min.css
+// @require      https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/gh/highlightjs/cdn-release/build/highlight.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/marked@4.0.0/marked.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/dompurify@3.3.1/dist/purify.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/katex@0.16.27/dist/katex.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/katex@0.16.27/dist/contrib/auto-render.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/@fortawesome/fontawesome-free@7.1.0/js/all.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/jquery@3.7.1/dist/jquery.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/izitoast@1.4.0/dist/js/iziToast.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/clipboard@2.0.11/dist/clipboard.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/vue@2.6.11/dist/vue.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/mark.js@8.11.1/dist/mark.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/fuse.js@7.2.0/dist/fuse.js?version=1.0.1
+// @resource     iziToastCSS https://cdn.amlg.top/npm/izitoast@1.4.0/dist/css/iziToast.min.css?version=1.0.1
+// @resource     icomoonCSS https://cdn.amlg.top/gh/marcelodolza/iziToast@master/docs/css/icomoon.css?version=1.0.1
+// @resource     hljs https://cdn.amlg.top/gh/highlightjs/cdn-release/build/styles/github.min.css?version=1.0.1
+// @resource     swal https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css?version=1.0.1
+// @resource     animate https://cdn.amlg.top/npm/animate.css@4.1.1/animate.min.css?version=1.0.1
 // @run-at       document-start
 // ==/UserScript==
+const defaultAttrs = [
+	"accept",
+	"action",
+	"align",
+	"alt",
+	"autocapitalize",
+	"autocomplete",
+	"autopictureinpicture",
+	"autoplay",
+	"background",
+	"bgcolor",
+	"border",
+	"capture",
+	"framespacing",
+	"cellpadding",
+	"cellspacing",
+	"checked",
+	"cite",
+	"class",
+	"clear",
+	"color",
+	"cols",
+	"colspan",
+	"command",
+	"commandfor",
+	"controls",
+	"controlslist",
+	"coords",
+	"crossorigin",
+	"datetime",
+	"decoding",
+	"default",
+	"dir",
+	"disabled",
+	"disablepictureinpicture",
+	"disableremoteplayback",
+	"download",
+	"draggable",
+	"enctype",
+	"enterkeyhint",
+	"exportparts",
+	"face",
+	"for",
+	"headers",
+	"height",
+	"hidden",
+	"high",
+	"href",
+	"hreflang",
+	"id",
+	"inert",
+	"inputmode",
+	"integrity",
+	"ismap",
+	"kind",
+	"label",
+	"lang",
+	"list",
+	"loading",
+	"loop",
+	"low",
+	"max",
+	"maxlength",
+	"media",
+	"method",
+	"min",
+	"minlength",
+	"multiple",
+	"muted",
+	"name",
+	"nonce",
+	"noshade",
+	"novalidate",
+	"nowrap",
+	"open",
+	"optimum",
+	"part",
+	"pattern",
+	"placeholder",
+	"playsinline",
+	"popover",
+	"popovertarget",
+	"popovertargetaction",
+	"poster",
+	"preload",
+	"pubdate",
+	"radiogroup",
+	"readonly",
+	"rel",
+	"required",
+	"rev",
+	"reversed",
+	"role",
+	"rows",
+	"rowspan",
+	"spellcheck",
+	"scope",
+	"selected",
+	"shape",
+	"size",
+	"sizes",
+	"slot",
+	"span",
+	"srclang",
+	"start",
+	"src",
+	"srcset",
+	"step",
+	"style",
+	"summary",
+	"tabindex",
+	"title",
+	"translate",
+	"type",
+	"usemap",
+	"valign",
+	"value",
+	"width",
+	"wrap",
+	"xmlns",
+	"accent-height",
+	"accumulate",
+	"additive",
+	"alignment-baseline",
+	"amplitude",
+	"ascent",
+	"attributename",
+	"attributetype",
+	"azimuth",
+	"basefrequency",
+	"baseline-shift",
+	"begin",
+	"bias",
+	"by",
+	"clip",
+	"clippathunits",
+	"clip-path",
+	"clip-rule",
+	"color",
+	"color-interpolation",
+	"color-interpolation-filters",
+	"color-profile",
+	"color-rendering",
+	"cx",
+	"cy",
+	"d",
+	"dx",
+	"dy",
+	"diffuseconstant",
+	"direction",
+	"display",
+	"divisor",
+	"dur",
+	"edgemode",
+	"elevation",
+	"end",
+	"exponent",
+	"fill",
+	"fill-opacity",
+	"fill-rule",
+	"filter",
+	"filterunits",
+	"flood-color",
+	"flood-opacity",
+	"font-family",
+	"font-size",
+	"font-size-adjust",
+	"font-stretch",
+	"font-style",
+	"font-variant",
+	"font-weight",
+	"fx",
+	"fy",
+	"g1",
+	"g2",
+	"glyph-name",
+	"glyphref",
+	"gradientunits",
+	"gradienttransform",
+	"image-rendering",
+	"in",
+	"in2",
+	"intercept",
+	"k",
+	"k1",
+	"k2",
+	"k3",
+	"k4",
+	"kerning",
+	"keypoints",
+	"keysplines",
+	"keytimes",
+	"lengthadjust",
+	"letter-spacing",
+	"kernelmatrix",
+	"kernelunitlength",
+	"lighting-color",
+	"local",
+	"marker-end",
+	"marker-mid",
+	"marker-start",
+	"markerheight",
+	"markerunits",
+	"markerwidth",
+	"maskcontentunits",
+	"maskunits",
+	"mask",
+	"mask-type",
+	"mode",
+	"numoctaves",
+	"offset",
+	"operator",
+	"opacity",
+	"order",
+	"orient",
+	"orientation",
+	"origin",
+	"overflow",
+	"paint-order",
+	"path",
+	"pathlength",
+	"patterncontentunits",
+	"patterntransform",
+	"patternunits",
+	"points",
+	"preservealpha",
+	"preserveaspectratio",
+	"primitiveunits",
+	"r",
+	"rx",
+	"ry",
+	"radius",
+	"refx",
+	"refy",
+	"repeatcount",
+	"repeatdur",
+	"restart",
+	"result",
+	"rotate",
+	"scale",
+	"seed",
+	"shape-rendering",
+	"slope",
+	"specularconstant",
+	"specularexponent",
+	"spreadmethod",
+	"startoffset",
+	"stddeviation",
+	"stitchtiles",
+	"stop-color",
+	"stop-opacity",
+	"stroke-dasharray",
+	"stroke-dashoffset",
+	"stroke-linecap",
+	"stroke-linejoin",
+	"stroke-miterlimit",
+	"stroke-opacity",
+	"stroke",
+	"stroke-width",
+	"surfacescale",
+	"systemlanguage",
+	"tablevalues",
+	"targetx",
+	"targety",
+	"transform",
+	"transform-origin",
+	"text-anchor",
+	"text-decoration",
+	"text-rendering",
+	"textlength",
+	"u1",
+	"u2",
+	"unicode",
+	"values",
+	"viewbox",
+	"visibility",
+	"version",
+	"vert-adv-y",
+	"vert-origin-x",
+	"vert-origin-y",
+	"word-spacing",
+	"writing-mode",
+	"xchannelselector",
+	"ychannelselector",
+	"x",
+	"x1",
+	"x2",
+	"y",
+	"y1",
+	"y2",
+	"z",
+	"zoomandpan",
+	"accent",
+	"accentunder",
+	"bevelled",
+	"close",
+	"columnalign",
+	"columnlines",
+	"columnspacing",
+	"columnspan",
+	"denomalign",
+	"depth",
+	"display",
+	"displaystyle",
+	"encoding",
+	"fence",
+	"frame",
+	"lquote",
+	"lspace",
+	"mathbackground",
+	"mathcolor",
+	"mathsize",
+	"mathvariant",
+	"maxsize",
+	"minsize",
+	"movablelimits",
+	"notation",
+	"numalign",
+	"open",
+	"rowalign",
+	"rowlines",
+	"rowspacing",
+	"rowspan",
+	"rspace",
+	"rquote",
+	"scriptlevel",
+	"scriptminsize",
+	"scriptsizemultiplier",
+	"selection",
+	"separator",
+	"separators",
+	"stretchy",
+	"subscriptshift",
+	"supscriptshift",
+	"symmetric",
+	"voffset",
+	"xlink:href",
+	"xml:id",
+	"xlink:title",
+	"xml:space",
+	"xmlns:xlink",
+	"scrolling",
+	"frameborder",
+];
+const defaultTags = [
+	'a', 'abbr', 'acronym', 'address', 'area', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'big', 'blink',
+	'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup',
+	'content', 'data', 'datalist', 'dd', 'decorator', 'del', 'details', 'dfn', 'dialog', 'dir', 'div', 'dl', 'dt',
+	'element', 'em', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5',
+	'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li',
+	'main', 'map', 'mark', 'marquee', 'menu', 'menuitem', 'meter', 'nav', 'nobr', 'ol', 'optgroup', 'option',
+	'output', 'p', 'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'search', 'section',
+	'select', 'shadow', 'slot', 'small', 'source', 'spacer', 'span', 'strike', 'strong', 'style', 'sub',
+	'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'tr',
+	'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr', 'svg', 'altglyph', 'altglyphdef', 'altglyphitem',
+	'animatecolor', 'animatemotion', 'animatetransform', 'circle', 'clippath', 'defs', 'desc', 'ellipse',
+	'enterkeyhint', 'exportparts', 'filter', 'font', 'g', 'glyph', 'glyphref', 'hkern', 'image', 'inputmode',
+	'line', 'lineargradient', 'marker', 'mask', 'metadata', 'mpath', 'part', 'path', 'pattern', 'polygon',
+	'polyline', 'radialgradient', 'rect', 'stop', 'switch', 'symbol', 'text', 'textpath', 'title', 'tref',
+	'tspan', 'view', 'vkern', 'feBlend', 'feColorMatrix', 'feComponentTransfer', 'feComposite',
+	'feConvolveMatrix', 'feDiffuseLighting', 'feDisplacementMap', 'feDistantLight', 'feDropShadow',
+	'feFlood', 'feFuncA', 'feFuncB', 'feFuncG', 'feFuncR', 'feGaussianBlur', 'feImage', 'feMerge',
+	'feMergeNode', 'feMorphology', 'feOffset', 'fePointLight', 'feSpecularLighting', 'feSpotLight',
+	'feTile', 'feTurbulence', 'math', 'menclose', 'merror', 'mfenced', 'mfrac', 'mglyph', 'mi',
+	'mlabeledtr', 'mmultiscripts', 'mn', 'mo', 'mover', 'mpadded', 'mphantom', 'mroot', 'mrow', 'ms',
+	'mspace', 'msqrt', 'mstyle', 'msub', 'msup', 'msubsup', 'mtable', 'mtd', 'mtext', 'mtr', 'munder',
+	'munderover', 'mprescripts', '#text'
+];
 function getCurrentUserId() {
 	let login = document.querySelector("[href='/auth/login']");
 	if (login) return null;
@@ -89,6 +458,28 @@ GM_addStyle(GM_getResourceText("icomoonCSS"));
 GM_addStyle(GM_getResourceText("swal"));
 GM_addStyle(GM_getResourceText("animate"));
 GM_addStyle(`
+details {
+    padding: .5em 1em;
+    margin: 1em 0 1em .2em;
+    border-left-width: 5px;
+    border-left-style: solid;
+    overflow: hidden;
+}
+details.info {
+    border-left-color: rgb(52, 152, 219);
+}
+details.success {
+    border-left-color: rgb(82, 196, 26);
+}
+details.error {
+    border-left-color: rgb(231, 76, 60);
+}
+details.warning {
+    border-left-color: rgb(255, 193, 22);
+}
+details {
+  display: block;
+}
 a[href="/user/1157535"][target="_blank"]:not(:has(> .luogu-username:first-child))::after {
     content: "AMLG";
     position: relative;
@@ -341,13 +732,13 @@ function getNotification() {
 				document.getElementById("aml-notification-badge").style.display =
 					"block";
 				document
-					.getElementsByClassName("fa-bell svg-inline--fa")[1]
+					.querySelector(`#aml-notification-btn[onclick="document.getElementById('aml-notification-drawer').classList.toggle('open');"]`).children[0]
 					.classList.add("animate__animated");
 				document
-					.getElementsByClassName("fa-bell svg-inline--fa")[1]
+					.querySelector(`#aml-notification-btn[onclick="document.getElementById('aml-notification-drawer').classList.toggle('open');"]`).children[0]
 					.classList.add("animate__infinite");
 				document
-					.getElementsByClassName("fa-bell svg-inline--fa")[1]
+					.querySelector(`#aml-notification-btn[onclick="document.getElementById('aml-notification-drawer').classList.toggle('open');"]`).children[0]
 					.classList.add("animate__swing");
 			}
 		});
@@ -356,7 +747,11 @@ function getNotification() {
 				return;
 			}
 			console.log(e.target);
-			document.querySelector("#aml-notification-modal").classList.remove("show");
+			try {
+				document.querySelector("#aml-notification-modal").classList.remove("show");
+			} catch (e) {
+				console.error(e);
+			}
 		});
 	} else {
 		GM_xmlhttpRequest({
@@ -433,13 +828,13 @@ function getNotification() {
 									"aml-notification-badge",
 								).style.display = "block";
 								document
-									.getElementsByClassName("fa-bell svg-inline--fa")[1]
+									.querySelector(`#aml-notification-btn[onclick="document.getElementById('aml-notification-drawer').classList.toggle('open');"]`).children[0]
 									.classList.add("animate__animated");
 								document
-									.getElementsByClassName("fa-bell svg-inline--fa")[1]
+									.querySelector(`#aml-notification-btn[onclick="document.getElementById('aml-notification-drawer').classList.toggle('open');"]`).children[0]
 									.classList.add("animate__infinite");
 								document
-									.getElementsByClassName("fa-bell svg-inline--fa")[1]
+									.querySelector(`#aml-notification-btn[onclick="document.getElementById('aml-notification-drawer').classList.toggle('open');"]`).children[0]
 									.classList.add("animate__swing");
 							}
 						});
@@ -448,7 +843,11 @@ function getNotification() {
 								return;
 							}
 							console.log(e.target);
-							document.querySelector("#aml-notification-modal").classList.remove("show");
+							try {
+								document.querySelector("#aml-notification-modal").classList.remove("show");
+							} catch (e) {
+								console.error(e);
+							}
 						});
 					} else {
 						console.error("返回的数据不是数组格式：", result__);
@@ -872,7 +1271,7 @@ async function all() {
 						}
 					},
 					renderer(token) {
-						return `<div class="align-${token.align}">${marked.parse(token.content)}</div>`;
+						return `<p style="text-align: ${token.align};">${marked.parse(token.content)}</p>`;
 					},
 				},
 				{
@@ -895,63 +1294,208 @@ async function all() {
 						}
 					},
 					renderer(token) {
-						const authorPart = `<p>${token.author ? token.author : "unknown author"}</p>`;
-						return `<div class="epigraph">${marked.parse(token.content)}${authorPart}</div>`;
+						const hasSource = token.author ? " has-source" : "";
+						const authorPart = token.author ? `<p>${token.author}</p>` : "";
+						return `<div class="epigraph${hasSource}"><p>${marked.parse(token.content)}</p>${authorPart}</div>`;
 					},
 				},
 				{
 					name: "foldable",
 					level: "block",
 					start(src) {
-						return src.match(/^:{3,}/)?.index;
+						return src.match(/^:{3,}\s*(info|success|warning|error|bug|flask)/)?.index;
 					},
 					tokenizer(src, tokens) {
-						const match = src.match(
-							/^(:{3,})\s*(\w+)?(\[([^\]]+)\])?(\s*\{([^}]+)\})?\s*([\s\S]*?)\s*\1/,
-						);
-						if (
-							match &&
-							(match[2] === "info" ||
-								match[2] === "warning" ||
-								match[2] === "success" ||
-								match[2] === "error" ||
-								match[2] === "bug" ||
-								match[2] === "flask")
-						) {
-							const colonCount = match[1].length;
-							return {
-								type: "foldable",
-								raw: match[0],
-								foldType: match[2] || "info",
-								title: match[4] || "",
-								options: match[6] || "",
-								content: match[7].trim(),
-								level: colonCount - 3,
-							};
+						const colonMatch = src.match(/^(:{3,})\s*(info|success|warning|error|bug|flask)/);
+						if (colonMatch) {
+							const colonCount = colonMatch[1].length;
+							const endMarker = ':'.repeat(colonCount);
+							const lines = src.split('\n');
+							let content = '';
+							let endLineIndex = -1;
+							for (let i = 1; i < lines.length; i++) {
+								if (lines[i].trim() === endMarker) {
+									endLineIndex = i;
+									break;
+								}
+								content += (i > 1 ? '\n' : '') + lines[i];
+							}
+							if (endLineIndex !== -1) {
+								const titleMatch = src.match(/\[([^\]]+)\]/);
+								const optionsMatch = src.match(/\{([^}]+)\}/);
+								return {
+									type: "foldable",
+									raw: lines.slice(0, endLineIndex + 1).join('\n'),
+									foldType: colonMatch[2] || "info",
+									title: titleMatch ? titleMatch[1] : "",
+									options: optionsMatch ? optionsMatch[1] : "",
+									content: content.trim(),
+									level: colonCount - 3,
+								};
+							}
 						}
 					},
 					renderer(token) {
 						const isOpen = token.options.includes("open");
-						const indentStyle = "";
-						return `
-								<details class="foldable ${token.foldType}" ${indentStyle} ${isOpen ? "open" : ""}>
-									<summary>
-										${token.title || "点击展开"}
-									</summary>
-									${marked.parse(token.content)}
-								</details>
-							`;
+						const indentStyle = token.level > 0 ? `style="padding-left: ${token.level * 20}px;"` : '';
+						return `<details class="${token.foldType}" ${isOpen ? 'open=""' : ''} ${indentStyle}><summary>${token.title || "点击展开"}</summary>${marked.parse(token.content)}</details>`;
+					},
+				},
+				{
+					name: "cuteTable",
+					level: "block",
+					start(src) {
+						return src.match(/^:::\s*cute-table(\s*\{([^}]+)\})?\s*$/)?.index;
+					},
+					tokenizer(src, tokens) {
+						const match = src.match(
+							/^:::\s*cute-table(\s*\{([^}]+)\})?\s*\n([\s\S]*?)\n:::/,
+						);
+						if (match) {
+							return {
+								type: "cuteTable",
+								raw: match[0],
+								options: match[2] || "",
+								content: match[3].trim(),
+							};
+						}
+					},
+					renderer(token) {
+						return `<div>${marked.parse(token.content)}</div>`;
+					},
+				},
+				{
+					name: "bilibili",
+					level: "inline",
+					start(src) {
+						return src.match(/^\!\[.*?\]\(bilibili:/)?.index;
+					},
+					tokenizer(src, tokens) {
+						const match = src.match(/^\!\[([^\]]*)\]\(bilibili:([a-zA-Z0-9]+)\)/);
+						if (match) {
+							return {
+								type: "bilibili",
+								raw: match[0],
+								alt: match[1] || "video",
+								bvid: match[2],
+							};
+						}
+					},
+					renderer(token) {
+						return `<div src="bilibili://${token.bvid}" alt="${token.alt}" style="position: relative; padding-bottom: 62.5%;"><iframe src="https://player.bilibili.com/player.html?danmaku=0&amp;autoplay=0&amp;playlist=0&amp;muted=0&amp;bvid=${token.bvid}" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="" style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%;"></iframe></div>`;
+					},
+				},
+				{
+					name: "taskList",
+					level: "block",
+					start(src) {
+						return src.match(/^\s*-\s*\[[ xX]\]\s/)?.index;
+					},
+					tokenizer(src, tokens) {
+						const match = src.match(/^\s*-\s*\[([ xX])\]\s+([^\n]+)/);
+						if (match) {
+							return {
+								type: "taskList",
+								raw: match[0],
+								checked: match[1] !== " ",
+								text: match[2],
+							};
+						}
+					},
+					renderer(token) {
+						return `<li class="task-list-item"><input type="checkbox" ${token.checked ? 'checked=""' : ''} disabled="">${marked.parseInline(token.text)}</li>`;
 					},
 				},
 			];
 			marked.use({ extensions: customExtensions });
-			marked.setOptions({
-				highlight: function (code, lang) {
-					if (lang && hljs.getLanguage(lang)) {
-						return hljs.highlight(code, { language: lang }).value;
+			const renderer = new marked.Renderer();
+			renderer.code = function ({ text, lang, escaped }) {
+				let highlightCode = text;
+				if (lang && hljs.getLanguage(lang)) {
+					highlightCode = hljs.highlight(text, { language: lang }).value;
+				} else {
+					highlightCode = hljs.highlightAuto(text).value;
+				}
+				const lineNumbers = lang?.includes("line-numbers");
+				const linesMatch = lang?.match(/lines=(\d+)-(\d+)/);
+				const showLineNumbers = lineNumbers && !lang.includes("hide-numbers");
+				const highlightRange = linesMatch ? { start: parseInt(linesMatch[1]), end: parseInt(linesMatch[2]) } : null;
+				const cleanLang = lang?.replace(/(line-numbers|lines=\d+-\d+)\s*/g, "").trim() || "";
+				const lineCount = text.split("\n").length;
+				let lineNumbersHtml = "";
+				if (showLineNumbers) {
+					lineNumbersHtml = `<span aria-hidden="true" class="line-numbers-rows">${Array.from({ length: lineCount }, () => '<span></span>').join('')}</span>`;
+				}
+				let highlightDiv = "";
+				if (highlightRange) {
+					const top = (highlightRange.start - 1) * 21;
+					const height = (highlightRange.end - highlightRange.start + 1) * 21;
+					highlightDiv = `<div aria-hidden="true" data-range="${highlightRange.start}-${highlightRange.end}" class="line-highlight" style="top: ${top}px; height: ${height}px;"></div>`;
+				}
+				let classes = "pre";
+				if (showLineNumbers) classes += " line-numbers";
+				if (!showLineNumbers && linesMatch) classes += " hide-numbers";
+				if (cleanLang) classes += ` language-${cleanLang}`;
+				if (linesMatch) classes += ` data-line="${linesMatch[1]}-${linesMatch[2]}"`;
+				return `<div class="code-container"><pre class="${classes}" tabindex="0"><code class="language-${cleanLang}">${highlightCode}${lineNumbersHtml}${highlightDiv}</code></pre></div>`;
+			};
+			renderer.listitem = function (text, task, checked) {
+				if (task) {
+					return `<li class="task-list-item"><input type="checkbox" ${checked ? 'checked=""' : ''} disabled="">${text}</li>`;
+				}
+				return `<li>${text}</li>`;
+			};
+			renderer.list = function (body, ordered, start) {
+				const hasTaskList = body.includes('task-list-item');
+				const classAttr = hasTaskList ? ' class="contains-task-list"' : '';
+				if (ordered) {
+					return `<ol${classAttr}>${body}</ol>`;
+				}
+				return `<ul${classAttr}>${body}</ul>`;
+			};
+			renderer.table = function (header, body) {
+				const rows = body.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) || [];
+				const processedRows = [];
+				const rowspans = {};
+				const colspans = {};
+				rows.forEach((row, rowIndex) => {
+					const cells = row.match(/<td[^>]*>[\s\S]*?<\/td>/g) || [];
+					const processedCells = [];
+					let colIndex = 0;
+					cells.forEach((cell, cellIndex) => {
+						while (rowspans[`${rowIndex}-${colIndex}`]) {
+							colIndex++;
+						}
+						const cellContent = cell.match(/>([\s\S]*?)</)?.[1]?.trim() || "";
+						if (cellContent === "^") {
+							const prevRowIndex = rowIndex - 1;
+							let prevColIndex = colIndex;
+							while (colspans[`${prevRowIndex}-${prevColIndex}`]) {
+								prevColIndex++;
+							}
+							rowspans[`${prevRowIndex}-${prevColIndex}`] = (rowspans[`${prevRowIndex}-${prevColIndex}`] || 1) + 1;
+							return;
+						} else if (cellContent === "<") {
+							const prevColIndex = colIndex - 1;
+							colspans[`${rowIndex}-${prevColIndex}`] = (colspans[`${rowIndex}-${prevColIndex}`] || 1) + 1;
+							return;
+						}
+						const rowspan = rowspans[`${rowIndex}-${colIndex}`] || 1;
+						const colspan = colspans[`${rowIndex}-${colIndex}`] || 1;
+						let attrs = "";
+						if (rowspan > 1) attrs += ` rowspan="${rowspan}"`;
+						if (colspan > 1) attrs += ` colspan="${colspan}"`;
+						processedCells.push(`<td${attrs}>${cellContent}</td>`);
+						colIndex++;
+					});
+					if (processedCells.length > 0) {
+						processedRows.push(`<tr>${processedCells.join('')}</tr>`);
 					}
-					return hljs.highlightAuto(code).value;
-				},
+				});
+				return `<table><colgroup>${header.match(/<th[^>]*>/g)?.map(() => '<col class="">').join('')}</colgroup><thead>${header}</thead><tbody>${processedRows.join('')}</tbody></table>`;
+			};
+			marked.setOptions({
+				renderer: renderer,
 				breaks: false,
 				gfm: true,
 				mangle: false,
@@ -1025,6 +1569,7 @@ async function all() {
 				benbentopEnabled: GM_getValue("amlBenbentopEnabled", true),
 				extendTaskEnabled: GM_getValue("amlExtendTaskEnabled", true),
 				userMarkEnabled: GM_getValue("amlUserMarkEnabled", true),
+				userEloColorEnabled: GM_getValue("amlUserEloColorEnabled", true),
 				benbenctrlenterEnabled: GM_getValue("amlBenbenctrlenterEnabled", true),
 				runCommandEnabled: GM_getValue("amlRunCommandEnabled", true),
 				fullBenBenEnabled: GM_getValue("amlFullBenBenEnabled", true),
@@ -1206,6 +1751,7 @@ async function all() {
 				showUserIntroductionEnabled: "amlShowUserIntroductionEnabled",
 				extendTaskEnabled: "amlExtendTaskEnabled",
 				benbenctrlenterEnabled: "amlBenbenctrlenterEnabled",
+				userEloColorEnabled: "amlUserEloColorEnabled",
 				userMarkEnabled: "amlUserMarkEnabled",
 				benbentopEnabled: "amlBenbentopEnabled",
 				runCommandEnabled: "amlRunCommandEnabled",
@@ -1323,6 +1869,13 @@ async function all() {
 					key: "benbenctrlenterEnabled",
 					label: "按 Ctrl+Enter 发送犇犇",
 					desc: "当聚焦（focus）在犇犇输入框时按下 Ctrl(Windows)/Command(Mac) +Enter 快捷键可以发送犇犇",
+					tag: "功能",
+					status: "stable",
+				},
+				{
+					key: "userEloColorEnabled",
+					label: "用户主页用户名 Elo 颜色",
+					desc: "在用户主页按照用户 Elo 修改用户名颜色（紫色≥2000，红色≥1100，橙色≥900，黄色≥700，绿色≥400）",
 					tag: "功能",
 					status: "stable",
 				},
@@ -3583,22 +4136,37 @@ async function all() {
 				const featureCards = document.querySelectorAll(".aml-feature-card");
 				const noResults = document.getElementById("aml-no-results");
 				if (searchInput) {
+					const fuseOptions = {
+						includeScore: true,
+						threshold: 0.4,
+						keys: ["label", "desc", "tag"]
+					};
+					const fuse = new Fuse(features, fuseOptions);
 					searchInput.addEventListener("input", function (e) {
-						const query = e.target.value.toLowerCase().trim();
-						let visibleCount = 0;
+						const query = e.target.value.trim();
 						featureCards.forEach((card) => {
-							const searchText = card
-								.getAttribute("data-search-text")
-								.toLowerCase();
-							if (searchText.includes(query)) {
-								card.style.display = "flex";
-								visibleCount++;
-							} else {
-								card.style.display = "none";
-							}
+							card.style.display = "none";
 						});
+						if (!query) {
+							featureCards.forEach((card) => {
+								card.style.display = "flex";
+							});
+							if (noResults) {
+								noResults.style.display = "none";
+							}
+							return;
+						}
+						const results = fuse.search(query);
+						if (results.length > 0) {
+							results.forEach((result) => {
+								const card = document.querySelector(`.aml-feature-card[data-search-text*="${result.item.label}"]`);
+								if (card) {
+									card.style.display = "flex";
+								}
+							});
+						}
 						if (noResults) {
-							noResults.style.display = visibleCount === 0 ? "block" : "none";
+							noResults.style.display = results.length === 0 ? "block" : "none";
 						}
 					});
 				}
@@ -4063,7 +4631,6 @@ async function all() {
 					["lsawProblemDisplay", true],
 					["lsawDiscussDisplay", true],
 					["lsawArticleDisplay", true],
-					["lsawOfficialListDisplay", false],
 					["lsawSelectListDisplay", false],
 					["lsawProblemDisplayNumber", 50],
 					["lsawListDisplayNumber", 50],
@@ -4835,20 +5402,7 @@ async function all() {
 					</div>
 				</div>
 				</div>
-				<div class="searchAnywhereSettingsBag" for="lsawOfficialListDisplay"> 显示官方题单 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawOfficialListDisplay}">
-					<div class="falseBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-						<path fill="currentColor" d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z" />
-					</svg>
-					</div>
-					<div class="trueBlock">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-						<path fill="currentColor"
-						d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM339.8 211.8C350.7 200.9 350.7 183.1 339.8 172.2C328.9 161.3 311.1 161.3 300.2 172.2L192 280.4L147.8 236.2C136.9 225.3 119.1 225.3 108.2 236.2C97.27 247.1 97.27 264.9 108.2 275.8L172.2 339.8C183.1 350.7 200.9 350.7 211.8 339.8L339.8 211.8z" />
-					</svg>
-					</div>
-				</div>
-				</div>
+
 				<div class="searchAnywhereSettingsBag" for="lsawSelectListDisplay"> 显示用户题单 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawSelectListDisplay}">
 					<div class="falseBlock">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
@@ -5084,6 +5638,7 @@ async function all() {
 					searchTimeout = null;
 					let info = $(".inputArea > input").val();
 					info = $.trim(info);
+					const currentSearchInfo = info;
 					if (info == "") {
 						$(".searchAnywhereContent").html(my_info);
 						setTimeout(() => {
@@ -5112,9 +5667,12 @@ async function all() {
 					let workCnt =
 						(settings.lsawUserDisplay != false) +
 						(settings.lsawProblemDisplay != false) +
-						(settings.lsawOfficialListDisplay != false) +
 						(settings.lsawSelectListDisplay != false);
 					const finishWork = () => {
+						const currentInputValue = $.trim($(".inputArea > input").val());
+						if (currentInputValue !== currentSearchInfo) {
+							return;
+						}
 						++finishWorks;
 						if (networkError)
 							$(".searchAnywhereContent").html(
@@ -5221,11 +5779,13 @@ async function all() {
 								"x-luogu-type": "content-only",
 								Accept: "application/json, text/plain, */*",
 								"x-lentille-request": "content-only",
+								"x-aml-skip-intercept": "true",
 							},
 							onload: function (response) {
 								let json;
 								try {
 									json = JSON.parse(response.responseText);
+									console.log(json);
 								} catch (e) {
 									networkError = true;
 									finishWork();
@@ -5251,7 +5811,7 @@ async function all() {
 									<a class="searchCard searchProblemCard" href='https://www.luogu.com.cn/problem/${item.pid}'>
 										<div class="searchProblemCardBody">
 											<div>${getProblemStatus(item.submitted, item.accepted)}</div>
-											<div>${item.title}</div>
+											<div>${item.name}</div>
 										</div>
 										<div>
 											<div class='searchProblemCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path data-v-639bc19b="" fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${item.pid}</div>
@@ -5272,64 +5832,6 @@ async function all() {
 								finishWork();
 							},
 						});
-					if (settings.lsawOfficialListDisplay != false)
-						GM_xmlhttpRequest({
-							method: "GET",
-							url: `https://www.luogu.com.cn/training/list?keyword=${info}&page=1&type=official`,
-							withCredentials: true,
-							headers: {
-								"x-luogu-type": "content-only",
-							},
-							onload: function (response) {
-								let json;
-								try {
-									json = JSON.parse(response.responseText);
-								} catch (e) {
-									networkError = true;
-									finishWork();
-									return;
-								}
-								if (json.code != 200) {
-									finishWork();
-									return;
-								}
-								json = json.currentData;
-								if (json.trainings.result.length != 0) {
-									officialHtml = `<div style='text-align: left; margin-bottom: 10px; width: 100%; font-size: 18px; font-weight: bold'>官方题单<a href="https://www.luogu.com.cn/training/list?keyword=${info}&page=1&type=official" style="cursor: pointer; float: right; font-weight: normal !important" class="searchShowProblems">查看所有 ${json.trainings.count} 份题单</a></div>`;
-									for (
-										let i = 0;
-										i < json.trainings.result.length &&
-										i < settings.lsawListDisplayNumber;
-										i++
-									) {
-										let item = json.trainings.result[i];
-										let acs = json.acceptedCounts[item.id];
-										if (acs == undefined) acs = 0;
-										officialHtml += `
-									<a class="searchCard searchListCard" href='https://www.luogu.com.cn/training/${item.id}' style="background: ${getColorFromPercent(acs / item.problemCount, 0.4)} !important">
-										<div class="searchListCardProgress" style="height: 5px; position: absolute; top: -1px; left: 0px; overflow: hidden; border-top-left-radius: 5px; border-top-right-radius: 5px">
-											<div style="width: ${(acs / item.problemCount) * 100}%; background: ${getColorFromPercent(acs / item.problemCount, 1)}; height: 5px; content: ""></div>
-											<div style="flex: 1"></div>
-										</div>
-										<div class="searchListCardBody">
-											<div>#${item.id}</div>
-											<div>${item.title}</div>
-										</div>
-										<div>
-											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path data-v-639bc19b="" fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${acs} / ${item.problemCount}</div>
-											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="#f1c40f" d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z"/></svg></div>${item.markCount}</div>
-										</div>
-									</a>
-								`;
-									}
-								}
-								finishWork();
-							},
-							onerror: function () {
-								networkError = true;
-								finishWork();
-							},
-						});
 					if (settings.lsawSelectListDisplay != false)
 						GM_xmlhttpRequest({
 							method: "GET",
@@ -5337,6 +5839,8 @@ async function all() {
 							withCredentials: true,
 							headers: {
 								"x-luogu-type": "content-only",
+								"x-lentille-request": "content-only",
+								"x-aml-skip-intercept": "true",
 							},
 							onload: function (response) {
 								let json;
@@ -5347,11 +5851,11 @@ async function all() {
 									finishWork();
 									return;
 								}
-								if (json.code != 200) {
+								if (json.status != 200) {
 									finishWork();
 									return;
 								}
-								json = json.currentData;
+								json = json.data;
 								if (json.trainings.result.length != 0) {
 									selectHtml = `<div style='text-align: left; margin-bottom: 10px; width: 100%; font-size: 18px; font-weight: bold'>用户题单<a href="https://www.luogu.com.cn/training/list?keyword=${info}&page=1&type=select" style="cursor: pointer; float: right; font-weight: normal !important" class="searchShowProblems">查看所有 ${json.trainings.count} 份题单</a></div>`;
 									for (
@@ -5367,7 +5871,7 @@ async function all() {
 									<a class="searchCard searchListCard" href='https://www.luogu.com.cn/training/${item.id}'>
 										<div class="searchListCardBody">
 											<div>#${item.id}</div>
-											<div>${item.title}</div>
+											<div>${item.name}</div>
 										</div>
 										<div>
 											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path data-v-639bc19b="" fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${item.problemCount}</div>
@@ -5481,7 +5985,11 @@ async function all() {
 							}, 20);
 						} else {
 							$(".searchAnywhere").css("opacity", "0");
-							document.querySelector("#aml-notification-modal").classList.remove("show");
+							try {
+								document.querySelector("#aml-notification-modal").classList.remove("show");
+							} catch (e) {
+								console.error(e);
+							}
 							setTimeout(() => {
 								$(".searchAnywhere").css("display", "none");
 							}, 200);
@@ -5492,7 +6000,11 @@ async function all() {
 					.unbind("click")
 					.click(() => {
 						$(".searchAnywhere").css("opacity", "0");
-						document.querySelector("#aml-notification-modal").classList.remove("show");
+						try {
+							document.querySelector("#aml-notification-modal").classList.remove("show");
+						} catch (e) {
+							console.error(e);
+						}
 						setTimeout(() => {
 							$(".searchAnywhere").css("display", "none");
 						}, 200);
@@ -5513,7 +6025,11 @@ async function all() {
 							}, 20);
 						} else {
 							$(".searchAnywhere").css("opacity", "0");
-							document.querySelector("#aml-notification-modal").classList.remove("show");
+							try {
+								document.querySelector("#aml-notification-modal").classList.remove("show");
+							} catch (e) {
+								console.error(e);
+							}
 							setTimeout(() => {
 								$(".searchAnywhere").css("display", "none");
 							}, 200);
@@ -6261,6 +6777,7 @@ async function all() {
 										headers: {
 											"x-requested-with": "XMLHttpRequest",
 											"x-lentille-request": "content-only",
+											"x-aml-skip-intercept": "true",
 										},
 									});
 									const html = await res.text();
@@ -6713,7 +7230,7 @@ async function all() {
 								getCurrentUserId() +
 								"/practice",
 								{
-									headers: [["x-lentille-request", "content-only"]],
+									headers: [["x-lentille-request", "content-only"], ["x-aml-skip-intercept", "true"]],
 								},
 							);
 							let data = await req.json();
@@ -7209,6 +7726,14 @@ async function all() {
 										return;
 									}
 								}
+								if (type == "problem") {
+									if (!command[1]) {
+										printOutput("参数错误");
+										return;
+									}
+									location.replace("https://www.luogu.com.cn/problem/" + command[1]);
+									return;
+								}
 								if (type == "uid") {
 									if (!command[1] || !parseInt(command[1]) || parseInt(command[1]) <= 0) {
 										printOutput("参数错误");
@@ -7260,6 +7785,10 @@ async function all() {
 												printOutput("根据用户名跳转到指定用户");
 												printOutput("uname <uname:String>");
 												break;
+											case "problem":
+												printOutput("跳转到指定问题");
+												printOutput("problem <pid:String>");
+												break;
 											default:
 												printOutput("未知命令");
 												break;
@@ -7271,6 +7800,7 @@ async function all() {
 										printOutput("discusssection <forum:String>");
 										printOutput("uid <uid:PositiveInteger>");
 										printOutput("uname <uname:String>");
+										printOutput("problem <pid:String>");
 									}
 									return;
 								}
@@ -7438,15 +7968,37 @@ async function all() {
 					console.log(e);
 				}
 			}
-			if (currentAMLSettings.userMarkEnabled && location.pathname.startsWith("/user/")){
+			if (currentAMLSettings.userMarkEnabled && location.pathname.startsWith("/user/")) {
 				try {
 					const uid = JSON.parse(document.getElementById('lentille-context').innerHTML).data.user.uid;
-					if (!uid || isNaN(uid)){
+					if (!uid || isNaN(uid)) {
 						throw new Error("用户ID无效");
 					}
 					const mark = GM_getValue("MARK", {})[uid];
 					if (!mark) throw new Error("用户未设置标记");
 					document.querySelector("#app > div.main-container.lside-nav > main > div > div.l-card > div.user-header-top > div.user-info.desktop-layout > div.luogu-username.user-name > span:nth-child(1)").innerHTML = JSON.parse(document.getElementById('lentille-context').innerHTML).data.user.name + "(" + mark + ")";
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			if (currentAMLSettings.userEloColorEnabled && location.pathname.startsWith('/user/')) {
+				try {
+					let username = document.querySelector("#app > div.main-container.lside-nav > main > div > div.l-card > div.user-header-top > div.user-info.desktop-layout > div.luogu-username.user-name > span:nth-child(1)");
+					let elo = JSON.parse(document.getElementById('lentille-context').innerHTML).data.elo;
+					let latestelo = elo ? elo[0].rating : JSON.parse(document.getElementById('lentille-context').innerHTML).data.user.elo.rating;
+					function getColor(elo) {
+						if (elo === "Null") return "#bdb7af";
+						elo = parseInt(elo, 10);
+						if (elo >= 2000) return "#a561c1";
+						if (elo >= 1100) return "#e95849";
+						if (elo >= 900) return "#e88a36";
+						if (elo >= 700) return "#ffcc88";
+						if (elo >= 400) return "#6bbf6b";
+						return "#bdb7af";
+					}
+					let color = getColor(latestelo);
+					username.style.color = color;
+					username.title = 'Elo: ' + latestelo;
 				} catch (e) {
 					console.log(e);
 				}
@@ -8385,7 +8937,16 @@ async function all() {
 											cancelButtonText: "取消",
 										}).then((result) => {
 											if (result.isConfirmed) {
-												renderContent.innerHTML = DOMPurify.sanitize(it);
+												renderContent.innerHTML = DOMPurify.sanitize(it,
+													{
+														ALLOWED_TAGS: [...defaultTags, 'iframe', 'details', 'summary'],
+														ALLOWED_ATTR: [...defaultAttrs, 'allowfullscreen', 'frameborder', 'src', 'alt', 'style'],
+														ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix|bilibili):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+														ADD_ATTR: ['style'],
+														ALLOW_ARIA_ATTR: true,
+														SAFE_FOR_TEMPLATES: true,
+													}
+												);
 												renderBtn.innerHTML = "渲染为 Markdown";
 											}
 										});
@@ -8704,7 +9265,7 @@ async function all() {
 							url_now += "&content=true";
 						}
 						const res = await fetch(url_now, {
-							headers: [["x-lentille-request", "content-only"]],
+							headers: [["x-lentille-request", "content-only"], ["x-aml-skip-intercept", "true"]],
 						});
 						const json = await res.json();
 						const pages = Math.ceil(
@@ -8713,7 +9274,7 @@ async function all() {
 						const page = Math.floor(Math.random() * pages) + 1;
 						let problems = [];
 						const res_page = await fetch(url_now + "&page=" + page.toString(), {
-							headers: [["x-lentille-request", "content-only"]],
+							headers: [["x-lentille-request", "content-only"], ["x-aml-skip-intercept", "true"]],
 						});
 						const json_page = await res_page.json();
 						for (const problem of json_page.data.problems.result) {
@@ -8805,6 +9366,19 @@ async function all() {
 				overflow-x: auto;
 				overflow-y: auto;
 			}
+			.aml-luogu-md-rendered iframe {
+				border-radius: 8px;
+				min-height: 200px;
+				width: 100%;
+				min-width: 300px;
+			}
+			.aml-luogu-md-rendered > div[src^="bilibili://"] {
+				min-height: 200px;
+				border-radius: 8px;
+				overflow: hidden;
+				width: 100%;
+				min-width: 300px;
+			}
 		`);
 					marked.setOptions({
 						gfm: true,
@@ -8821,7 +9395,13 @@ async function all() {
 						container.className = "aml-luogu-md-rendered";
 						try {
 							const html = renderMarkdown(rawMarkdown);
-							container.innerHTML = DOMPurify.sanitize(html);
+							container.innerHTML = DOMPurify.sanitize(html,
+								{
+									ALLOWED_TAGS: [...defaultTags, 'iframe', 'details', 'summary'],
+									ALLOWED_ATTR: [...defaultAttrs, 'allowfullscreen', 'frameborder', 'src', 'alt', 'style'],
+									ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix|bilibili):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+								}
+							);
 							setTimeout(() => {
 								addCopyButtons(container);
 							}, 500);
@@ -9393,7 +9973,13 @@ async function all() {
 						container.className = "aml-memo-content";
 						try {
 							const html = renderMarkdown(content);
-							container.innerHTML = DOMPurify.sanitize(html);
+							container.innerHTML = DOMPurify.sanitize(html,
+								{
+									ALLOWED_TAGS: [...defaultTags, 'iframe', 'details', 'summary'],
+									ALLOWED_ATTR: [...defaultAttrs, 'allowfullscreen', 'frameborder', 'src', 'alt', 'style'],
+									ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix|bilibili):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+								}
+							);
 							setTimeout(() => {
 								addCopyButtons(container);
 							}, 500);
@@ -9494,7 +10080,13 @@ async function all() {
 						container.className = "aml-benbentop-content";
 						try {
 							const html = renderMarkdown(content);
-							container.innerHTML = DOMPurify.sanitize(html);
+							container.innerHTML = DOMPurify.sanitize(html,
+								{
+									ALLOWED_TAGS: [...defaultTags, 'iframe', 'details', 'summary'],
+									ALLOWED_ATTR: [...defaultAttrs, 'allowfullscreen', 'frameborder', 'src', 'alt', 'style'],
+									ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix|bilibili):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+								}
+							);
 							setTimeout(() => {
 								addCopyButtons(container);
 							}, 500);
@@ -11427,7 +12019,11 @@ function patchXHR(eventName = "luogu-xhr-intercept") {
 }
 patchXHR();
 window.addEventListener("luogu-xhr-intercept", (e) => {
-	const { data } = e.detail.response;
+	const { request, response } = e.detail;
+	if (request?.requestHeaders?.["x-aml-skip-intercept"]) {
+		return;
+	}
+	const { data } = response;
 	if (data && data.instance && data.template && data.status) {
 		const target = document.getElementById("lentille-context");
 		if (target) {
