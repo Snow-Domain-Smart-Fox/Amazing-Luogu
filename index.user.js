@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -29,7 +29,7 @@
 // @connect      gh.halonice.com
 // @connect      hk-yd-proxy.gitwarp.com
 // @connect      zym2013.dpdns.org
-// @connect      api-v2.luogu.me
+// @connect      api.luogu.me
 // @connect      www.luogu.com.cn
 // @connect      lab.magiconch.com
 // @connect      yiyan.amlg.top
@@ -1873,6 +1873,13 @@ async function all() {
 					status: "stable",
 				},
 				{
+					key: "defaultCodeEnabled",
+					label: "代码缺省源",
+					desc: "在题目提交和 IDE 页面的代码框为空时，自动填充默认代码",
+					tag: "功能",
+					status: "stable",
+				},
+				{
 					key: "userEloColorEnabled",
 					label: "用户主页用户名 Elo 颜色",
 					desc: "在用户主页按照用户 Elo 修改用户名颜色（紫色≥2000，红色≥1100，橙色≥900，黄色≥700，绿色≥400）",
@@ -3367,7 +3374,7 @@ async function all() {
 						<h4><i class="far fa-question-circle" aria-hidden="true"></i> 帮助</h4>
 						<p>还没写完。征集用户写的帮助。</p>
 						<h5>Q：如何配置搜索使其可以搜索文章？</h5>
-						<p>在 <a href="https://www.luogu.me/" target="_blank" rel="noopener">保存站</a> 打开控制台（按 <code>F12</code> 或 <code>Ctrl+Shift+I</code>）。<br>
+						<p>在 <a href="https://www.luogu.me/search" target="_blank" rel="noopener">保存站搜索页面</a> 打开控制台（按 <code>F12</code> 或 <code>Ctrl+Shift+I</code>）。<br>
 						点击"Network"标签 → 刷新网页 → 点击第一条 <strong>document</strong> 类型请求 → 找到"Request Headers" → 复制 <code>cf_clearance</code> 值。<br>
 						粘贴到 Amazing Luogu 搜索设置的最后一项，保存并刷新页面即可。</p>
 						<p><img src="https://cdn.luogu.com.cn/upload/image_hosting/70dzgnv4.png" alt="配置示意" style="max-width:100%;border-radius:8px" /></p>
@@ -3493,6 +3500,7 @@ async function all() {
 						{ name: 'GenGen RMJ', icon: 'fas fa-rocket', type: 'scriptcat', desc: '新的 RMJ', link: 'https://gengen.qzz.io/projects/rmj/' },
 						{ name: 'Better Luogu', icon: 'fas fa-puzzle-piece', type: 'tampermonkey', desc: '强大的洛谷插件', link: 'https://blg.volatiles.dpdns.org/' },
 						{ name: 'Argon Luogu', icon: 'fa-brands fa-css', type: 'software', desc: '漂亮的洛谷样式', link: 'https://userstyles.world/style/24127/default-slug' },
+						{ name: 'Argon Luogu Dev(Unofficial)', icon: 'fa-brands fa-css', type: 'software', desc: '比 Argon Luogu 更兼容 Amazing Luogu ，而且更美丽（非官方）', link: 'https://userstyles.world/style/28284/argon-luogu-dev-2026' },
 						{ name: 'OI CPP', icon: 'fa-solid fa-code', type: 'software', desc: '强大的 IDE', link: 'https://oicpp.mywwzh.top/' },
 						{ name: '洛谷仓库', icon: 'fa-regular fa-floppy-disk', type: 'website', desc: '强大的洛谷保存站。', link: 'https://luogu.store/' },
 						{ name: 'S-A-OJ', icon: 'fa-brands fa-css', type: 'software', desc: '完美的 OJ - OJ 样式修改', link: 'https://userstyles.world/style/26790/sa-oj-oj-luoguatcoder'}
@@ -4051,6 +4059,18 @@ async function all() {
 			<div id="aml-focusmode-disabled-notice" class="disabled-notice" style="display: ${currentSettings.focusModeEnabled ? "none" : "block"};">专注模式功能已关闭，请在功能开关中开启。</div>
 		</div>
 		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fas fa-sticky-note"></i> &nbsp;默认代码设置</h4>
+			<div id="aml-defaultcode-section" style="display: ${currentSettings.defaultCodeEnabled ? "block" : "none"};">
+				<div class="aml-input-group">
+					<label for="aml-defaultcode-content">默认代码内容：</label>
+					<textarea id="aml-defaultcode-content" placeholder="输入默认代码内容...">${currentSettings.defaultCodeContent}</textarea>
+				</div>
+				<button id="aml-save-defaultcode-btn" class="aml-primary-btn">保存内容</button>
+				<div id="aml-defaultcode-status" class="aml-status-msg" style="margin-top: 10px; font-weight: bold;"></div>
+			</div>
+			<div id="aml-memo-disabled-notice" class="disabled-notice" style="display: ${currentSettings.memoEnabled ? "none" : "block"};">备忘录功能已关闭，请在功能开关中开启。</div>
+		</div>
+		<div class="aml-settings-section aml-home-card">
 			<h4><i class="fas fa-sticky-note"></i> &nbsp;备忘录设置</h4>
 			<div id="aml-memo-section" style="display: ${currentSettings.memoEnabled ? "block" : "none"};">
 				<div class="aml-input-group">
@@ -4574,6 +4594,18 @@ async function all() {
 						saveAMLSetting("slogenTimeFormat", newValue);
 					};
 				}
+				const defaultCodeContentInput = document.querySelector("#aml-defaultcode-content");
+				const saveDefaultCodeBtn = document.querySelector("#aml-save-defaultcode-btn");
+				if (defaultCodeContentInput && saveDefaultCodeBtn) {
+					saveDefaultCodeBtn.onclick = () => {
+						const newValue = defaultCodeContentInput.value;
+						saveAMLSetting("defaultCodeContent", newValue);
+						const statusDiv = document.getElementById("aml-defaultcode-status");
+						statusDiv.textContent = "默认代码内容已保存！";
+						statusDiv.style.color = "green";
+						setTimeout(() => (statusDiv.textContent = ""), 2000);
+					};
+				}
 				const memoContentInput = document.querySelector("#aml-memo-content");
 				const saveMemoBtn = document.querySelector("#aml-save-memo-btn");
 				if (memoContentInput && saveMemoBtn) {
@@ -4634,7 +4666,7 @@ async function all() {
 					["lsawSelectListDisplay", false],
 					["lsawProblemDisplayNumber", 50],
 					["lsawListDisplayNumber", 50],
-					["lsawArticleDisplayNumber", 10],
+					["lsawArticleDisplayNumber", 12],
 					["lsawLuoguMeCf", ""],
 				];
 				for (let i = 0; i < majorSettings.length; i++) {
@@ -5417,6 +5449,20 @@ async function all() {
 					</div>
 				</div>
 				</div>
+				<div class="searchAnywhereSettingsBag" for="lsawArticleDisplay"> 显示专栏 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawArticleDisplay}">
+					<div class="falseBlock">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+						<path fill="currentColor" d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z" />
+					</svg>
+					</div>
+					<div class="trueBlock">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+						<path fill="currentColor"
+						d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM339.8 211.8C350.7 200.9 350.7 183.1 339.8 172.2C328.9 161.3 311.1 161.3 300.2 172.2L192 280.4L147.8 236.2C136.9 225.3 119.1 225.3 108.2 236.2C97.27 247.1 97.27 264.9 108.2 275.8L172.2 339.8C183.1 350.7 200.9 350.7 211.8 339.8L339.8 211.8z" />
+					</svg>
+					</div>
+				</div>
+				</div>
 				<div class="searchAnywhereSettingsBag" for="lsawProblemDisplayNumber"> 题目展示数量 <div style="float: right; width: 150px">
 					<div class="inputAreaSmall withContent">
 					<input type="number" min="1" max="50" value="${settings.lsawProblemDisplayNumber}" class="withContent" />
@@ -5431,7 +5477,7 @@ async function all() {
 				</div>
 				<div class="searchAnywhereSettingsBag" for="lsawArticleDisplayNumber"> 文章展示数量 <div style="float: right; width: 150px">
 					<div class="inputAreaSmall withContent">
-					<input type="number" min="1" max="10" value="${settings.lsawArticleDisplayNumber}" class="withContent" />
+					<input type="number" min="1" max="12" value="${settings.lsawArticleDisplayNumber}" class="withContent" />
 					</div>
 				</div>
 				</div>
@@ -5851,7 +5897,7 @@ async function all() {
 									finishWork();
 									return;
 								}
-								if (json.status != 200) {
+								if (json.code != 200) {
 									finishWork();
 									return;
 								}
@@ -5901,11 +5947,11 @@ async function all() {
 					if (settings.lsawArticleDisplay != false) {
 						GM_xmlhttpRequest({
 							method: "GET",
-							url: `https://api-v2.luogu.me/api/search?q=${info}&page=1`,
+							url: `https://api.luogu.me/search/articles?q=${info}&page=1&limit=${settings.lsawArticleDisplayNumber}`,
 							withCredentials: true,
 							cookies: `cf_clearance=${settings.lsawLuoguMeCf}; `,
 							headers: {
-								Host: "api-v2.luogu.me",
+								Host: "api.luogu.me",
 								"sec-ch-ua-platform": '"Windows"',
 								"user-agent":
 									"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
@@ -5927,25 +5973,28 @@ async function all() {
 								let json;
 								try {
 									json = JSON.parse(response.responseText);
+									console.log(json);
 								} catch (e) {
 									finishWork();
 									return;
 								}
-								if (json.success != true) {
+								if (json.code != 200) {
 									finishWork();
 									return;
 								}
 								json = json.data;
+								console.log(json);
 								if (json.total != 0) {
 									articleHtml = `<div style='text-align: left; margin-bottom: 10px; width: 100%; font-size: 18px; font-weight: bold'>文章<a href="https://www.luogu.me/search?q=${info}" style="cursor: pointer; float: right; font-weight: normal !important" class="searchShowArticles">查看所有 ${json.total} 份文章</a></div>`;
 									for (
 										let i = 0;
-										i < json.size && i < settings.lsawListDisplayNumber;
+										i < json.limit && i < settings.lsawArticleDisplayNumber;
 										i++
 									) {
-										let item = json.results[i];
+										let item = json.hits[i];
+										console.log(item);
 										articleHtml += `
-								<a class="searchCard searchListCard" href='https://www.luogu.com/article/${item.id}' style="">
+								<a class="searchCard searchListCard" href='https://www.luogu.me/article/${item.id}' style="">
 									<div class="searchListCardProgress" style="height: 5px; position: absolute; top: -1px; left: 0px; overflow: hidden; border-top-left-radius: 5px; border-top-right-radius: 5px">
 										<div style="height: 5px; content: ""></div>
 										<div style="flex: 1"></div>
@@ -9242,7 +9291,8 @@ async function all() {
 							if (tags[tag_now_.textContent.trim()]) {
 								tags_now.push(tags[tag_now_.textContent.trim()]);
 							} else {
-								dif_now = dif[tag_now_.textContent.trim()];
+								if(dif_now == -1) dif_now = dif[tag_now_.textContent.trim()];
+								else dif_now += "|" + dif[tag_now_.textContent.trim()];
 							}
 						}
 						tags_now = [...new Set(tags_now)];
@@ -9838,18 +9888,18 @@ async function all() {
 							handleJumpRequest();
 						} else if (
 							event.code === "KeyJ" &&
-							event.ctrlKey &&
+							(event.ctrlKey || event.metaKey) &&
 							event.shiftKey &&
 							event.altKey
 						) {
 							handleJumpRequest();
-						} else if (event.code === "KeyG" && event.ctrlKey && event.shiftKey) {
+						} else if (event.code === "KeyG" && (event.ctrlKey || event.metaKey) && event.shiftKey) {
 							handleJumpRequest();
-						} else if (event.code === "KeyM" && event.ctrlKey && event.shiftKey) {
+						} else if (event.code === "KeyM" && (event.ctrlKey || event.metaKey) && event.shiftKey) {
 							handleJumpRequest();
-						} else if (event.code === "KeyV" && event.ctrlKey && event.shiftKey) {
+						} else if (event.code === "KeyV" && (event.ctrlKey || event.metaKey) && event.shiftKey) {
 							handleJumpRequest();
-						} else if (event.code === "KeyL" && event.ctrlKey && event.shiftKey) {
+						} else if (event.code === "KeyL" && (event.ctrlKey || event.metaKey) && event.shiftKey) {
 							handleJumpRequest();
 						}
 					});
@@ -10400,7 +10450,7 @@ async function all() {
 			}
 			if (
 				window.location.pathname.includes("/problem/") &&
-				window.location.hash === "#ide" &&
+				(window.location.hash === "#ide" || window.location.hash === "#submit") &&
 				currentAMLSettings.defaultCodeEnabled
 			) {
 				try {
@@ -10408,8 +10458,7 @@ async function all() {
 						const editorElement = document.querySelector(".cm-content");
 						if (
 							editorElement &&
-							editorElement.innerHTML.trim() ===
-							'<div class="cm-activeLine cm-line"><br></div>'
+							editorElement.textContent.trim() === ''
 						) {
 							const defaultCode = GM_getValue("amlDefaultCodeContent", "");
 							if (defaultCode) {
