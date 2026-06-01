@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1413,7 +1413,7 @@ async function all() {
 				let highlightCode = text;
 				if (lang && hljs.getLanguage(lang)) {
 					highlightCode = hljs.highlight(text, { language: lang }).value;
-				} else {
+				} else if (lang){
 					highlightCode = hljs.highlightAuto(text).value;
 				}
 				const lineNumbers = lang?.includes("line-numbers");
@@ -1421,7 +1421,7 @@ async function all() {
 				const showLineNumbers = lineNumbers && !lang.includes("hide-numbers");
 				const highlightRange = linesMatch ? { start: parseInt(linesMatch[1]), end: parseInt(linesMatch[2]) } : null;
 				const cleanLang = lang?.replace(/(line-numbers|lines=\d+-\d+)\s*/g, "").trim() || "";
-				const lineCount = text.split("\n").length;
+				const lineCount = (text||"").split("\n").length;
 				let lineNumbersHtml = "";
 				if (showLineNumbers) {
 					lineNumbersHtml = `<span aria-hidden="true" class="line-numbers-rows">${Array.from({ length: lineCount }, () => '<span></span>').join('')}</span>`;
@@ -1938,7 +1938,7 @@ async function all() {
 				{
 					key: "vscodeLuoguEnabled",
 					label: "跳转到 VSCode Luogu",
-					desc: "在题目和比赛页面添加跳转到 VSCode Luogu 按钮（需要安装 VSCode 插件 AmazingLuoguDevTeam.vscode-luogu-api）",
+					desc: "在题目和比赛页面添加跳转到 VSCode Luogu 的快捷键：Ctrl+Alt+V（macOS 为 Command+Option+V，需要安装 VSCode 插件 AmazingLuoguDevTeam.vscode-luogu-api）",
 					tag: "功能",
 					status: "stable",
 				},
@@ -3416,7 +3416,7 @@ async function all() {
 					<div class="aml-tab-content active" data-tab-pane="announcement">
 						<h1 class="aml-home-greeting">👋 Hi !</h1>
 						<div class="aml-home-grid">
-							<div>
+							<div style="width: 40%;">
 								<div class="aml-home-card">
 									<h5><i class="fas fa-clock"></i> 当前时间</h5>
 									<div class="aml-time-container">
@@ -3427,7 +3427,7 @@ async function all() {
 									<div class="aml-yiyan-from">${yiyan?.tag ? "—— " + yiyan.tag : ""}</div>
 								</div>
 							</div>
-							<div class="aml-home-card">
+							<div class="aml-home-card" style="width: 60%;">
 								<h5><i class="fas fa-history"></i> 历史上的今天</h5>
 								<div class="aml-history">${"正在获取..."}</div>
 							</div>
@@ -3727,7 +3727,7 @@ async function all() {
 												'X-CSRF-Token': '${gettoken()}',
 											},
 											body: JSON.stringify({
-												user: 1393230,
+												user: 1157535,
 												content: content,
 											}),
 											credentials: 'include',
@@ -8229,72 +8229,127 @@ async function all() {
 				!location.hash
 			) {
 				try {
-					let search = new URLSearchParams(location.search);
-					let cpbtn = document
-						.querySelector("[data-v-f265fec6]")
-						.querySelector("[data-v-f265fec6]")
-						.querySelector("[data-v-f265fec6]").lastChild.firstChild.lastChild;
-					const parser = new DOMParser();
-					const doc = parser.parseFromString(
-						`<button data-v-505b6a97="" data-v-f265fec6-s="" class="aml-vscode lform-size-middle button-transparent" type="button">跳转到 VSCode Luogu</button>`,
-						"text/html",
-					).body.firstChild;
-					doc.onclick = function () {
-						Swal.fire({
-							icon: "info",
-							title: "正在跳转",
-							html: "请稍后...",
-							showLoading: true,
-						});
-						if (search.get("contestId")) {
-							GM_xmlhttpRequest({
-								method: "GET",
-								url:
-									"http://127.0.0.1:" +
-									currentAMLSettings.vscodePort +
-									"/problem/" +
-									location.pathname.split("/")[2] +
-									"/" +
-									search.get("contestId"),
-								timeout: 10000,
-								onload: function () {
-									Swal.fire({
-										title: "跳转成功",
-										html: "请打开 VSCode 查看",
-										icon: "success",
-										showCancelButton: true,
-										confirmButtonText: "确定",
-										cancelButtonText: "取消",
+					document.addEventListener("keydown", function (event) {
+						if (window.location.hostname !== "www.luogu.com.cn") return;
+						if (event.code === "KeyV" && event.ctrlKey && event.altKey) {
+							doc.onclick = function () {
+								Swal.fire({
+									icon: "info",
+									title: "正在跳转",
+									html: "请稍后...",
+									showLoading: true,
+								});
+								if (search.get("contestId")) {
+									GM_xmlhttpRequest({
+										method: "GET",
+										url:
+											"http://127.0.0.1:" +
+											currentAMLSettings.vscodePort +
+											"/problem/" +
+											location.pathname.split("/")[2] +
+											"/" +
+											search.get("contestId"),
+										timeout: 10000,
+										onload: function () {
+											Swal.fire({
+												title: "跳转成功",
+												html: "请打开 VSCode 查看",
+												icon: "success",
+												showCancelButton: true,
+												confirmButtonText: "确定",
+												cancelButtonText: "取消",
+											});
+										},
+										ontimeout: function () {
+											Swal.fire({
+												title: "跳转失败",
+												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+												icon: "error",
+												showCancelButton: true,
+												confirmButtonText: "确定",
+												cancelButtonText: "取消",
+											});
+										},
+										onerror: function () {
+											Swal.fire({
+												title: "跳转失败",
+												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+												icon: "error",
+												showCancelButton: true,
+												confirmButtonText: "确定",
+												cancelButtonText: "取消",
+											});
+										},
 									});
-								},
-								ontimeout: function () {
-									Swal.fire({
-										title: "跳转失败",
-										html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-										icon: "error",
-										showCancelButton: true,
-										confirmButtonText: "确定",
-										cancelButtonText: "取消",
+								} else {
+									GM_xmlhttpRequest({
+										method: "GET",
+										url:
+											"http://127.0.0.1:" +
+											currentAMLSettings.vscodePort +
+											"/problem/" +
+											location.pathname.split("/")[2],
+										timeout: 10000,
+										onload: function () {
+											Swal.fire({
+												title: "跳转成功",
+												html: "请打开 VSCode 查看",
+												icon: "success",
+												showCancelButton: true,
+												confirmButtonText: "确定",
+												cancelButtonText: "取消",
+											});
+										},
+										ontimeout: function () {
+											Swal.fire({
+												title: "跳转失败",
+												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+												icon: "error",
+												showCancelButton: true,
+												confirmButtonText: "确定",
+												cancelButtonText: "取消",
+											});
+										},
+										onerror: function () {
+											Swal.fire({
+												title: "跳转失败",
+												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+												icon: "error",
+												showCancelButton: true,
+												confirmButtonText: "确定",
+												cancelButtonText: "取消",
+											});
+										},
 									});
-								},
-								onerror: function () {
-									Swal.fire({
-										title: "跳转失败",
-										html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-										icon: "error",
-										showCancelButton: true,
-										confirmButtonText: "确定",
-										cancelButtonText: "取消",
-									});
-								},
+								}
+							};
+						}
+					});
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			if (
+				currentAMLSettings.vscodeLuoguEnabled &&
+				location.pathname.startsWith("/contest/") &&
+				location.pathname.replaceAll("/", "") != "contestlist"
+			) {
+				try {
+					document.addEventListener("keydown", function (event) {
+						if (window.location.hostname !== "www.luogu.com.cn") return;
+						if (event.code === "KeyV" && event.ctrlKey && event.altKey) {
+							Swal.fire({
+								icon: "info",
+								title: "正在跳转",
+								html: "请稍后...",
+								showLoading: true,
 							});
-						} else {
 							GM_xmlhttpRequest({
 								method: "GET",
 								url:
 									"http://127.0.0.1:" +
 									currentAMLSettings.vscodePort +
-									"/problem/" +
+									"/contest/" +
 									location.pathname.split("/")[2],
 								timeout: 10000,
 								onload: function () {
@@ -8329,92 +8384,7 @@ async function all() {
 								},
 							});
 						}
-					};
-					cpbtn.parentNode.insertBefore(doc, null);
-				} catch (e) {
-					console.log(e);
-				}
-			}
-			if (
-				currentAMLSettings.vscodeLuoguEnabled &&
-				location.pathname.startsWith("/contest/") &&
-				location.pathname.replaceAll("/", "") != "contestlist"
-			) {
-				try {
-					let cpbtn = document.getElementsByClassName("title lfe-h2")[0];
-					const parser = new DOMParser();
-					const doc = parser.parseFromString(
-						`<button data-v-7ade990c="" data-v-9f9431e6="" type="button" class="aml-vscode lfe-form-sz-middle" data-v-2dfcfd35="" style="
-    font-size: small;
-    border: 1px solid;
-    border-color: rgb(52, 152, 219);
-    background-color: rgb(52, 152, 219);
-    display: inline-block;
-    flex: none;
-    outline: 0;
-    cursor: pointer;
-    color: #fff;
-    font-weight: inherit;
-    line-height: 1.5;
-    text-align: center;
-    vertical-align: middle;
-    border-radius: 3px;
-    ">跳转到 VSCode Luogu</button>`,
-						"text/html",
-					).body.firstChild;
-					const spaceNode = parser.parseFromString(
-						'<l class="aml-space">&nbsp;</l>',
-						"text/html",
-					).body.firstElementChild;
-					doc.onclick = function () {
-						Swal.fire({
-							icon: "info",
-							title: "正在跳转",
-							html: "请稍后...",
-							showLoading: true,
-						});
-						GM_xmlhttpRequest({
-							method: "GET",
-							url:
-								"http://127.0.0.1:" +
-								currentAMLSettings.vscodePort +
-								"/contest/" +
-								location.pathname.split("/")[2],
-							timeout: 10000,
-							onload: function () {
-								Swal.fire({
-									title: "跳转成功",
-									html: "请打开 VSCode 查看",
-									icon: "success",
-									showCancelButton: true,
-									confirmButtonText: "确定",
-									cancelButtonText: "取消",
-								});
-							},
-							ontimeout: function () {
-								Swal.fire({
-									title: "跳转失败",
-									html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-									icon: "error",
-									showCancelButton: true,
-									confirmButtonText: "确定",
-									cancelButtonText: "取消",
-								});
-							},
-							onerror: function () {
-								Swal.fire({
-									title: "跳转失败",
-									html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-									icon: "error",
-									showCancelButton: true,
-									confirmButtonText: "确定",
-									cancelButtonText: "取消",
-								});
-							},
-						});
-					};
-					cpbtn.appendChild(spaceNode);
-					cpbtn.appendChild(doc);
+					});
 				} catch (e) {
 					console.log(e);
 				}
@@ -8873,7 +8843,7 @@ async function all() {
 					let verified = res.user.verified;
 					if (!isAdmin && !verified) {
 						console.log("增强功能启动");
-						const it = res.user.introduction;
+						const it = res.user.introduction || "";
 						const escapedIt = it.replace(
 							/[&<>"']/g,
 							(c) =>
@@ -8885,7 +8855,7 @@ async function all() {
 									"'": "&#39;",
 								})[c],
 						);
-						const introduction = marked.parse(escapedIt);
+						const introduction = marked.parse(escapedIt, { highlight: false });
 						const jsCard = document.createElement("div");
 						jsCard.setAttribute("data-v-c3407962", "");
 						jsCard.setAttribute("data-v-f4fefeb2", "");
@@ -9291,7 +9261,7 @@ async function all() {
 							if (tags[tag_now_.textContent.trim()]) {
 								tags_now.push(tags[tag_now_.textContent.trim()]);
 							} else {
-								if(dif_now == -1) dif_now = dif[tag_now_.textContent.trim()];
+								if (dif_now == -1) dif_now = dif[tag_now_.textContent.trim()];
 								else dif_now += "|" + dif[tag_now_.textContent.trim()];
 							}
 						}
@@ -10158,16 +10128,16 @@ async function all() {
 						memoDiv.className = "lg-article";
 						function JSON2markdown(json) {
 							const mingciduizhao = {
-								1: "🥇 第一名",
-								2: "🥈 第二名",
-								3: "🥉 第三名",
-								4: "&emsp;&nbsp;&nbsp;第四名",
-								5: "&emsp;&nbsp;&nbsp;第五名",
-								6: "&emsp;&nbsp;&nbsp;第六名",
-								7: "&emsp;&nbsp;&nbsp;第七名",
-								8: "&emsp;&nbsp;&nbsp;第八名",
-								9: "&emsp;&nbsp;&nbsp;第九名",
-								10: "&emsp;&nbsp;&nbsp;第十名"
+								1: "&nbsp;🥇 第一名",
+								2: "&nbsp;🥈 第二名",
+								3: "&nbsp;🥉 第三名",
+								4: "&nbsp;&emsp;&nbsp;&nbsp;第四名",
+								5: "&nbsp;&emsp;&nbsp;&nbsp;第五名",
+								6: "&nbsp;&emsp;&nbsp;&nbsp;第六名",
+								7: "&nbsp;&emsp;&nbsp;&nbsp;第七名",
+								8: "&nbsp;&emsp;&nbsp;&nbsp;第八名",
+								9: "&nbsp;&emsp;&nbsp;&nbsp;第九名",
+								10: "&nbsp;&emsp;&nbsp;&nbsp;第十名"
 							};
 							let ret = "# " + GM_getValue("benbensOriginDate") + " 犇犇龙王榜\n\n";
 							let rank = 0;
@@ -10827,7 +10797,7 @@ async function all() {
 					let emojiList = [];
 					let searchPanelOpen = false;
 					var g = [
-						"https://cdn.jsdelivr.net/gh/hyc1230/qqemoji/56x56/%EMOJI%.gif",
+						"https://fastly.jsdelivr.net/gh/hyc1230/qqemoji/56x56/%EMOJI%.gif",
 						"https://mirror.ghproxy.com/https://raw.githubusercontent.com/hyc1230/qqemoji/master/56x56/%EMOJI%.gif",
 						"https://qqemoji.heyc.eu.org/56x56/%EMOJI%.gif",
 						"https://qqemoji.netlify.app/56x56/%EMOJI%.gif",
@@ -10938,7 +10908,7 @@ async function all() {
 						}
 						const button = document.createElement("button");
 						button.id = SEARCH_BUTTON_ID;
-						button.innerHTML = `<img src="${g[o["img-src"]].replace(/%EMOJI%/g, "tiao")}" width="32" height="32">`;
+						button.innerHTML = `<img src="${g[o["img-src"]].replace(/%EMOJI%/g, "bx")}" width="32" height="32">`;
 						button.style.position = "fixed";
 						button.style.bottom = "20px";
 						button.style.left = "20px";
@@ -11148,9 +11118,9 @@ async function all() {
 					{
 						name: "jsDelivr",
 						versionUrl:
-							"https://cdn.jsdelivr.net/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/versions.json",
+							"https://fastly.jsdelivr.net/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/versions.json",
 						downloadUrl:
-							"https://cdn.jsdelivr.net/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/index.user.js",
+							"https://fastly.jsdelivr.net/gh/Snow-Domain-Smart-Fox/Amazing-Luogu@refs/heads/main/index.user.js",
 					},
 					{
 						name: "Github Raw",
