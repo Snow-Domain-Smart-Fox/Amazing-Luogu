@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1413,7 +1413,7 @@ async function all() {
 				let highlightCode = text;
 				if (lang && hljs.getLanguage(lang)) {
 					highlightCode = hljs.highlight(text, { language: lang }).value;
-				} else if (lang){
+				} else if (lang) {
 					highlightCode = hljs.highlightAuto(text).value;
 				}
 				const lineNumbers = lang?.includes("line-numbers");
@@ -1421,7 +1421,7 @@ async function all() {
 				const showLineNumbers = lineNumbers && !lang.includes("hide-numbers");
 				const highlightRange = linesMatch ? { start: parseInt(linesMatch[1]), end: parseInt(linesMatch[2]) } : null;
 				const cleanLang = lang?.replace(/(line-numbers|lines=\d+-\d+)\s*/g, "").trim() || "";
-				const lineCount = (text||"").split("\n").length;
+				const lineCount = (text || "").split("\n").length;
 				let lineNumbersHtml = "";
 				if (showLineNumbers) {
 					lineNumbersHtml = `<span aria-hidden="true" class="line-numbers-rows">${Array.from({ length: lineCount }, () => '<span></span>').join('')}</span>`;
@@ -8230,100 +8230,103 @@ async function all() {
 			) {
 				try {
 					document.addEventListener("keydown", function (event) {
+						let search = new URLSearchParams(location.search);
 						if (window.location.hostname !== "www.luogu.com.cn") return;
 						if (event.code === "KeyV" && event.ctrlKey && event.altKey) {
-							doc.onclick = function () {
-								Swal.fire({
-									icon: "info",
-									title: "正在跳转",
-									html: "请稍后...",
-									showLoading: true,
+							Swal.fire({
+								icon: "info",
+								title: "正在跳转",
+								html: "请稍后...",
+								showLoading: true,
+								allowEscapeClick: false,
+								allowOutsideClick: false,
+								showCancelButton: false,
+								showConfirmButton: false,
+							});
+							if (search.get("contestId")) {
+								GM_xmlhttpRequest({
+									method: "GET",
+									url:
+										"http://127.0.0.1:" +
+										currentAMLSettings.vscodePort +
+										"/problem/" +
+										location.pathname.split("/")[2] +
+										"/" +
+										search.get("contestId"),
+									timeout: 10000,
+									onload: function () {
+										Swal.fire({
+											title: "跳转成功",
+											html: "请打开 VSCode 查看",
+											icon: "success",
+											showCancelButton: true,
+											confirmButtonText: "确定",
+											cancelButtonText: "取消",
+										});
+									},
+									ontimeout: function () {
+										Swal.fire({
+											title: "跳转失败",
+											html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+											icon: "error",
+											showCancelButton: true,
+											confirmButtonText: "确定",
+											cancelButtonText: "取消",
+										});
+									},
+									onerror: function () {
+										Swal.fire({
+											title: "跳转失败",
+											html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+											icon: "error",
+											showCancelButton: true,
+											confirmButtonText: "确定",
+											cancelButtonText: "取消",
+										});
+									},
 								});
-								if (search.get("contestId")) {
-									GM_xmlhttpRequest({
-										method: "GET",
-										url:
-											"http://127.0.0.1:" +
-											currentAMLSettings.vscodePort +
-											"/problem/" +
-											location.pathname.split("/")[2] +
-											"/" +
-											search.get("contestId"),
-										timeout: 10000,
-										onload: function () {
-											Swal.fire({
-												title: "跳转成功",
-												html: "请打开 VSCode 查看",
-												icon: "success",
-												showCancelButton: true,
-												confirmButtonText: "确定",
-												cancelButtonText: "取消",
-											});
-										},
-										ontimeout: function () {
-											Swal.fire({
-												title: "跳转失败",
-												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-												icon: "error",
-												showCancelButton: true,
-												confirmButtonText: "确定",
-												cancelButtonText: "取消",
-											});
-										},
-										onerror: function () {
-											Swal.fire({
-												title: "跳转失败",
-												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-												icon: "error",
-												showCancelButton: true,
-												confirmButtonText: "确定",
-												cancelButtonText: "取消",
-											});
-										},
-									});
-								} else {
-									GM_xmlhttpRequest({
-										method: "GET",
-										url:
-											"http://127.0.0.1:" +
-											currentAMLSettings.vscodePort +
-											"/problem/" +
-											location.pathname.split("/")[2],
-										timeout: 10000,
-										onload: function () {
-											Swal.fire({
-												title: "跳转成功",
-												html: "请打开 VSCode 查看",
-												icon: "success",
-												showCancelButton: true,
-												confirmButtonText: "确定",
-												cancelButtonText: "取消",
-											});
-										},
-										ontimeout: function () {
-											Swal.fire({
-												title: "跳转失败",
-												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-												icon: "error",
-												showCancelButton: true,
-												confirmButtonText: "确定",
-												cancelButtonText: "取消",
-											});
-										},
-										onerror: function () {
-											Swal.fire({
-												title: "跳转失败",
-												html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
-												icon: "error",
-												showCancelButton: true,
-												confirmButtonText: "确定",
-												cancelButtonText: "取消",
-											});
-										},
-									});
-								}
-							};
-						}
+							} else {
+								GM_xmlhttpRequest({
+									method: "GET",
+									url:
+										"http://127.0.0.1:" +
+										currentAMLSettings.vscodePort +
+										"/problem/" +
+										location.pathname.split("/")[2],
+									timeout: 10000,
+									onload: function () {
+										Swal.fire({
+											title: "跳转成功",
+											html: "请打开 VSCode 查看",
+											icon: "success",
+											showCancelButton: true,
+											confirmButtonText: "确定",
+											cancelButtonText: "取消",
+										});
+									},
+									ontimeout: function () {
+										Swal.fire({
+											title: "跳转失败",
+											html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+											icon: "error",
+											showCancelButton: true,
+											confirmButtonText: "确定",
+											cancelButtonText: "取消",
+										});
+									},
+									onerror: function () {
+										Swal.fire({
+											title: "跳转失败",
+											html: "请检查 VSCode 插件是否已安装且 VSCode 已启动",
+											icon: "error",
+											showCancelButton: true,
+											confirmButtonText: "确定",
+											cancelButtonText: "取消",
+										});
+									},
+								});
+							}
+						};
 					});
 				} catch (e) {
 					console.log(e);
@@ -8343,6 +8346,10 @@ async function all() {
 								title: "正在跳转",
 								html: "请稍后...",
 								showLoading: true,
+								allowEscapeClick: false,
+								allowOutsideClick: false,
+								showCancelButton: false,
+								showConfirmButton: false,
 							});
 							GM_xmlhttpRequest({
 								method: "GET",
