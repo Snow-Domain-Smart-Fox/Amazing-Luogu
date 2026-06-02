@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1409,13 +1409,20 @@ async function all() {
 			];
 			marked.use({ extensions: customExtensions });
 			const renderer = new marked.Renderer();
-			renderer.code = function ({ text, lang, escaped }) {
+			renderer.code = function ( text, lang, escaped ) {
 				let highlightCode = text;
 				if (lang && hljs.getLanguage(lang)) {
 					highlightCode = hljs.highlight(text, { language: lang }).value;
 				} else if (lang) {
 					highlightCode = hljs.highlightAuto(text).value;
+				} else {
+					try {
+						highlightCode = hljs.highlightAuto(text).value;
+					} catch (e) {
+						highlightCode = text;
+					}
 				}
+				console.log(highlightCode);
 				const lineNumbers = lang?.includes("line-numbers");
 				const linesMatch = lang?.match(/lines=(\d+)-(\d+)/);
 				const showLineNumbers = lineNumbers && !lang.includes("hide-numbers");
