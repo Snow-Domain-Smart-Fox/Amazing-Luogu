@@ -48,4 +48,4 @@
 如有任何疑问或建议，请通过以下方式联系我们：
     - GitHub: https://github.com/Snow-Domain-Smart-Fox
 
-最后更新日期：2026年5月19日
+最后更新日期：2026年6月6日
