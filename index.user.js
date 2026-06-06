@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -68,6 +68,32 @@
 // @resource     animate https://cdn.amlg.top/npm/animate.css@4.1.1/animate.min.css?version=1.0.1
 // @run-at       document-start
 // ==/UserScript==
+const eventListeners = [];
+function addManagedEventListener(target, event, callback, options) {
+    target.addEventListener(event, callback, options);
+    eventListeners.push({ target, event, callback, options });
+}
+function removeAllManagedEventListeners() {
+    for (const listener of eventListeners) {
+        listener.target.removeEventListener(listener.event, listener.callback, listener.options);
+    }
+    eventListeners.length = 0;
+}
+const keydownListeners = [];
+function addKeydownListener(callback) {
+    document.addEventListener("keydown", callback);
+    keydownListeners.push({ callback, target: document });
+}
+function removeAllKeydownListeners() {
+    for (const listener of keydownListeners) {
+        listener.target.removeEventListener("keydown", listener.callback);
+    }
+    keydownListeners.length = 0;
+}
+unsafeWindow.addManagedEventListener = addManagedEventListener;
+unsafeWindow.removeAllManagedEventListeners = removeAllManagedEventListeners;
+unsafeWindow.addKeydownListener = addKeydownListener;
+unsafeWindow.removeAllKeydownListeners = removeAllKeydownListeners;
 const defaultAttrs = [
 	"accept",
 	"action",
@@ -1235,7 +1261,7 @@ async function all() {
 				if (document.body) {
 					document.body.insertBefore(svgSprite, document.body.firstChild);
 				} else {
-					document.addEventListener("DOMContentLoaded", () => {
+					addManagedEventListener(document, "DOMContentLoaded", () => {
 						document.body.insertBefore(svgSprite, document.body.firstChild);
 					});
 				}
@@ -1409,7 +1435,7 @@ async function all() {
 			];
 			marked.use({ extensions: customExtensions });
 			const renderer = new marked.Renderer();
-			renderer.code = function ( text, lang, escaped ) {
+			renderer.code = function (text, lang, escaped) {
 				let highlightCode = text;
 				if (lang && hljs.getLanguage(lang)) {
 					highlightCode = hljs.highlight(text, { language: lang }).value;
@@ -1917,7 +1943,7 @@ async function all() {
 				{
 					key: "contestReplayEnabled",
 					label: "创建重现赛",
-					desc: "在比赛页面添加创建重现赛功能",
+					desc: "在比赛页面添加创建重现赛功能，快捷键：Ctrl+Alt+C（macOS 为 Command+Option+C）",
 					tag: "功能",
 					status: "stable",
 				},
@@ -1987,7 +2013,7 @@ async function all() {
 				{
 					key: "problemRandom",
 					label: "随机跳题",
-					desc: "根据筛选条件或题单随机跳转到一道题目",
+					desc: "根据筛选条件或题单随机跳转到一道题目，快捷键：Ctrl+Alt+R（macOS 为 Command+Option+R）",
 					tag: "功能",
 					status: "stable",
 				},
@@ -3507,7 +3533,7 @@ async function all() {
 						{ name: 'GenGen RMJ', icon: 'fas fa-rocket', type: 'scriptcat', desc: '新的 RMJ', link: 'https://gengen.qzz.io/projects/rmj/' },
 						{ name: 'Better Luogu', icon: 'fas fa-puzzle-piece', type: 'tampermonkey', desc: '强大的洛谷插件', link: 'https://blg.volatiles.dpdns.org/' },
 						{ name: 'Argon Luogu', icon: 'fa-brands fa-css', type: 'software', desc: '漂亮的洛谷样式', link: 'https://userstyles.world/style/24127/default-slug' },
-						{ name: 'Argon Luogu Dev(Unofficial)', icon: 'fa-brands fa-css', type: 'software', desc: '比 Argon Luogu 更兼容 Amazing Luogu ，而且更美丽（非官方）', link: 'https://userstyles.world/style/28284/argon-luogu-dev-2026' },
+						{ name: 'Argon Luogu Dev 2026', icon: 'fa-brands fa-css', type: 'software', desc: '比 Argon Luogu 更兼容 Amazing Luogu ，而且更美丽', link: 'https://userstyles.world/style/28284/argon-luogu-dev-2026' },
 						{ name: 'OI CPP', icon: 'fa-solid fa-code', type: 'software', desc: '强大的 IDE', link: 'https://oicpp.mywwzh.top/' },
 						{ name: '洛谷仓库', icon: 'fa-regular fa-floppy-disk', type: 'website', desc: '强大的洛谷保存站。', link: 'https://luogu.store/' },
 						{ name: 'S-A-OJ', icon: 'fa-brands fa-css', type: 'software', desc: '完美的 OJ - OJ 样式修改', link: 'https://userstyles.world/style/26790/sa-oj-oj-luoguatcoder'}
@@ -3526,7 +3552,7 @@ async function all() {
 						const slide = document.createElement('div');
 						slide.className = 'aml-carousel-slide';
 						slide.innerHTML = \`<img src="\${ad.image}" alt="Ad \${index}"><div class="aml-carousel-caption">\${ad.text}</div>\`;
-						slide.addEventListener('click', () => { window.open(ad.link, '_blank'); });
+						addManagedEventListener(slide, 'click', () => { window.open(ad.link, '_blank'); });
 						carouselTrack.appendChild(slide);
 						const dot = document.createElement('div');
 						dot.className = \`aml-carousel-dot \${index === 0 ? 'active' : ''}\`;
@@ -3558,7 +3584,7 @@ async function all() {
 							</div>
 							<p class="aml-script-desc">\${script.desc}</p>
 						\`;
-						card.addEventListener('click', () => { window.open(script.link, '_blank'); });
+						addManagedEventListener(card, 'click', () => { window.open(script.link, '_blank'); });
 						scriptsGrid.appendChild(card);
 					});
 				}
@@ -3580,10 +3606,10 @@ async function all() {
 							const toggleBtn = document.getElementById('aml-toggle-sidebar');
 							const sidebar = document.getElementById('aml-sidebar');
 							const closeBtn = document.getElementById('aml-close-panel');
-							toggleBtn?.addEventListener('click', () => {
+							toggleBtn && addManagedEventListener(toggleBtn, 'click', () => {
 								sidebar?.classList.toggle('collapsed');
 							});
-							closeBtn?.addEventListener('click', () => {
+							closeBtn && addManagedEventListener(closeBtn, 'click', () => {
 								document.querySelector('.welcomeContainer')?.remove();
 							});
 						})();
@@ -3603,7 +3629,7 @@ async function all() {
 								});
 							}
 							tabBtns.forEach(btn => {
-								btn.addEventListener('click', (e) => {
+								addManagedEventListener(btn, 'click', (e) => {
 									e.preventDefault();
 									switchTab(btn.dataset.tab);
 								});
@@ -3629,7 +3655,7 @@ async function all() {
 						(function initThanks() {
 							const thanksBtn = document.querySelector('[data-tab="thanks"]');
 							if (!thanksBtn) return;
-							thanksBtn.addEventListener('click', function renderThanks() {
+							addManagedEventListener(thanksBtn, 'click', function renderThanks() {
 								const grid = document.getElementById('aml-thanks-grid');
 								if (!grid || grid.querySelector('.thanks-card')) return;
 								const contributors = [
@@ -3680,7 +3706,7 @@ async function all() {
 											btn.disabled = true;
 										}
 									}).catch(() => {});
-									btn.addEventListener('click', async () => {
+									addManagedEventListener(btn, 'click', async () => {
 										btn.disabled = true;
 										btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 关注中…';
 										try {
@@ -3713,7 +3739,7 @@ async function all() {
 							const submitBtn = document.getElementById('submit-bug-btn');
 							const statusEl = document.getElementById('bug-submit-status');
 							if (!submitBtn) return;
-							submitBtn.addEventListener('click', async function () {
+							addManagedEventListener(submitBtn, 'click', async function () {
 								const title = document.getElementById('bug-title').value.trim();
 								const content = document.getElementById('bug-content').value.trim();
 								if (!title) return showStatus('请输入标题', 'error');
@@ -4143,7 +4169,7 @@ async function all() {
 					"aml-chatNotificationEnabled",
 				);
 				if (chatNotificationToggle) {
-					chatNotificationToggle.addEventListener("change", function (e) {
+					addManagedEventListener(chatNotificationToggle, "change", function (e) {
 						const newValue = e.target.checked;
 						saveAMLSetting("chatNotificationEnabled", newValue);
 						currentAMLSettings.chatNotificationEnabled = newValue;
@@ -4169,7 +4195,7 @@ async function all() {
 						keys: ["label", "desc", "tag"]
 					};
 					const fuse = new Fuse(features, fuseOptions);
-					searchInput.addEventListener("input", function (e) {
+				addManagedEventListener(searchInput, "input", function (e) {
 						const query = e.target.value.trim();
 						featureCards.forEach((card) => {
 							card.style.display = "none";
@@ -4241,16 +4267,15 @@ async function all() {
 				focusModeSettingsKeys.forEach((key) => {
 					const element = document.getElementById(`aml-${key}`);
 					if (element) {
-						element.addEventListener("change", function (e) {
+						addManagedEventListener(element, "change", function (e) {
 							const newValue = e.target.checked;
 							saveAMLSetting(key, newValue);
 							currentAMLSettings[key] = newValue;
 						});
 					}
 				});
-				document
-					.getElementById("aml-focusModeEnabled")
-					?.addEventListener("change", function (e) {
+				const focusModeEnabledEl = document.getElementById("aml-focusModeEnabled");
+				focusModeEnabledEl && addManagedEventListener(focusModeEnabledEl, "change", function (e) {
 						const newValue = e.target.checked;
 						saveAMLSetting("focusModeEnabled", newValue);
 						currentAMLSettings.focusModeEnabled = newValue;
@@ -4270,22 +4295,20 @@ async function all() {
 					"focusModeHideArticle",
 					"focusModeHidePaste",
 				].forEach((key) => {
-					document
-						.getElementById(`aml-${key}`)
-						?.addEventListener("change", function (e) {
-							const newValue = e.target.checked;
-							saveAMLSetting(key, newValue);
-							currentAMLSettings[key] = newValue;
-						});
+					const el = document.getElementById(`aml-${key}`);
+					el && addManagedEventListener(el, "change", function (e) {
+						const newValue = e.target.checked;
+						saveAMLSetting(key, newValue);
+						currentAMLSettings[key] = newValue;
+					});
 				});
-				document
-					.getElementById("aml-check-update-btn")
-					?.addEventListener("click", function (e) {
+				const checkUpdateBtn = document.getElementById("aml-check-update-btn");
+				checkUpdateBtn && addManagedEventListener(checkUpdateBtn, "click", function (e) {
 						e.preventDefault();
 						const statusDiv = document.getElementById("aml-update-status");
 						if (statusDiv) {
 							statusDiv.textContent = "正在检查更新...";
-							statusDiv.style.color = "";
+							statusDiv.style.color = "green";
 							statusDiv.style.display = "block";
 						}
 						checkScriptVersion(0)
@@ -4329,23 +4352,22 @@ async function all() {
 				const customFontInput = document.getElementById(
 					"aml-custom-font-input",
 				);
-				customCSSInput?.addEventListener("input", () => {
+				customCSSInput && addManagedEventListener(customCSSInput, "input", () => {
 					saveAMLSetting("customCSS", customCSSInput.value);
 					if (currentAMLSettings.customStyleEnabled) injectCustomCSS();
 				});
-				cssPositionSelect?.addEventListener("change", () => {
+				cssPositionSelect && addManagedEventListener(cssPositionSelect, "change", () => {
 					saveAMLSetting("customCSSPosition", cssPositionSelect.value);
 					if (currentAMLSettings.customStyleEnabled) injectCustomCSS();
 				});
-				customFontInput?.addEventListener("input", () => {
+				customFontInput && addManagedEventListener(customFontInput, "input", () => {
 					saveAMLSetting("customFontURL", customFontInput.value);
 					if (currentAMLSettings.customFontEnabled && customFontInput.value) {
 						loadCustomFont();
 					}
 				});
-				document
-					.getElementById("aml-customStyleEnabled")
-					?.addEventListener("change", function () {
+				const customStyleEnabledEl = document.getElementById("aml-customStyleEnabled");
+				customStyleEnabledEl && addManagedEventListener(customStyleEnabledEl, "change", function () {
 						saveAMLSetting("customStyleEnabled", this.checked);
 						if (this.checked) {
 							injectCustomCSS();
@@ -4353,25 +4375,22 @@ async function all() {
 							removeCustomCSS();
 						}
 					});
-				document
-					.getElementById("aml-custom-css-input")
-					?.addEventListener("input", function () {
-						saveAMLSetting("customCSS", this.value);
-						if (document.getElementById("aml-customStyleEnabled")?.checked) {
-							injectCustomCSS();
-						}
-					});
-				document
-					.getElementById("aml-css-position-select")
-					?.addEventListener("change", function () {
-						saveAMLSetting("customCSSPosition", this.value);
-						if (document.getElementById("aml-customStyleEnabled")?.checked) {
-							injectCustomCSS();
-						}
-					});
-				document
-					.getElementById("aml-customFontEnabled")
-					?.addEventListener("change", function () {
+				const customCssInputEl = document.getElementById("aml-custom-css-input");
+				customCssInputEl && addManagedEventListener(customCssInputEl, "input", function () {
+					saveAMLSetting("customCSS", this.value);
+					if (document.getElementById("aml-customStyleEnabled")?.checked) {
+						injectCustomCSS();
+					}
+				});
+				const cssPositionSelectEl = document.getElementById("aml-css-position-select");
+				cssPositionSelectEl && addManagedEventListener(cssPositionSelectEl, "change", function () {
+					saveAMLSetting("customCSSPosition", this.value);
+					if (document.getElementById("aml-customStyleEnabled")?.checked) {
+						injectCustomCSS();
+					}
+				});
+				const customFontEnabledEl = document.getElementById("aml-customFontEnabled");
+				customFontEnabledEl && addManagedEventListener(customFontEnabledEl, "change", function () {
 						saveAMLSetting("customFontEnabled", this.checked);
 						if (this.checked && currentAMLSettings.customFontURL) {
 							loadCustomFont();
@@ -6369,7 +6388,7 @@ async function all() {
 							copyButton.style.display = "";
 						}
 					}
-					header.addEventListener("click", (event) => {
+					addManagedEventListener(header, "click", (event) => {
 						event.stopPropagation();
 						const isFolded = content.classList.contains("aml-collapsed");
 						if (isFolded) {
@@ -6603,7 +6622,7 @@ async function all() {
 						setTimeout(CheckAndDelete, 2000);
 					}, 3000);
 				}, 5000);
-				document.addEventListener("visibilitychange", () => {
+				addManagedEventListener(document, "visibilitychange", () => {
 					if (document.hidden) {
 						if (foldingInterval) {
 							clearInterval(foldingInterval);
@@ -6986,12 +7005,12 @@ async function all() {
 							button.style.position = "absolute";
 							button.style.top = "100px";
 							button.style.right = "100px";
-							window.addEventListener("scroll", function () {
+							addManagedEventListener(window, "scroll", function () {
 								var scrollY = window.scrollY;
 								button.style.top = 100 + scrollY + "px";
 							});
 							button.classList.add("aml-button-lgcm");
-							button.addEventListener("click", async function () {
+							addManagedEventListener(button, "click", async function () {
 								handleCopyMarkdown();
 							});
 							document.body.appendChild(button);
@@ -7055,7 +7074,7 @@ async function all() {
 						button.setAttribute("data-v-505b6a97", "");
 						button.setAttribute("type", "button");
 					}
-					button.addEventListener("click", (e) => {
+					addManagedEventListener(button, "click", (e) => {
 						e.stopPropagation();
 						e.preventDefault();
 						if (typeof GM_setClipboard === "function") {
@@ -7248,13 +7267,14 @@ async function all() {
 				const urlObserver = new MutationObserver(() => {
 					if (location.href !== lastUrl) {
 						lastUrl = location.href;
+						removeAllKeydownListeners();
 						processMainContent();
 						processReplies();
 					}
 				});
 				urlObserver.observe(document, { childList: true, subtree: true });
 				if (document.readyState === "loading") {
-					document.addEventListener("DOMContentLoaded", function () {
+					addManagedEventListener(document, "DOMContentLoaded", function () {
 						processMainContent();
 						processReplies();
 					});
@@ -7447,35 +7467,12 @@ async function all() {
 			}
 			if (
 				currentAMLSettings.contestReplayEnabled &&
-				location.pathname.split("/")[1] == "contest"
+				location.pathname.split("/")[1] == "contest" &&
+				location.pathname.replaceAll("/", "") != "contestlist" && 
+				location.pathname.replaceAll("/", "") != "contestnew"
 			) {
 				try {
-					let cpbtn = document.getElementsByClassName("title lfe-h2")[0];
-					const parser = new DOMParser();
-					const doc = parser.parseFromString(
-						`<button data-v-7ade990c="" data-v-9f9431e6="" type="button" class="aml-vscode lfe-form-sz-middle" data-v-2dfcfd35="" style="
-    font-size: small;
-    border: 1px solid;
-    border-color: rgb(52, 152, 219);
-    background-color: rgb(52, 152, 219);
-    display: inline-block;
-    flex: none;
-    outline: 0;
-    cursor: pointer;
-    color: #fff;
-    font-weight: inherit;
-    line-height: 1.5;
-    text-align: center;
-    vertical-align: middle;
-    border-radius: 3px;
-    ">创建重现赛</button>`,
-						"text/html",
-					).body.firstChild;
-					const spaceNode = parser.parseFromString(
-						'<l class="aml-space">&nbsp;</l>',
-						"text/html",
-					).body.firstElementChild;
-					doc.onclick = async function () {
+					const createContestReplay = async function () {
 						const { value: NewStartTime } = await Swal.fire({
 							title: "创建重现赛",
 							input: "datetime-local",
@@ -7564,8 +7561,14 @@ async function all() {
 							}
 						}
 					};
-					cpbtn.appendChild(spaceNode);
-					cpbtn.appendChild(doc);
+					addKeydownListener(function (event) {
+						if (window.location.hostname !== "www.luogu.com.cn") return;
+						if (location.pathname.split("/")[1] !== "contest") return;
+						if (event.code === "KeyC" && (event.ctrlKey || event.metaKey) && event.altKey) {
+							event.preventDefault();
+							createContestReplay();
+						}
+					});
 				} catch (e) {
 					console.log(e);
 				}
@@ -8062,7 +8065,7 @@ async function all() {
 			if (currentAMLSettings.benbenctrlenterEnabled && !benbenctrlenterInited) {
 				try {
 					benbenctrlenterInited = true;
-					document.addEventListener("keyup", function (event) {
+					addManagedEventListener(document, "keyup", function (event) {
 						const isCtrlOrCommand = event.ctrlKey || event.metaKey;
 						if (
 							isCtrlOrCommand &&
@@ -8236,10 +8239,11 @@ async function all() {
 				!location.hash
 			) {
 				try {
-					document.addEventListener("keydown", function (event) {
+					addKeydownListener(function (event) {
 						let search = new URLSearchParams(location.search);
 						if (window.location.hostname !== "www.luogu.com.cn") return;
-						if (event.code === "KeyV" && event.ctrlKey && event.altKey) {
+						if (!location.pathname.startsWith("/problem/") || location.pathname.split("/").length != 3) return;
+						if (event.code === "KeyV" && (event.ctrlKey || event.metaKey) && (event.altKey || event.optionKey)) {
 							Swal.fire({
 								icon: "info",
 								title: "正在跳转",
@@ -8345,9 +8349,10 @@ async function all() {
 				location.pathname.replaceAll("/", "") != "contestlist"
 			) {
 				try {
-					document.addEventListener("keydown", function (event) {
+					addKeydownListener(function (event) {
 						if (window.location.hostname !== "www.luogu.com.cn") return;
-						if (event.code === "KeyV" && event.ctrlKey && event.altKey) {
+						if (!location.pathname.startsWith("/contest/")) return;
+						if (event.code === "KeyV" && (event.ctrlKey || event.metaKey) && (event.altKey || event.optionKey)) {
 							Swal.fire({
 								icon: "info",
 								title: "正在跳转",
@@ -8677,8 +8682,8 @@ async function all() {
 						const _nbnhhsh = (_) => {
 							setTimeout(nbnhhsh, 1);
 						};
-						document.body.addEventListener("mouseup", _nbnhhsh);
-						document.body.addEventListener("keyup", _nbnhhsh);
+						addManagedEventListener(document.body, "mouseup", _nbnhhsh);
+						addManagedEventListener(document.body, "keyup", _nbnhhsh);
 						const createEl = (html) => {
 							createEl._el.innerHTML = html;
 							let el = createEl._el.children[0];
@@ -8948,8 +8953,8 @@ async function all() {
 								const renderBtn = editTab.querySelector(
 									'button[data-type="render"]',
 								);
-								const renderContent = targetCard.querySelector(".lfe-marked");
-								copyBtn.addEventListener("click", function () {
+							const renderContent = targetCard.querySelector(".lfe-marked");
+							addManagedEventListener(copyBtn, "click", function () {
 									GM_setClipboard(it);
 									Swal.fire({
 										title: "Amazing Luogu",
@@ -9161,32 +9166,7 @@ async function all() {
 				currentPath.match(/^\/training\/\d+$/)
 			) {
 				try {
-					const parser = new DOMParser();
-					const space = parser.parseFromString(
-						`<l class="aml-space">&nbsp;</l>`,
-						"text/html",
-					).body.firstElementChild;
-					const doc = parser.parseFromString(
-						`<button data-v-7ade990c="" data-v-9f9431e6="" type="button" class="aml-vscode lfe-form-sz-middle" data-v-2dfcfd35="" style="
-    font-size: small;
-    border: 1px solid;
-    border-color: rgb(52, 152, 219);
-    background-color: rgb(52, 152, 219);
-    display: inline-block;
-    flex: none;
-    outline: 0;
-    cursor: pointer;
-    color: #fff;
-    font-weight: inherit;
-    line-height: 1.5;
-    text-align: center;
-    vertical-align: middle;
-    border-radius: 3px;
-    ">随机跳题</button>`,
-						"text/html",
-					).body.firstElementChild;
-					let trainingId = location.pathname.replace("/training/", "");
-					doc.onclick = async function () {
+					const randomJumpFromTraining = async function () {
 						Swal.fire({
 							title: "正在跳题",
 							text: "请稍候",
@@ -9202,10 +9182,14 @@ async function all() {
 							"https://www.luogu.com.cn/problem/" + problem.pid,
 						);
 					};
-					if (document.getElementsByClassName("title lfe-h2")[0]) {
-						document.getElementsByClassName("title lfe-h2")[0].appendChild(space);
-						document.getElementsByClassName("title lfe-h2")[0].appendChild(doc);
-					}
+					addKeydownListener(function (event) {
+						if (window.location.hostname !== "www.luogu.com.cn") return;
+						if (!currentPath.match(/^\/training\/\d+$/)) return;
+						if (event.code === "KeyR" && (event.ctrlKey || event.metaKey) && event.altKey) {
+							event.preventDefault();
+							randomJumpFromTraining();
+						}
+					});
 				} catch (e) {
 					console.log(e);
 				}
@@ -9215,12 +9199,7 @@ async function all() {
 				currentPath.startsWith("/problem/list")
 			) {
 				try {
-					const parser = new DOMParser();
-					const doc = parser.parseFromString(
-						`<button class="aml-problem-random-button solid lform-size-middle aml-random-problem-btn" style="background-color: rgba(var(--l-button--real-color), 1);color: #fff;scroll-margin-top: 3.5rem;--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));    display: inline-block;outline: none;cursor: pointer;font-weight: inherit;line-height: 1.5;text-align: center;vertical-align: middle;border-radius: 3px;border: 1px solid rgb(var(--l-button--real-color));background: rgba(var(--l-button--real-color), 0) none;color: rgb(var(--l-button--real-color));" type="button">随机跳题</button>`,
-						"text/html",
-					).body.firstElementChild;
-					doc.onclick = async function () {
+					const randomJumpFromList = async function () {
 						Swal.fire({
 							title: "正在跳题",
 							text: "请稍候",
@@ -9328,20 +9307,14 @@ async function all() {
 							problems[Math.floor(Math.random() * problems.length)],
 						);
 					};
-					const spaceNode = parser.parseFromString(
-						'<l class="aml-space">&nbsp;</l>',
-						"text/html",
-					).body.firstElementChild;
-					document
-						.getElementsByClassName("solid lform-size-middle")[0]
-						.parentNode.insertBefore(
-							doc,
-							document.getElementsByClassName("solid lform-size-middle")[0]
-								.nextElementSibling,
-						);
-					document
-						.getElementsByClassName("solid lform-size-middle")[0]
-						.parentNode.insertBefore(spaceNode, doc);
+					addKeydownListener(function (event) {
+						if (window.location.hostname !== "www.luogu.com.cn") return;
+						if (!currentPath.startsWith("/problem/list")) return;
+						if (event.code === "KeyR" && (event.ctrlKey || event.metaKey) && event.altKey) {
+							event.preventDefault();
+							randomJumpFromList();
+						}
+					});
 				} catch (e) {
 					console.log(e);
 				}
@@ -9440,7 +9413,7 @@ async function all() {
 								addCopyButtons(container);
 							}, 500);
 							container.querySelectorAll("img").forEach((img) => {
-								img.addEventListener("click", () => {
+								addManagedEventListener(img, "click", () => {
 									window.open(img.src, "_blank");
 								});
 								img.onerror = function () {
@@ -9454,7 +9427,7 @@ async function all() {
 								};
 							});
 							element.appendChild(container);
-							container.addEventListener("dblclick", () => {
+							addManagedEventListener(container, "dblclick", () => {
 								const input = document.querySelector(".editor textarea");
 								if (input) {
 									input.value += rawMarkdown;
@@ -9481,7 +9454,7 @@ async function all() {
 						let observerInterval = setInterval(() => {
 							processNewMessages();
 						}, 500);
-						document.addEventListener("visibilitychange", () => {
+						addManagedEventListener(document, "visibilitychange", () => {
 							if (document.hidden) {
 								if (observerInterval) {
 									clearInterval(observerInterval);
@@ -9861,13 +9834,14 @@ async function all() {
 						if (selectedText === "" || selectedText === null) return;
 						jumpToProblem(selectedText);
 					}
-					document.addEventListener("dblclick", function (event) {
+					addManagedEventListener(document, "dblclick", function (event) {
 						if (window.location.hostname === "www.luogu.com.cn") {
 							handleJumpRequest();
 						}
 					});
-					document.addEventListener("keydown", function (event) {
+					addKeydownListener(function (event) {
 						if (window.location.hostname !== "www.luogu.com.cn") return;
+						if (!currentPath.match(/^\/problem\/\w+/)) return;
 						if (event.code === "KeyJ" && event.ctrlKey && event.shiftKey) {
 							handleJumpRequest();
 						} else if (
@@ -10316,7 +10290,7 @@ async function all() {
 						}
 					};
 					if (document.readyState === "loading") {
-						document.addEventListener("DOMContentLoaded", applyJumpStyling);
+						addManagedEventListener(document, "DOMContentLoaded", applyJumpStyling);
 					} else {
 						setTimeout(applyJumpStyling, 500);
 					}
@@ -10970,15 +10944,15 @@ async function all() {
     `;
 						document.body.appendChild(panel);
 						const input = document.getElementById("qq-emoji-search-input");
-						input.addEventListener("input", () => {
+						addManagedEventListener(input, "input", () => {
 							displaySearchResults(input.value);
 						});
-						panel.addEventListener("click", (e) => {
+						addManagedEventListener(panel, "click", (e) => {
 							if (e.target === panel) {
 								toggleSearchPanel();
 							}
 						});
-						document.addEventListener("keydown", (e) => {
+						addManagedEventListener(document, "keydown", (e) => {
 							if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "e") {
 								e.preventDefault();
 								toggleSearchPanel();
@@ -11892,6 +11866,7 @@ async function all() {
 })();
 function show_user_agreement() {
 	if (GM_getValue("user_agreement_showed_1.0.0", false)) {
+		show_disclaimer();
 		return;
 	}
 	Swal.fire({
@@ -11942,6 +11917,7 @@ function show_user_agreement() {
 }
 function show_disclaimer() {
 	if (GM_getValue("disclaimer_showed_1.0.0", false)) {
+		show_data_collection_notice();
 		return;
 	}
 	Swal.fire({
@@ -11977,6 +11953,62 @@ function show_disclaimer() {
 		GM_setValue("disclaimer_showed_1.0.0", true);
 	});
 }
+function show_data_collection_notice() {
+	if (GM_getValue("data_collection_notice_showed_1.0.0", false)) {
+		return;
+	}
+	Swal.fire({
+		title: "数据采集说明",
+		html: `
+            <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
+    <h4>签名与网站时间提示功能</h4>
+    <p>当您启用"签名与网站时间提示"功能后，您的用户 UID（洛谷用户 ID）将被上传到 Supabase 数据库。</p>
+    <h4>用途说明</h4>
+    <p>- 收集您的用户 UID 用于记录和显示您在洛谷的最后在线时间<br>- 此数据仅用于显示您的在线状态，不会用于其他用途<br>- 数据通过 https://ktwhwvafywwekfkvskbk.supabase.co 进行传输和存储</p>
+    <h4>数据安全</h4>
+    <p>- 所有数据传输均通过 HTTPS 加密<br>- 数据存储在 Supabase 的安全数据库中<br>- 您可以随时在设置中关闭此功能，停止数据收集</p>
+    <h4>功能关闭</h4>
+    <p>您可以通过以下方式关闭此功能：<br>1. 打开 Amazing Luogu 设置页面<br>2. 找到"签名与网站时间提示"选项<br>3. 将其关闭即可停止数据收集</p>
+    <h4>其他功能</h4>
+    <p>除上述功能外，Amazing Luogu 不会收集您的其他个人数据，也不会将任何数据分享给第三方。</p>
+    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年5月19日</p>
+</div>
+        `,
+		width: '600px',
+		showCancelButton: false,
+		confirmButtonText: "我已知晓",
+		allowOutsideClick: false,
+		allowEscapeKey: false,
+	}).then(() => {
+		GM_setValue("data_collection_notice_showed_1.0.0", true);
+	});
+}
+function show_updates(){
+	if (GM_getValue("updates_showed_1.0.6", false)) {
+		return;
+	}
+	Swal.fire({
+		title: "更新说明",
+		html: `
+            <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
+    <h4>随机跳题</h4>
+    <p>随机跳题功能被去掉了按钮，改成了 Ctrl+Alt+R(Command+Option+R) 的快捷键</p>
+	<h4>跳转到 VScode Luogu</h4>
+	<p>跳转到 VScode Luogu 功能被去掉了按钮，改成了 Ctrl+Alt+V(Command+Option+V) 了</p>
+	<h4>创建重现赛</h4>
+	<p>创建重现赛功能被去掉了按钮，改成了 Ctrl+Alt+C(Command+Option+C) 的快捷键</p>
+    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年6月6日</p>
+</div>
+        `,
+		width: '600px',
+		showCancelButton: false,
+		confirmButtonText: "我已知晓",
+		allowOutsideClick: false,
+		allowEscapeKey: false,
+	}).then(() => {
+		GM_setValue("updates_showed_1.0.6", true);
+	});
+}
 window.addEventListener("load", function () {
 	setTimeout(follow, 1000);
 	setTimeout(show_user_agreement, 1000);
@@ -11984,6 +12016,8 @@ window.addEventListener("load", function () {
 });
 unsafeWindow.addEventListener("console-capture", (e) => {
 	if (e.detail.args[1] == "Navigated to ") {
+		removeAllKeydownListeners();
+		removeAllManagedEventListeners();
 		requestAnimationFrame(() => {
 			requestAnimationFrame(() => {
 				setTimeout(all, 1000);
