@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -70,25 +70,25 @@
 // ==/UserScript==
 const eventListeners = [];
 function addManagedEventListener(target, event, callback, options) {
-    target.addEventListener(event, callback, options);
-    eventListeners.push({ target, event, callback, options });
+	target.addEventListener(event, callback, options);
+	eventListeners.push({ target, event, callback, options });
 }
 function removeAllManagedEventListeners() {
-    for (const listener of eventListeners) {
-        listener.target.removeEventListener(listener.event, listener.callback, listener.options);
-    }
-    eventListeners.length = 0;
+	for (const listener of eventListeners) {
+		listener.target.removeEventListener(listener.event, listener.callback, listener.options);
+	}
+	eventListeners.length = 0;
 }
 const keydownListeners = [];
 function addKeydownListener(callback) {
-    document.addEventListener("keydown", callback);
-    keydownListeners.push({ callback, target: document });
+	document.addEventListener("keydown", callback);
+	keydownListeners.push({ callback, target: document });
 }
 function removeAllKeydownListeners() {
-    for (const listener of keydownListeners) {
-        listener.target.removeEventListener("keydown", listener.callback);
-    }
-    keydownListeners.length = 0;
+	for (const listener of keydownListeners) {
+		listener.target.removeEventListener("keydown", listener.callback);
+	}
+	keydownListeners.length = 0;
 }
 unsafeWindow.addManagedEventListener = addManagedEventListener;
 unsafeWindow.removeAllManagedEventListeners = removeAllManagedEventListeners;
@@ -3941,7 +3941,7 @@ async function all() {
 				if (uid == null) {
 					return null;
 				}
-				if (uid == getuid()) {
+				if (uid == getuid() && !location.pathname.startsWith("/ticket")) {
 					let a = document.querySelector("span[data-v-1ecbf760]");
 					let b = document.querySelector("a[data-v-aef5ecde][data-v-0640126c]");
 					if (a) {
@@ -3949,6 +3949,9 @@ async function all() {
 					} else {
 						return b ? b.textContent.trim() : null;
 					}
+				}
+				if (uid == getuid()) {
+					return 'User ' + uid;
 				}
 				console.log(`https://www.luogu.com.cn/api/user/search?keyword=${uid}`);
 				const response = await fetch(
@@ -4195,7 +4198,7 @@ async function all() {
 						keys: ["label", "desc", "tag"]
 					};
 					const fuse = new Fuse(features, fuseOptions);
-				addManagedEventListener(searchInput, "input", function (e) {
+					addManagedEventListener(searchInput, "input", function (e) {
 						const query = e.target.value.trim();
 						featureCards.forEach((card) => {
 							card.style.display = "none";
@@ -4276,16 +4279,16 @@ async function all() {
 				});
 				const focusModeEnabledEl = document.getElementById("aml-focusModeEnabled");
 				focusModeEnabledEl && addManagedEventListener(focusModeEnabledEl, "change", function (e) {
-						const newValue = e.target.checked;
-						saveAMLSetting("focusModeEnabled", newValue);
-						currentAMLSettings.focusModeEnabled = newValue;
-						const focusModeSection = document.getElementById(
-							"aml-focusmode-section",
-						);
-						if (focusModeSection) {
-							focusModeSection.style.display = newValue ? "block" : "none";
-						}
-					});
+					const newValue = e.target.checked;
+					saveAMLSetting("focusModeEnabled", newValue);
+					currentAMLSettings.focusModeEnabled = newValue;
+					const focusModeSection = document.getElementById(
+						"aml-focusmode-section",
+					);
+					if (focusModeSection) {
+						focusModeSection.style.display = newValue ? "block" : "none";
+					}
+				});
 				[
 					"focusModeHidePassedProblems",
 					"focusModeHideUserNav",
@@ -4304,47 +4307,47 @@ async function all() {
 				});
 				const checkUpdateBtn = document.getElementById("aml-check-update-btn");
 				checkUpdateBtn && addManagedEventListener(checkUpdateBtn, "click", function (e) {
-						e.preventDefault();
-						const statusDiv = document.getElementById("aml-update-status");
-						if (statusDiv) {
-							statusDiv.textContent = "正在检查更新...";
-							statusDiv.style.color = "green";
-							statusDiv.style.display = "block";
-						}
-						checkScriptVersion(0)
-							.then(() => {
-								if (
-									statusDiv &&
-									statusDiv.textContent.includes("正在检查更新")
-								) {
-									statusDiv.textContent = "检查完成。";
-									Swal.fire({
-										title: "提示",
-										text: "检查完成。",
-										icon: "info",
-										confirmButtonText: "确定",
-									});
-									statusDiv.style.color = "green";
-									setTimeout(() => {
-										if (statusDiv.textContent === "正在检查更新...") {
-											statusDiv.textContent = "";
-										}
-									}, 3000);
-								}
-							})
-							.catch((error) => {
-								if (statusDiv) {
-									statusDiv.textContent = "检查更新时发生错误或取消了更新。";
-									statusDiv.style.color = "red";
-								}
+					e.preventDefault();
+					const statusDiv = document.getElementById("aml-update-status");
+					if (statusDiv) {
+						statusDiv.textContent = "正在检查更新...";
+						statusDiv.style.color = "green";
+						statusDiv.style.display = "block";
+					}
+					checkScriptVersion(0)
+						.then(() => {
+							if (
+								statusDiv &&
+								statusDiv.textContent.includes("正在检查更新")
+							) {
+								statusDiv.textContent = "检查完成。";
 								Swal.fire({
-									title: "错误",
-									text: "检查更新时发生错误或取消了更新。",
-									icon: "error",
+									title: "提示",
+									text: "检查完成。",
+									icon: "info",
 									confirmButtonText: "确定",
 								});
+								statusDiv.style.color = "green";
+								setTimeout(() => {
+									if (statusDiv.textContent === "正在检查更新...") {
+										statusDiv.textContent = "";
+									}
+								}, 3000);
+							}
+						})
+						.catch((error) => {
+							if (statusDiv) {
+								statusDiv.textContent = "检查更新时发生错误或取消了更新。";
+								statusDiv.style.color = "red";
+							}
+							Swal.fire({
+								title: "错误",
+								text: "检查更新时发生错误或取消了更新。",
+								icon: "error",
+								confirmButtonText: "确定",
 							});
-					});
+						});
+				});
 				const customCSSInput = document.getElementById("aml-custom-css-input");
 				const cssPositionSelect = document.getElementById(
 					"aml-css-position-select",
@@ -4368,13 +4371,13 @@ async function all() {
 				});
 				const customStyleEnabledEl = document.getElementById("aml-customStyleEnabled");
 				customStyleEnabledEl && addManagedEventListener(customStyleEnabledEl, "change", function () {
-						saveAMLSetting("customStyleEnabled", this.checked);
-						if (this.checked) {
-							injectCustomCSS();
-						} else {
-							removeCustomCSS();
-						}
-					});
+					saveAMLSetting("customStyleEnabled", this.checked);
+					if (this.checked) {
+						injectCustomCSS();
+					} else {
+						removeCustomCSS();
+					}
+				});
 				const customCssInputEl = document.getElementById("aml-custom-css-input");
 				customCssInputEl && addManagedEventListener(customCssInputEl, "input", function () {
 					saveAMLSetting("customCSS", this.value);
@@ -4391,13 +4394,13 @@ async function all() {
 				});
 				const customFontEnabledEl = document.getElementById("aml-customFontEnabled");
 				customFontEnabledEl && addManagedEventListener(customFontEnabledEl, "change", function () {
-						saveAMLSetting("customFontEnabled", this.checked);
-						if (this.checked && currentAMLSettings.customFontURL) {
-							loadCustomFont();
-						} else {
-							removeCustomFontFace();
-						}
-					});
+					saveAMLSetting("customFontEnabled", this.checked);
+					if (this.checked && currentAMLSettings.customFontURL) {
+						loadCustomFont();
+					} else {
+						removeCustomFontFace();
+					}
+				});
 				$(".welcomeContainer").click(function (event) {
 					event.stopPropagation();
 				});
@@ -5540,6 +5543,7 @@ async function all() {
 			`);
 				setTimeout(() => {
 					getNotification();
+					console.log(getuid());
 					getusernameandset(getuid());
 					fetchHomeData();
 					qwq();
@@ -5715,6 +5719,7 @@ async function all() {
 						$(".searchAnywhereContent").html(my_info);
 						setTimeout(() => {
 							getNotification();
+							console.log(getuid());
 							getusernameandset(getuid());
 							fetchHomeData();
 							qwq();
@@ -7468,7 +7473,7 @@ async function all() {
 			if (
 				currentAMLSettings.contestReplayEnabled &&
 				location.pathname.split("/")[1] == "contest" &&
-				location.pathname.replaceAll("/", "") != "contestlist" && 
+				location.pathname.replaceAll("/", "") != "contestlist" &&
 				location.pathname.replaceAll("/", "") != "contestnew"
 			) {
 				try {
@@ -8953,8 +8958,8 @@ async function all() {
 								const renderBtn = editTab.querySelector(
 									'button[data-type="render"]',
 								);
-							const renderContent = targetCard.querySelector(".lfe-marked");
-							addManagedEventListener(copyBtn, "click", function () {
+								const renderContent = targetCard.querySelector(".lfe-marked");
+								addManagedEventListener(copyBtn, "click", function () {
 									GM_setClipboard(it);
 									Swal.fire({
 										title: "Amazing Luogu",
@@ -11542,12 +11547,15 @@ async function all() {
 									let text = card.innerText;
 									if (
 										currentAMLSettings.focusModeHideProblemDiscuss &&
+										!card.classList.contains("problem") &&
 										text.includes("讨论")
 									) {
 										card.style.setProperty("display", "none", "important");
 									}
 									if (
 										currentAMLSettings.focusModeHideProblemTags &&
+										path.replaceAll("/", "") !== "problemlist" &&
+										!card.classList.contains("problem") &&
 										text.includes("标签")
 									) {
 										card.style.setProperty("display", "none", "important");
@@ -11951,10 +11959,12 @@ function show_disclaimer() {
 		allowEscapeKey: false,
 	}).then(() => {
 		GM_setValue("disclaimer_showed_1.0.0", true);
+		show_data_collection_notice();
 	});
 }
 function show_data_collection_notice() {
 	if (GM_getValue("data_collection_notice_showed_1.0.0", false)) {
+		show_updates();
 		return;
 	}
 	Swal.fire({
@@ -11981,9 +11991,10 @@ function show_data_collection_notice() {
 		allowEscapeKey: false,
 	}).then(() => {
 		GM_setValue("data_collection_notice_showed_1.0.0", true);
+		show_updates();
 	});
 }
-function show_updates(){
+function show_updates() {
 	if (GM_getValue("updates_showed_1.0.6", false)) {
 		return;
 	}
