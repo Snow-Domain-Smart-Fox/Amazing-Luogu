@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -40,6 +40,7 @@
 // @connect      codeforces.com
 // @connect      127.0.0.1
 // @connect      online.amlg.top
+// @connect      unpkg.com
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -61,13 +62,52 @@
 // @require      https://cdn.amlg.top/npm/vue@2.6.11/dist/vue.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/mark.js@8.11.1/dist/mark.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/fuse.js@7.2.0/dist/fuse.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.umd.js?version=1.0.8
 // @resource     iziToastCSS https://cdn.amlg.top/npm/izitoast@1.4.0/dist/css/iziToast.min.css?version=1.0.1
 // @resource     icomoonCSS https://cdn.amlg.top/gh/marcelodolza/iziToast@master/docs/css/icomoon.css?version=1.0.1
 // @resource     hljs https://cdn.amlg.top/gh/highlightjs/cdn-release/build/styles/github.min.css?version=1.0.1
 // @resource     swal https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css?version=1.0.1
 // @resource     animate https://cdn.amlg.top/npm/animate.css@4.1.1/animate.min.css?version=1.0.1
+// @resource     walineCSS https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.css?version=1.0.8
 // @run-at       document-start
 // ==/UserScript==
+const originalFetch = window.fetch;
+window.fetch = function (url, options) {
+	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string") {
+		return new Promise(function (resolve, reject) {
+			GM_xmlhttpRequest({
+				method: options?.method || "GET",
+				url: url,
+				headers: options?.headers || {},
+				data: options?.body,
+				onload: function (response) {
+					const headers = new Headers();
+					if (response.responseHeaders) {
+						response.responseHeaders.split("\r\n").forEach(function (line) {
+							const index = line.indexOf(":");
+							if (index > 0) {
+								const key = line.substring(0, index).trim();
+								const value = line.substring(index + 1).trim();
+								headers.append(key, value);
+							}
+						});
+					}
+					resolve({
+						status: response.status,
+						statusText: response.statusText,
+						headers: headers,
+						text: function () { return Promise.resolve(response.responseText); },
+						json: function () { return Promise.resolve(JSON.parse(response.responseText)); },
+					});
+				},
+				onerror: function (error) {
+					reject(error);
+				},
+			});
+		});
+	}
+	return originalFetch(url, options);
+};
 const eventListeners = [];
 function addManagedEventListener(target, event, callback, options) {
 	target.addEventListener(event, callback, options);
@@ -483,6 +523,7 @@ GM_addStyle(GM_getResourceText("iziToastCSS"));
 GM_addStyle(GM_getResourceText("icomoonCSS"));
 GM_addStyle(GM_getResourceText("swal"));
 GM_addStyle(GM_getResourceText("animate"));
+GM_addStyle(GM_getResourceText("walineCSS"));
 GM_addStyle(`
 details {
     padding: .5em 1em;
@@ -1655,6 +1696,7 @@ async function all() {
 					"amlDiscussCopyButtonEnabled",
 					true,
 				),
+				walineEnabled: GM_getValue("amlWalineEnabled", false),
 				customCSS: GM_getValue("amlCustomCSS", ""),
 				customCSSPosition: GM_getValue("amlCustomCSSPosition", "head"),
 				customFontURL: GM_getValue("amlCustomFontURL", ""),
@@ -1822,6 +1864,7 @@ async function all() {
 				autoExpandBenben: "amlAutoExpandBenben",
 				copyMarkdownEnabled: "amlCopyMarkdownEnabled",
 				discussCopyButtonEnabled: "amlDiscussCopyButtonEnabled",
+				walineEnabled: "amlWalineEnabled",
 				customCSS: "amlCustomCSS",
 				customCSSPosition: "amlCustomCSSPosition",
 				customFontURL: "amlCustomFontURL",
@@ -2034,9 +2077,16 @@ async function all() {
 				{
 					key: "discussCopyButtonEnabled",
 					label: "讨论区复制",
-					desc: "在讨论区帖子中添加复制 Markdown 按钮",
+					desc: "在讨论区帖子中添加复制 Markdown 按钮和引用按钮",
 					tag: "功能",
 					status: "stable",
+				},
+				{
+					key: "walineEnabled",
+					label: "Waline 评论",
+					desc: "在讨论区帖子中启用 Waline 匿名评论系统，使用 Ctrl+Alt+W 快捷键加载",
+					tag: "功能",
+					status: "beta",
 				},
 				{
 					key: "chatNotificationEnabled",
@@ -7060,13 +7110,18 @@ async function all() {
 						}
 					}, 100);
 				}
+				function formatAsQuote(content) {
+					return content.split("\n").map((line) => `> ${line}`).join("\n");
+				}
 				function createCopyButton(
 					content,
 					label = "复制 Md",
 					fontcolor,
 					type = "a",
+					isQuote = false,
 				) {
 					const button = document.createElement(type);
+					const copyContent = isQuote ? formatAsQuote(content) : content;
 					if (type != "button") {
 						button.href = "javascript:void(0)";
 						button.textContent = label;
@@ -7079,30 +7134,57 @@ async function all() {
 						button.setAttribute("data-v-505b6a97", "");
 						button.setAttribute("type", "button");
 					}
-					addManagedEventListener(button, "click", (e) => {
-						e.stopPropagation();
-						e.preventDefault();
-						if (typeof GM_setClipboard === "function") {
-							GM_setClipboard(content, "text/plain");
-						} else {
-							navigator.clipboard.writeText(content).catch((err) => {
-								Swal.fire({
-									title: "错误",
-									text: "复制失败",
-									icon: "error",
-									confirmButtonText: "确定",
+					if (isQuote) {
+						addManagedEventListener(button, "click", (e) => {
+							e.stopPropagation();
+							e.preventDefault();
+							if (typeof GM_setClipboard === "function") {
+								GM_setClipboard(formatAsQuote(content), "text/plain");
+							} else {
+								navigator.clipboard.writeText(formatAsQuote(content)).catch((err) => {
+									Swal.fire({
+										title: "错误",
+										text: "复制失败",
+										icon: "error",
+										confirmButtonText: "确定",
+									});
 								});
-							});
-						}
-						const originalText = button.textContent;
-						button.textContent = "已复制";
-						const originalColor = button.style.color;
-						button.style.color = "#4CAF50";
-						setTimeout(() => {
-							button.textContent = originalText;
-							button.style.color = originalColor || fontcolor;
-						}, 2000);
-					});
+							}
+							const originalText = button.textContent;
+							button.textContent = "已复制";
+							const originalColor = button.style.color;
+							button.style.color = "#4CAF50";
+							setTimeout(() => {
+								button.textContent = originalText;
+								button.style.color = originalColor || fontcolor;
+							}, 2000);
+						});
+					} else {
+						addManagedEventListener(button, "click", (e) => {
+							e.stopPropagation();
+							e.preventDefault();
+							if (typeof GM_setClipboard === "function") {
+								GM_setClipboard(copyContent, "text/plain");
+							} else {
+								navigator.clipboard.writeText(copyContent).catch((err) => {
+									Swal.fire({
+										title: "错误",
+										text: "复制失败",
+										icon: "error",
+										confirmButtonText: "确定",
+									});
+								});
+							}
+							const originalText = button.textContent;
+							button.textContent = "已复制";
+							const originalColor = button.style.color;
+							button.style.color = "#4CAF50";
+							setTimeout(() => {
+								button.textContent = originalText;
+								button.style.color = originalColor || fontcolor;
+							}, 2000);
+						});
+					}
 					return button;
 				}
 				function getPageDataFromScript() {
@@ -7144,6 +7226,14 @@ async function all() {
 								"button",
 							);
 							button.classList.add("aml-copy-md-btn-main");
+							const quoteButton = createCopyButton(
+								postContent,
+								"引用",
+								"rgb(var(--l-button--real-color))",
+								"button",
+								true,
+							);
+							quoteButton.classList.add("aml-copy-md-btn-main");
 							const cardElement = markedWrap.closest(".l-card");
 							if (cardElement) {
 								let targetContainer = null;
@@ -7173,6 +7263,7 @@ async function all() {
 								}
 								if (targetContainer) {
 									targetContainer.appendChild(button);
+									targetContainer.appendChild(quoteButton);
 								} else {
 									Swal.fire({
 										title: "错误",
@@ -7181,6 +7272,7 @@ async function all() {
 										confirmButtonText: "确定",
 									});
 									markedWrap.appendChild(button);
+									markedWrap.appendChild(quoteButton);
 								}
 							} else {
 								Swal.fire({
@@ -7190,6 +7282,7 @@ async function all() {
 									confirmButtonText: "确定",
 								});
 								markedWrap.appendChild(button);
+								markedWrap.appendChild(quoteButton);
 							}
 						}
 					});
@@ -7264,6 +7357,15 @@ async function all() {
 						);
 						button.classList.add("aml-copy-md-btn-reply");
 						actionContainer.appendChild(button);
+						const quoteButton = createCopyButton(
+							replyContent,
+							"引用",
+							"rgba(0,0,0,.5)",
+							"a",
+							true,
+						);
+						quoteButton.classList.add("aml-copy-md-btn-reply");
+						actionContainer.appendChild(quoteButton);
 					}
 				}
 				processMainContent();
@@ -7288,6 +7390,91 @@ async function all() {
 						processMainContent();
 						processReplies();
 					}, 500);
+				}
+			}
+			if (
+				currentAMLSettings.walineEnabled &&
+				window.location.pathname.match(/^\/discuss\/\d+$/)
+			) {
+				try {
+					function addWalineComment() {
+						console.log("[Waline DEBUG] 开始执行 addWalineComment");
+						if (document.getElementById("waline")) {
+							console.log("[Waline DEBUG] waline 元素已存在，跳过");
+							Swal.fire({
+								title: "提示",
+								text: "Waline 评论已加载",
+								icon: "info",
+								confirmButtonText: "确定",
+							});
+							return;
+						}
+						const mainElement = document.querySelector("main");
+						if (!mainElement) {
+							console.log("[Waline DEBUG] 未找到 main 元素");
+							Swal.fire({
+								title: "错误",
+								text: "未找到 main 元素",
+								icon: "error",
+								confirmButtonText: "确定",
+							});
+							return;
+						}
+						console.log("[Waline DEBUG] 找到 main 元素，子元素数量:", mainElement.children.length);
+						const targetElement = mainElement.children[mainElement.children.length - 1]?.children[mainElement.children[mainElement.children.length - 1].children.length - 1]?.children[mainElement.children[mainElement.children.length - 1].children[mainElement.children[mainElement.children.length - 1].children.length - 1].children.length - 1]?.children[mainElement.children[mainElement.children.length - 1].children[mainElement.children[mainElement.children.length - 1].children.length - 1].children[mainElement.children[mainElement.children.length - 1].children[mainElement.children[mainElement.children.length - 1].children.length - 1].children.length - 1].children.length - 1];
+						if (!targetElement) {
+							console.log("[Waline DEBUG] 未找到 targetElement");
+							Swal.fire({
+								title: "错误",
+								text: "未找到目标元素",
+								icon: "error",
+								confirmButtonText: "确定",
+							});
+							return;
+						}
+						console.log("[Waline DEBUG] 找到 targetElement:", targetElement);
+						const walineDiv = document.createElement("div");
+						walineDiv.id = "waline";
+						targetElement.parentNode.insertBefore(walineDiv, targetElement.nextSibling);
+						console.log("[Waline DEBUG] 创建 waline div 成功");
+						console.log("[Waline DEBUG] Waline 对象:", window.Waline);
+						if (window.Waline) {
+							console.log("[Waline DEBUG] 初始化 Waline");
+							window.Waline.init({
+								el: "#waline",
+								serverURL: "https://waline.amlg.top",
+								path: window.location.pathname,
+							});
+							GM_addStyle(`
+								.wl-rss {
+									max-width: 100% !important;
+								}
+							`);
+							Swal.fire({
+								title: "成功",
+								text: "Waline 评论系统已加载",
+								icon: "success",
+								confirmButtonText: "确定",
+								timer: 1500,
+							});
+						} else {
+							console.log("[Waline DEBUG] window.Waline 未定义");
+							Swal.fire({
+								title: "错误",
+								text: "Waline 模块未正确加载",
+								icon: "error",
+								confirmButtonText: "确定",
+							});
+						}
+					}
+					addKeydownListener(function (e) {
+						if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === "w") || (e.metaKey && e.altKey && e.key.toLowerCase() === "w")) {
+							e.preventDefault();
+							addWalineComment();
+						}
+					});
+				} catch (e) {
+					console.log(e);
 				}
 			}
 			if (currentAMLSettings.acceptedProblemCmpEnabled) {
@@ -11995,20 +12182,18 @@ function show_data_collection_notice() {
 	});
 }
 function show_updates() {
-	if (GM_getValue("updates_showed_1.0.6", false)) {
+	if (GM_getValue("updates_showed_1.0.8", false)) {
 		return;
 	}
 	Swal.fire({
 		title: "更新说明",
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
-    <h4>随机跳题</h4>
-    <p>随机跳题功能被去掉了按钮，改成了 Ctrl+Alt+R(Command+Option+R) 的快捷键</p>
-	<h4>跳转到 VScode Luogu</h4>
-	<p>跳转到 VScode Luogu 功能被去掉了按钮，改成了 Ctrl+Alt+V(Command+Option+V) 了</p>
-	<h4>创建重现赛</h4>
-	<p>创建重现赛功能被去掉了按钮，改成了 Ctrl+Alt+C(Command+Option+C) 的快捷键</p>
-    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年6月6日</p>
+    <h4>Waline 评论系统</h4>
+    <p>新增 Waline 匿名评论系统，在讨论区帖子中使用 Ctrl+Alt+W(Command+Option+W) 快捷键加载</p>
+	<h4>讨论区引用功能</h4>
+	<p>讨论区复制功能新增引用按钮，可将内容格式化为 Markdown 引用格式复制</p>
+    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年6月12日</p>
 </div>
         `,
 		width: '600px',
@@ -12017,7 +12202,7 @@ function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	}).then(() => {
-		GM_setValue("updates_showed_1.0.6", true);
+		GM_setValue("updates_showed_1.0.8", true);
 	});
 }
 window.addEventListener("load", function () {
