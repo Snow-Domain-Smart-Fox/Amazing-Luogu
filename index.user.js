@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.8
+// @version      1.0.9
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -73,7 +73,8 @@
 // ==/UserScript==
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
-	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string") {
+	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com"))) {
+		console.log("[Waline Fetch] 拦截请求:", url);
 		return new Promise(function (resolve, reject) {
 			GM_xmlhttpRequest({
 				method: options?.method || "GET",
@@ -81,6 +82,7 @@ window.fetch = function (url, options) {
 				headers: options?.headers || {},
 				data: options?.body,
 				onload: function (response) {
+					console.log("[Waline Fetch] 响应成功:", response.status);
 					const headers = new Headers();
 					if (response.responseHeaders) {
 						response.responseHeaders.split("\r\n").forEach(function (line) {
@@ -101,6 +103,7 @@ window.fetch = function (url, options) {
 					});
 				},
 				onerror: function (error) {
+					console.log("[Waline Fetch] 响应错误:", error);
 					reject(error);
 				},
 			});
@@ -1477,25 +1480,35 @@ async function all() {
 			marked.use({ extensions: customExtensions });
 			const renderer = new marked.Renderer();
 			renderer.code = function (text, lang, escaped) {
-				let highlightCode = text;
+				let originalText = text;
+				if (escaped) {
+					const textarea = document.createElement('textarea');
+					textarea.innerHTML = text;
+					originalText = textarea.value;
+				} else {
+					originalText = text;
+				}
+				let highlightCode = originalText;
 				if (lang && hljs.getLanguage(lang)) {
-					highlightCode = hljs.highlight(text, { language: lang }).value;
+					highlightCode = hljs.highlight(originalText, { language: lang }).value;
 				} else if (lang) {
-					highlightCode = hljs.highlightAuto(text).value;
+					highlightCode = hljs.highlightAuto(originalText).value;
 				} else {
 					try {
-						highlightCode = hljs.highlightAuto(text).value;
+						highlightCode = hljs.highlightAuto(originalText).value;
 					} catch (e) {
-						highlightCode = text;
+						highlightCode = originalText;
 					}
 				}
-				console.log(highlightCode);
+				const textarea = document.createElement('textarea');
+				textarea.innerHTML = highlightCode;
+				highlightCode = textarea.value;
 				const lineNumbers = lang?.includes("line-numbers");
 				const linesMatch = lang?.match(/lines=(\d+)-(\d+)/);
 				const showLineNumbers = lineNumbers && !lang.includes("hide-numbers");
 				const highlightRange = linesMatch ? { start: parseInt(linesMatch[1]), end: parseInt(linesMatch[2]) } : null;
 				const cleanLang = lang?.replace(/(line-numbers|lines=\d+-\d+)\s*/g, "").trim() || "";
-				const lineCount = (text || "").split("\n").length;
+				const lineCount = (originalText || "").split("\n").length;
 				let lineNumbersHtml = "";
 				if (showLineNumbers) {
 					lineNumbersHtml = `<span aria-hidden="true" class="line-numbers-rows">${Array.from({ length: lineCount }, () => '<span></span>').join('')}</span>`;
@@ -1574,6 +1587,7 @@ async function all() {
 				gfm: true,
 				mangle: false,
 				headerIds: false,
+				escape: false,
 			});
 			const renderMarkdown = (text) => {
 				let tmp = document.createElement("div");
@@ -6066,28 +6080,55 @@ async function all() {
 								json = json.data;
 								console.log(json);
 								if (json.total != 0) {
-									articleHtml = `<div style='text-align: left; margin-bottom: 10px; width: 100%; font-size: 18px; font-weight: bold'>文章<a href="https://www.luogu.me/search?q=${info}" style="cursor: pointer; float: right; font-weight: normal !important" class="searchShowArticles">查看所有 ${json.total} 份文章</a></div>`;
-									for (
-										let i = 0;
-										i < json.limit && i < settings.lsawArticleDisplayNumber;
-										i++
-									) {
-										let item = json.hits[i];
-										console.log(item);
-										articleHtml += `
-								<a class="searchCard searchListCard" href='https://www.luogu.me/article/${item.id}' style="">
-									<div class="searchListCardProgress" style="height: 5px; position: absolute; top: -1px; left: 0px; overflow: hidden; border-top-left-radius: 5px; border-top-right-radius: 5px">
-										<div style="height: 5px; content: ""></div>
-										<div style="flex: 1"></div>
-									</div>
-									<div class="searchListCardBody">
-										<div>#${item.id}</div>
-										<div>${item.title}</div>
-									</div>
-								</a>
-								`;
+									console.log('文章数量:', json.hits.length);
+									articleHtml = `<div style='text-align: left; margin-bottom: 10px; width: 100%; font-size: 18px; font-weight: bold'>文章<a href="https://www.luogu.me/search?q=${info}" style="cursor: pointer; float: right; font-weight: normal !important" class="searchShowArticles">查看所有 ${json.total} 篇文章</a></div>`;
+									const categoryMap = {
+										1: { name: '个人记录', color: '#808080' },
+										2: { name: '题解', color: '#3498db' },
+										3: { name: '科技·工程', color: '#f39c11' },
+										4: { name: '算法·理论', color: '#9d3dcf' },
+										5: { name: '生活·游记', color: '#70ad47' },
+										6: { name: '学习·文化课', color: '#2949b4' },
+										7: { name: '休闲·娱乐', color: '#fe4c61' },
+										8: { name: '闲话', color: '#808080' }
+									};
+									function escapeHtml(str) {
+										if (!str) return '';
+										return str.replace(/[&<>]/g, function (m) {
+											if (m === '&') return '&amp;';
+											if (m === '<') return '&lt;';
+											if (m === '>') return '&gt;';
+											return m;
+										});
 									}
-									finishWork();
+									for (let i = 0; i < json.hits.length && i < settings.lsawArticleDisplayNumber; i++) {
+										let item = json.hits[i];
+										let date = new Date(item.updatedAt);
+										let timeStr = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+										let categoryInfo = categoryMap[item.category] || { name: '其他', color: '#aaa' };
+										articleHtml += `
+        <a class="searchCard searchProblemCard" href="https://www.luogu.me/article/${escapeHtml(item.id)}" target="_blank">
+            <div class="searchProblemCardBody">
+                <div>${escapeHtml(item.title)}</div>
+            </div>
+            <div>
+                <div class="searchProblemCardTag">
+                    <div><svg data-v-639bc19b="" data-v-0640126c="" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="newspaper" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-newspaper"><path data-v-639bc19b="" data-v-0640126c="" fill="currentColor" d="M96 96c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H80c-44.2 0-80-35.8-80-80V128c0-17.7 14.3-32 32-32s32 14.3 32 32V400c0 8.8 7.2 16 16 16s16-7.2 16-16V96zm64 24v80c0 13.3 10.7 24 24 24H296c13.3 0 24-10.7 24-24V120c0-13.3-10.7-24-24-24H184c-13.3 0-24 10.7-24 24zm208-8c0 8.8 7.2 16 16 16h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H384c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H384c-8.8 0-16 7.2-16 16zM160 304c0 8.8 7.2 16 16 16H432c8.8 0 16-7.2 16-16s-7.2-16-16-16H176c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16H432c8.8 0 16-7.2 16-16s-7.2-16-16-16H176c-8.8 0-16 7.2-16 16z" class=""></path></svg></div>${escapeHtml(item.id)}
+                </div>
+                <div class="searchProblemCardTag">
+                    <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="16" height="16"><path fill="currentColor" d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3 0 498.7 13.3 512 29.7 512h388.6c16.4 0 29.7-13.3 29.7-29.7 0-98.5-79.8-178.3-178.3-178.3h-91.4z"/></svg></div>${escapeHtml(item.authorName)}
+                </div>
+                <div class="searchProblemCardTag">
+                    <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="16" height="16"><path fill="currentColor" d="M256 512C114.6 512 0 397.4 0 256S114.6 0 256 0s256 114.6 256 256-114.6 256-256 256zm0-448C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64zm-8 88v136c0 4.4 3.6 8 8 8h120c4.4 0 8-3.6 8-8s-3.6-8-8-8h-112V152c0-4.4-3.6-8-8-8s-8 3.6-8 8z"/></svg></div>${timeStr}
+                </div>
+                <div style="flex: 1; text-align: right">
+                    <div class="problemTagInfo" style="background: ${categoryInfo.color};">${categoryInfo.name}</div>
+                </div>
+            </div>
+        </a>
+    `;
+										finishWork();
+									}
 								}
 							},
 							onerror: function () {
