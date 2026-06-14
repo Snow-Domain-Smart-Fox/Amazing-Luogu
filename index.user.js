@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.0.9
+// @version      1.1.0
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -11859,9 +11859,8 @@ async function all() {
 		slogenTimeEnabled: GM_getValue("amlSlogenTimeEnabled", false),
 	};
 	const uid = getCurrentUserId();
-	if (currentAMLSettings.slogenTimeEnabled) {
+	if (uid) {
 		try {
-			GM_setValue("SlogenDeleted_" + uid, false);
 			let heartbeatInterval = null;
 			let pollInterval = null;
 			async function register(uid) {
@@ -12039,11 +12038,11 @@ async function all() {
 		} catch (e) {
 			console.log(e);
 		}
-	} else if (
-		!GM_getValue("SlogenDeleted_" + uid, false) &&
-		GM_getValue("amlgEmail_" + uid, "") &&
-		GM_getValue("amlgPassword_" + uid, "")
-	) {
+		if (currentAMLSettings.slogenTimeEnabled) {
+			GM_setValue("SlogenDeleted_" + uid, false);
+		}
+	}
+	if (!currentAMLSettings.slogenTimeEnabled && uid && !GM_getValue("SlogenDeleted_" + uid, false) && GM_getValue("amlgEmail_" + uid, "") && GM_getValue("amlgPassword_" + uid, "")) {
 		try {
 			console.log(
 				JSON.stringify({
