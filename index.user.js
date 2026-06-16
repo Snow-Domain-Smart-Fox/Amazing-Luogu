@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -9110,17 +9110,17 @@ async function all() {
 						const introduction = marked.parse(escapedIt, { highlight: false });
 						const jsCard = document.createElement("div");
 						jsCard.setAttribute("data-v-c3407962", "");
-						jsCard.setAttribute("data-v-f4fefeb2", "");
+						jsCard.setAttribute("data-v-4ad5148e", "");
 						jsCard.setAttribute("data-v-754e1ea4-s", "");
-						jsCard.className = "l-card";
+						jsCard.className = "l-card aml-l-card";
 						jsCard.innerHTML = `
-			<div data-v-f4fefeb2="" class="header aml-user-introduction-header">
-			<h3 data-v-f4fefeb2="" style="margin: 0px;">个人介绍</h3>
-			<span data-v-f4fefeb2="" class="edit-button">
+			<div data-v-4ad5148e="" class="header aml-user-introduction-header">
+			<h3 data-v-4ad5148e="" style="margin: 0px;">个人介绍</h3>
+			<span data-v-4ad5148e="" class="edit-button">
 			</span>
 			</div>
 			<br>
-			<div data-v-f4fefeb2="" class="lfe-marked-wrap introduction">
+			<div data-v-4ad5148e="" class="lfe-marked-wrap introduction">
 			<div class="lfe-marked">${introduction}</div>
 			</div>
 					`.trim();
@@ -9172,7 +9172,7 @@ async function all() {
 							);
 							const introduction = marked.parse(escapedIt);
 							if (cardHeader) {
-								let editTab = cardHeader.querySelector("span[data-v-f4fefeb2]");
+								let editTab = cardHeader.querySelector("span[data-v-4ad5148e]");
 								if (!editTab) {
 									editTab = document.createElement("span");
 									editTab.className = "edit-button edit-tab aml-deltab";
