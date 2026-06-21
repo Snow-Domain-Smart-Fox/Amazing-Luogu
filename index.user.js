@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -4099,7 +4099,7 @@ async function all() {
 			<div id="aml-discuss-section" style="display: ${currentSettings.discussListLengthEnabled ? "block" : "none"};">
 				<div class="aml-input-group">
 					<label for="aml-discuss-length">讨论列表长度限制:</label>
-					<input type="number" min="4" max="16" id="aml-discuss-length" value="${currentSettings.discussListLength || 16}">
+					<input type="number" min="4" max="20" id="aml-discuss-length" value="${currentSettings.discussListLength || 16}">
 				</div>
 			</div>
 			<div id="aml-discuss-disabled-notice" class="disabled-notice" style="display: ${currentSettings.discussListLengthEnabled ? "none" : "block"};">讨论列表长度限制功能已关闭，请在功能开关中开启。</div>
@@ -4660,7 +4660,7 @@ async function all() {
 					discussLengthInput.oninput = (e) => {
 						const newValue = Math.min(
 							Math.max(parseInt(e.target.value) || 16, 4),
-							16,
+							20,
 						);
 						saveAMLSetting("discussListLength", newValue);
 						discussLengthInput.value = newValue;
