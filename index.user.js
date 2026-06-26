@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.2
+// @version      1.1.3
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1654,6 +1654,10 @@ async function all() {
 					"amlShowUserIntroductionEnabled",
 					true,
 				),
+				luoguComDiscussToComCnEnabled: GM_getValue(
+					"amlLuoguComDiscussToComCnEnabled",
+					true,
+				),
 				benbentopEnabled: GM_getValue("amlBenbentopEnabled", true),
 				extendTaskEnabled: GM_getValue("amlExtendTaskEnabled", true),
 				userMarkEnabled: GM_getValue("amlUserMarkEnabled", true),
@@ -1694,7 +1698,7 @@ async function all() {
 					"http://8.140.166.24:44963/?base64=",
 				),
 				vscodePort: GM_getValue("amlVscodePort", 1145),
-				discussListLength: GM_getValue("amlDiscussListLength", 16),
+				discussListLength: GM_getValue("amlDiscussListLength", 20),
 				colorUpdateInterval: GM_getValue("amlColorUpdateInterval", 300),
 				memoContent: GM_getValue(
 					"amlMemoContent",
@@ -1840,6 +1844,7 @@ async function all() {
 				showUserIntroductionEnabled: "amlShowUserIntroductionEnabled",
 				extendTaskEnabled: "amlExtendTaskEnabled",
 				benbenctrlenterEnabled: "amlBenbenctrlenterEnabled",
+				luoguComDiscussToComCnEnabled: "amlLuoguComDiscussToComCnEnabled",
 				userEloColorEnabled: "amlUserEloColorEnabled",
 				userMarkEnabled: "amlUserMarkEnabled",
 				benbentopEnabled: "amlBenbentopEnabled",
@@ -1959,6 +1964,13 @@ async function all() {
 					key: "benbenctrlenterEnabled",
 					label: "按 Ctrl+Enter 发送犇犇",
 					desc: "当聚焦（focus）在犇犇输入框时按下 Ctrl(Windows)/Command(Mac) +Enter 快捷键可以发送犇犇",
+					tag: "功能",
+					status: "stable",
+				},
+				{
+					key: "luoguComDiscussToComCnEnabled",
+					label: "讨论自动切换",
+					desc: "把国际站讨论自动切换到国内站，无法访问的国内站讨论自动切换到保存站",
 					tag: "功能",
 					status: "stable",
 				},
@@ -8291,6 +8303,24 @@ async function all() {
 					let color = getColor(latestelo);
 					username.style.color = color;
 					username.title = 'Elo: ' + latestelo;
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			if (currentAMLSettings.luoguComDiscussToComCnEnabled && /^\/discuss\/\d+$/.test(location.pathname)) {
+				try {
+					function getPageStatusCode() {
+						const entry = performance.getEntriesByType("navigation")[0];
+						if (entry && entry.responseStatus) {
+							return entry.responseStatus;
+						}
+						return 0;
+					}
+					if (location.hostname.includes('.cn') && getPageStatusCode() != 200) {
+						location.href = location.href.replace("www.luogu.com.cn", "luogu.store").replace("luogu.com.cn", "luogu.store").replace("discuss", 'd');
+					} else if (getPageStatusCode() != 200) {
+						location.hostname = "www.luogu.com.cn";
+					}
 				} catch (e) {
 					console.log(e);
 				}
