@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.3
+// @version      1.1.4
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -71,18 +71,39 @@
 // @resource     walineCSS https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.css?version=1.0.8
 // @run-at       document-start
 // ==/UserScript==
+
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
 	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com"))) {
 		console.log("[Waline Fetch] 拦截请求:", url);
+		console.log("[Waline Fetch] 请求方法:", options?.method || "GET");
+		console.log("[Waline Fetch] 请求头:", JSON.stringify(options?.headers || {}));
+		console.log("[Waline Fetch] 请求体类型:", typeof options?.body);
+		console.log("[Waline Fetch] 请求体:", options?.body);
 		return new Promise(function (resolve, reject) {
+			let requestData = options?.body;
+			if (requestData instanceof FormData) {
+				const formDataObj = {};
+				requestData.forEach((value, key) => {
+					formDataObj[key] = value;
+				});
+				requestData = JSON.stringify(formDataObj);
+			} else if (typeof requestData !== "string" && requestData !== undefined) {
+				try {
+					requestData = JSON.stringify(requestData);
+				} catch (e) {
+					console.error("[Waline Fetch] 无法序列化请求体:", e);
+					requestData = String(requestData);
+				}
+			}
 			GM_xmlhttpRequest({
 				method: options?.method || "GET",
 				url: url,
 				headers: options?.headers || {},
-				data: options?.body,
+				data: requestData,
 				onload: function (response) {
 					console.log("[Waline Fetch] 响应成功:", response.status);
+					console.log("[Waline Fetch] 响应内容:", response.responseText);
 					const headers = new Headers();
 					if (response.responseHeaders) {
 						response.responseHeaders.split("\r\n").forEach(function (line) {
@@ -5539,7 +5560,6 @@ async function all() {
 					</div>
 				</div>
 				</div>
-
 				<div class="searchAnywhereSettingsBag" for="lsawSelectListDisplay"> 显示用户题单 <div style="float: right" class="searchAnywhereClicky" flag="${settings.lsawSelectListDisplay}">
 					<div class="falseBlock">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
@@ -6399,8 +6419,6 @@ async function all() {
 			) {
 				const threshold = 1500;
 				const isChatPage = window.location.pathname.startsWith("/chat");
-
-				// ===================== 核心：只加 CSS，完全不改 DOM =====================
 				if (isChatPage) {
 					GM_addStyle(`
 						.aml-code-content.aml-expanded code {
@@ -6421,7 +6439,6 @@ async function all() {
 						}
 					`);
 				}
-
 				function wrapPreInFoldable(preElement) {
 					if (preElement.closest(".aml-code-foldable-wrapper")) {
 						return;
@@ -6452,7 +6469,6 @@ async function all() {
 							language = match[1].toUpperCase();
 						}
 					}
-
 					const header = document.createElement("div");
 					header.className = "aml-code-fold-header";
 					header.innerHTML = `<span class="aml-code-title">${language}</span><div class="aml-toggle-icon-wrapper"><i class="fas fa-chevron-down aml-toggle-icon"></i></div>`;
@@ -7497,6 +7513,11 @@ async function all() {
 								el: "#waline",
 								serverURL: "https://waline.amlg.top",
 								path: window.location.pathname,
+								html: false,
+								reaction: [
+									'https://qqemoji.heyc.eu.org/56x56/qiang.gif',
+									'https://qqemoji.heyc.eu.org/56x56/ruo.gif'
+								],
 							});
 							GM_addStyle(`
 								.wl-rss {
@@ -8177,7 +8198,6 @@ async function all() {
             font-size:12px;
         }
         `);
-
 					window.markRenderFunc = null;
 					function getMarkData() {
 						return GM_getValue("MARK", {});
@@ -9522,9 +9542,10 @@ async function all() {
 							}
 						}
 						tags_now = [...new Set(tags_now)];
-						const keyword_now = document
-							.querySelectorAll('[placeholder="算法、标题或题目编号"]')[0]
-							.value.trim();
+						const keyword_now = (document
+							.querySelectorAll('[placeholder="算法、标题或题目编号"]')[0].value || document
+								.querySelectorAll('[placeholder="算法、标题或题目编号"]')[1].value)
+							.trim();
 						const content_now = document.getElementById("LCheck-1").checked;
 						let url_now = "https://www.luogu.com.cn/problem/list?";
 						url_now += "type=" + type_now;
@@ -12073,41 +12094,49 @@ async function all() {
 		}
 	}
 	if (!currentAMLSettings.slogenTimeEnabled && uid && !GM_getValue("SlogenDeleted_" + uid, false) && GM_getValue("amlgEmail_" + uid, "") && GM_getValue("amlgPassword_" + uid, "")) {
-		try {
-			console.log(
-				JSON.stringify({
-					email: GM_getValue("amlgEmail_" + uid, ""),
-					password: GM_getValue("amlgPassword_" + uid, ""),
-				}),
-			);
-			await new Promise((resolve, reject) => {
-				GM_xmlhttpRequest({
-					method: "POST",
-					url: "https://online.amlg.top/api/delete",
-					data: JSON.stringify({
+		const lastDeleteAttempt = GM_getValue("amlgDeleteAttempt_" + uid, 0);
+		const now = new Date().getTime();
+		if (now - lastDeleteAttempt < 86400000) {
+			console.log("距离上次删除尝试不足24小时，跳过");
+		} else {
+			try {
+				GM_setValue("amlgDeleteAttempt_" + uid, now);
+				console.log(
+					JSON.stringify({
 						email: GM_getValue("amlgEmail_" + uid, ""),
 						password: GM_getValue("amlgPassword_" + uid, ""),
 					}),
-					onload: function (response) {
-						if (response.status >= 200 && response.status < 300) {
-							resolve(response);
-							GM_setValue("SlogenDeleted_" + uid, true);
-						} else {
-							reject(
-								new Error("HTTP " + response.status + " " + response.response),
-							);
-						}
-					},
-					onerror: function (error) {
-						reject(new Error("Network error: " + error.message));
-					},
-					ontimeout: function () {
-						reject(new Error("Request timeout"));
-					},
+				);
+				await new Promise((resolve, reject) => {
+					GM_xmlhttpRequest({
+						method: "POST",
+						url: "https://online.amlg.top/api/delete",
+						data: JSON.stringify({
+							email: GM_getValue("amlgEmail_" + uid, ""),
+							password: GM_getValue("amlgPassword_" + uid, ""),
+						}),
+						onload: function (response) {
+							if (response.status >= 200 && response.status < 300) {
+								resolve(response);
+								GM_setValue("SlogenDeleted_" + uid, true);
+								GM_setValue("amlgDeleteAttempt_" + uid, 0);
+							} else {
+								reject(
+									new Error("HTTP " + response.status + " " + response.response),
+								);
+							}
+						},
+						onerror: function (error) {
+							reject(new Error("Network error: " + error.message));
+						},
+						ontimeout: function () {
+							reject(new Error("Request timeout"));
+						},
+					});
 				});
-			});
-		} catch (e) {
-			console.log(e);
+			} catch (e) {
+				console.log(e);
+			}
 		}
 	}
 }
