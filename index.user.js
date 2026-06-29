@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.4
+// @version      1.1.5
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -529,10 +529,10 @@ const defaultTags = [
 function getCurrentUserId() {
 	let login = document.querySelector("[href='/auth/login']");
 	if (login) return null;
-	let avatarImg = document.querySelector("img.avatar[data-v-0a5f98b2]");
-	if (!avatarImg) {
+	let avatarImg = document.querySelector("img.avatar");
+	if (!avatarImg || isnew) {
 		avatarImg = document.querySelector(
-			".user-nav .avatar img[data-v-65720dbc]",
+			".user-nav .avatar img[alt='User Avatar']",
 		);
 	}
 	if (avatarImg && avatarImg.src) {
@@ -752,6 +752,7 @@ let Notificationaaaaaaa = null;
 let supabaseRunned = false;
 let onlineInitialized = false;
 let ocrInitialized = false;
+let isnew = false;
 let NotificationCache = GM_getValue("AML_notification_cache", null);
 let NotificationCacheTime = GM_getValue("AML_notification_cache_time", 0);
 if (
@@ -1032,6 +1033,11 @@ async function follow() {
 }
 async function all() {
 	function main() {
+		function checkNew(){
+			if(document.getElementById("lentille-context")){
+				isnew = true;
+			}
+		}
 		async function check() {
 			let uid = getCurrentUserId();
 			if (GM_getValue("Intro2Restore_" + uid, false)) {
@@ -1059,6 +1065,7 @@ async function all() {
 				}
 			}
 		}
+		checkNew();
 		check();
 		if (foldingInterval) {
 			clearInterval(foldingInterval);
@@ -1074,7 +1081,9 @@ async function all() {
 						((this.innerHTML && this.className.includes("aml-")) ||
 							this.className.includes("searchAnywhere") ||
 							this.className.includes("welcomeContainer") || this.className.includes("cmd-exec-container")) &&
-						!this.className.includes("aml-code")
+						!this.className.includes("aml-code") &&
+						!this.className.includes("fold") &&
+						!this.className.includes("aml-toggle-icon-wrapper")
 					) {
 						this.remove();
 					}
@@ -1085,19 +1094,6 @@ async function all() {
 				'[id^="aml-"], .searchAnywhere, .searchAnywhereSettings, .searchAnywhereEntrance',
 			)
 			.forEach((el) => el.remove());
-		(function removeElementsWithAmlClass() {
-			const allElements = document.querySelectorAll("*");
-			const elementsArray = Array.from(allElements);
-			elementsArray.forEach((element) => {
-				const classList = element.classList;
-				const hasAmlClass = Array.from(classList).some((className) => {
-					return className.startsWith("aml-");
-				});
-				if (hasAmlClass) {
-					element.remove();
-				}
-			});
-		})();
 		(function ($, undefined) {
 			"use strict";
 			if (
@@ -3732,12 +3728,13 @@ async function all() {
 								});
 							});
 						})();
+						let isnew = document.getElementById("lentille-context")?true:false;
 						function getCurrentUserId() {
 							let login = document.querySelector(\"[href='/auth/login']\");
 							if (login) return null;
-							let avatarImg = document.querySelector(\"img.avatar[data-v-0a5f98b2]\");
-							if (!avatarImg) {
-								avatarImg = document.querySelector(\".user-nav .avatar img[data-v-65720dbc]\");
+							let avatarImg = document.querySelector(\"img.avatar\");
+							if (!avatarImg || isnew) {
+								avatarImg = document.querySelector(\".user-nav .avatar img[alt='User Avatar']\");
 							}
 							if (avatarImg && avatarImg.src) {
 								const match = avatarImg.src.match(/\\/upload\\/usericon\\/(\\d+)\\.png/);
@@ -4020,10 +4017,10 @@ async function all() {
 			function getuid() {
 				let login = document.querySelector("[href='/auth/login']");
 				if (login) return null;
-				let avatarImg = document.querySelector("img.avatar[data-v-0a5f98b2]");
-				if (!avatarImg) {
+				let avatarImg = document.querySelector("img.avatar");
+				if (!avatarImg || isnew) {
 					avatarImg = document.querySelector(
-						".user-nav .avatar img[data-v-65720dbc]",
+						".user-nav .avatar img[alt='User Avatar']",
 					);
 				}
 				if (avatarImg && avatarImg.src) {
@@ -4039,8 +4036,8 @@ async function all() {
 					return null;
 				}
 				if (uid == getuid() && !location.pathname.startsWith("/ticket")) {
-					let a = document.querySelector("span[data-v-1ecbf760]");
-					let b = document.querySelector("a[data-v-aef5ecde][data-v-0640126c]");
+					let a = document.querySelector("body>div>div>div>div>span[style*='font']")
+					let b = document.querySelector("a[class='color-none'][colorscheme='none'][target='_blank'][href*='/user/']");
 					if (a) {
 						return a.textContent.trim();
 					} else {
@@ -4568,11 +4565,11 @@ async function all() {
 									let login = document.querySelector("[href='/auth/login']");
 									if (login) return null;
 									let avatarImg = document.querySelector(
-										"img.avatar[data-v-0a5f98b2]",
+										"img.avatar",
 									);
-									if (!avatarImg) {
+									if (!avatarImg || isnew) {
 										avatarImg = document.querySelector(
-											".user-nav .avatar img[data-v-65720dbc]",
+											".user-nav .avatar img[alt='User Avatar']",
 										);
 									}
 									if (avatarImg && avatarImg.src) {
@@ -6411,11 +6408,7 @@ async function all() {
 			`);
 			if (
 				currentAMLSettings.codeFolding &&
-				!window.location.pathname.includes("/record/") &&
-				!(
-					window.location.pathname.includes("/problem/") &&
-					window.location.pathname.split("/").length == 3
-				)
+				!window.location.pathname.includes("/record/")
 			) {
 				const threshold = 1500;
 				const isChatPage = window.location.pathname.startsWith("/chat");
@@ -6730,12 +6723,15 @@ async function all() {
 						.querySelectorAll(".aml-code-content.aml-expanded")
 						.forEach((code) => {
 							const hasPre = code.querySelector("pre");
+							const wrapper = code.closest(".aml-code-foldable-wrapper");
+							if (!wrapper) {
+								return;
+							}
 							if (code.innerHTML.trim() == "" && !hasPre) {
-								code.parentElement.remove();
+								wrapper.remove();
 							}
 						});
 				}
-				let foldingInterval;
 				setTimeout(() => {
 					processNewCodeBlocks();
 					scanAllCodeBlocks();
@@ -6778,23 +6774,7 @@ async function all() {
 			];
 			GM_addStyle(`
 				@import url('https://cdn.amlg.top/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css');
-				[data-v-0a593618],
-				[data-v-fdcd5a58] {
-					display: none;
-				}
-				[data-v-ce0b4304][data-v-0b63fe2e][data-v-754e1ea4-s] {
-					display: none;
-				}
-				[data-v-ce0b4304][data-v-1b6544ef][data-v-754e1ea4-s] {
-					display: none;
-				}
-				[data-v-1351fcdc][data-v-5d32e576] {
-					display: none;
-				}
-				[data-v-ce0b4304][data-v-216447b8][data-v-754e1ea4-s] {
-					display: none;
-				}
-				[data-v-754e1ea4-s][data-v-ce0b4304] {
+				div:has(> span > svg[data-icon="rectangle-ad"]) {
 					display: none;
 				}
 				@font-face {
@@ -7444,8 +7424,27 @@ async function all() {
 					if (location.href !== lastUrl) {
 						lastUrl = location.href;
 						removeAllKeydownListeners();
+						if (foldingInterval) {
+							clearInterval(foldingInterval);
+							foldingInterval = null;
+						}
 						processMainContent();
 						processReplies();
+						if (typeof processNewCodeBlocks === "function") {
+							setTimeout(() => {
+								document.querySelectorAll(".aml-code-processed").forEach(el => el.classList.remove("aml-code-processed"));
+								processNewCodeBlocks();
+								if (typeof scanAllCodeBlocks === "function") {
+									scanAllCodeBlocks();
+								}
+								foldingInterval = setInterval(() => {
+									processNewCodeBlocks();
+									if (typeof scanAllCodeBlocks === "function") {
+										scanAllCodeBlocks();
+									}
+								}, 3000);
+							}, 5000);
+						}
 					}
 				});
 				urlObserver.observe(document, { childList: true, subtree: true });
@@ -8802,15 +8801,15 @@ async function all() {
 				try {
 					if (
 						location.hash == "#ide" &&
-						!document.querySelector("[id=LCheck-4]").checked
-					) {
-						let O2INPUT = document.querySelector("[for=LCheck-4]");
-						O2INPUT.click();
-					} else if (
-						location.hash == "#submit" &&
 						!document.querySelector("[id=LCheck-5]").checked
 					) {
 						let O2INPUT = document.querySelector("[for=LCheck-5]");
+						O2INPUT.click();
+					} else if (
+						location.hash == "#submit" &&
+						!document.querySelector("[id=LCheck-4]").checked
+					) {
+						let O2INPUT = document.querySelector("[for=LCheck-4]");
 						O2INPUT.click();
 					}
 				} catch (e) {
@@ -10731,10 +10730,10 @@ async function all() {
 					function getCurrentUserId() {
 						let login = document.querySelector("[href='/auth/login']");
 						if (login) return null;
-						let avatarImg = document.querySelector("img.avatar[data-v-0a5f98b2]");
-						if (!avatarImg) {
+						let avatarImg = document.querySelector("img.avatar");
+						if (!avatarImg || isnew) {
 							avatarImg = document.querySelector(
-								".user-nav .avatar img[data-v-65720dbc]",
+								".user-nav .avatar img[alt='User Avatar']",
 							);
 						}
 						if (avatarImg && avatarImg.src) {
@@ -11891,10 +11890,10 @@ async function all() {
 	function getCurrentUserId() {
 		let login = document.querySelector("[href='/auth/login']");
 		if (login) return null;
-		let avatarImg = document.querySelector("img.avatar[data-v-0a5f98b2]");
-		if (!avatarImg) {
+		let avatarImg = document.querySelector("img.avatar");
+		if (!avatarImg || isnew) {
 			avatarImg = document.querySelector(
-				".user-nav .avatar img[data-v-65720dbc]",
+				".user-nav .avatar img[alt='User Avatar']",
 			);
 		}
 		if (avatarImg && avatarImg.src) {
@@ -12138,6 +12137,37 @@ async function all() {
 				console.log(e);
 			}
 		}
+		async function unregister(uid) {
+			console.log("开始清除用户 " + uid + " 的本地数据");
+			const keys = [
+				"amlgEmail_" + uid,
+				"amlgPassword_" + uid,
+				"amlgDate_" + uid,
+				"SlogenDeleted_" + uid,
+				"amlgDeleteAttempt_" + uid,
+				"Intro2Verify_" + uid,
+				"Intro2Restore_" + uid,
+			];
+			let deletedCount = 0;
+			keys.forEach(function (key) {
+				if (GM_getValue(key) !== undefined) {
+					GM_deleteValue(key);
+					deletedCount++;
+				}
+			});
+			console.log("已清除 " + deletedCount + " 条本地数据");
+			if (heartbeatInterval) {
+				clearInterval(heartbeatInterval);
+				heartbeatInterval = null;
+			}
+			if (pollInterval) {
+				clearInterval(pollInterval);
+				pollInterval = null;
+			}
+			onlineInitialized = false;
+			console.log("用户 " + uid + " 本地数据已清除，账号仍保留在服务端");
+		}
+		unsafeWindow.unregister = unregister;
 	}
 }
 (function patch() {
@@ -12281,7 +12311,7 @@ function show_data_collection_notice() {
 	});
 }
 function show_updates() {
-	if (GM_getValue("updates_showed_1.0.8", false)) {
+	if (GM_getValue("updates_showed_1.1.5", false)) {
 		return;
 	}
 	Swal.fire({
@@ -12289,10 +12319,10 @@ function show_updates() {
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
     <h4>Waline 评论系统</h4>
-    <p>新增 Waline 匿名评论系统，在讨论区帖子中使用 Ctrl+Alt+W(Command+Option+W) 快捷键加载</p>
-	<h4>讨论区引用功能</h4>
-	<p>讨论区复制功能新增引用按钮，可将内容格式化为 Markdown 引用格式复制</p>
-    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年6月12日</p>
+    <p>添加对讨论匿名赞/踩功能</p>
+	<h4>代码折叠</h4>
+	<p>代码折叠功能将不会被洛谷的不刷新换页逻辑破坏</p>
+    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年6月29日</p>
 </div>
         `,
 		width: '600px',
@@ -12301,7 +12331,7 @@ function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	}).then(() => {
-		GM_setValue("updates_showed_1.0.8", true);
+		GM_setValue("updates_showed_1.1.5", true);
 	});
 }
 window.addEventListener("load", function () {
