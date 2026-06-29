@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.5
+// @version      1.1.6
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -9506,11 +9506,12 @@ async function all() {
 							暂无评定: 0,
 							入门: 1,
 							"普及−": 2,
-							"普及/提高−": 3,
-							"普及+/提高": 4,
-							"提高+/省选−": 5,
-							"省选/NOI−": 6,
-							"NOI/NOI+/CTSC": 7,
+							"普及": 3,
+							"普及+/提高−": 4,
+							"提高": 5,
+							"提高+/省选−": 6,
+							"省选/NOI−": 7,
+							"NOI/NOI+/CTS": 8,
 						};
 						const tags_response = await fetch(
 							"https://www.luogu.com.cn/_lfe/tags/zh-CN",
@@ -9848,58 +9849,7 @@ async function all() {
 							"Problem color map set up & cached for 30 days.",
 						);
 					}
-					let lgbot2Visited = false;
-					let lgbot2Fetching = false;
 					async function getProblemColor(problemPid, isPriority = false) {
-						if (
-							window.location.href.startsWith(
-								"https://www.luogu.com.cn/record/list",
-							)
-						) {
-							const records = _feInstance.currentData.records.result;
-							if (!records.lgbot1Visited) {
-								for (const record of records) {
-									problemColorMap.set(
-										record.problem.pid,
-										`rgb(${difficultyColors[record.problem.difficulty].join(",")})`,
-									);
-								}
-								records.lgbot1Visited = true;
-							}
-						}
-						if (
-							!lgbot2Visited &&
-							/^https:\/\/www\.luogu\.com\.cn\/user\/\d+\/practice$/.test(
-								window.location.href,
-							)
-						) {
-							if (!lgbot2Fetching) {
-								lgbot2Fetching = true;
-								let jjssoonn = JSON.parse(
-									document.getElementById("lentille-context").innerHTML,
-								);
-								let submitted = jjssoonn.data.submitted;
-								for (const p of submitted) {
-									problemColorMap.set(
-										p.pid,
-										`rgb(${difficultyColors[p.difficulty].join(",")})`,
-									);
-								}
-								let passed = jjssoonn.data.passed;
-								for (const p of passed) {
-									problemColorMap.set(
-										p.pid,
-										`rgb(${difficultyColors[p.difficulty].join(",")})`,
-									);
-								}
-							} else {
-								while (lgbot2Fetching) {
-									await new Promise((resolve) => setTimeout(resolve, 500));
-								}
-							}
-							lgbot2Fetching = false;
-							lgbot2Visited = true;
-						}
 						if (problemColorMap.has(problemPid)) {
 							return problemColorMap.get(problemPid);
 						}
