@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.6
+// @version      1.1.7
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1033,8 +1033,8 @@ async function follow() {
 }
 async function all() {
 	function main() {
-		function checkNew(){
-			if(document.getElementById("lentille-context")){
+		function checkNew() {
+			if (document.getElementById("lentille-context")) {
 				isnew = true;
 			}
 		}
@@ -5121,6 +5121,9 @@ async function all() {
 		.badgeOrange {
 			background-color: #e67e22;
 		}
+		.badgeCyan {
+			background-color: rgb(19, 194, 194);
+		}
 		.badgeYellow {
 			background-color: #d9a71d;
 		}
@@ -5752,6 +5755,7 @@ async function all() {
 					"Orange",
 					"Yellow",
 					"Green",
+					"Cyan",
 					"Blue",
 					"Purple",
 					"Black",
@@ -5759,12 +5763,13 @@ async function all() {
 				const problemNames = [
 					"暂无评定",
 					"入门",
-					"普及-",
-					"普及/提高-",
-					"普及+/提高",
-					"提高+/省选-",
-					"省选/NOI-",
-					"NOI/NOI+/CTSC",
+					"普及−",
+					"普及",
+					"普及+/提高−",
+					"提高",
+					"提高+/省选−",
+					"省选/NOI−",
+					"NOI/NOI+/CTS",
 				];
 				let searchTimeout = null;
 				let currentHoverCard = undefined;
@@ -6763,14 +6768,15 @@ async function all() {
 				});
 			}
 			const difficultyColors = [
-				[0xbf, 0xbf, 0xbf],
-				[0xfe, 0x4c, 0x61],
-				[0xf3, 0x9c, 0x11],
-				[0xff, 0xc1, 0x16],
-				[0x52, 0xc4, 0x1a],
-				[0x34, 0x98, 0xdb],
-				[0x9d, 0x3d, 0xcf],
-				[0x0e, 0x1d, 0x69],
+				[232, 232, 232],
+				[254, 76, 97],
+				[243, 156, 17],
+				[255, 193, 22],
+				[83, 196, 26],
+				[19, 194, 194],
+				[52, 152, 219],
+				[156, 61, 207],
+				[14, 29, 105],
 			];
 			GM_addStyle(`
 				@import url('https://cdn.amlg.top/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css');
