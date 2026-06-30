@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.7
+// @version      1.1.8
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -12049,82 +12049,68 @@ async function all() {
 		}
 	}
 	if (!currentAMLSettings.slogenTimeEnabled && uid && !GM_getValue("SlogenDeleted_" + uid, false) && GM_getValue("amlgEmail_" + uid, "") && GM_getValue("amlgPassword_" + uid, "")) {
-		const lastDeleteAttempt = GM_getValue("amlgDeleteAttempt_" + uid, 0);
-		const now = new Date().getTime();
-		if (now - lastDeleteAttempt < 86400000) {
-			console.log("距离上次删除尝试不足24小时，跳过");
-		} else {
-			try {
-				GM_setValue("amlgDeleteAttempt_" + uid, now);
-				console.log(
-					JSON.stringify({
+		try {
+			await new Promise((resolve, reject) => {
+				GM_xmlhttpRequest({
+					method: "POST",
+					url: "https://online.amlg.top/api/delete",
+					data: JSON.stringify({
 						email: GM_getValue("amlgEmail_" + uid, ""),
 						password: GM_getValue("amlgPassword_" + uid, ""),
 					}),
-				);
-				await new Promise((resolve, reject) => {
-					GM_xmlhttpRequest({
-						method: "POST",
-						url: "https://online.amlg.top/api/delete",
-						data: JSON.stringify({
-							email: GM_getValue("amlgEmail_" + uid, ""),
-							password: GM_getValue("amlgPassword_" + uid, ""),
-						}),
-						onload: function (response) {
-							if (response.status >= 200 && response.status < 300) {
-								resolve(response);
-								GM_setValue("SlogenDeleted_" + uid, true);
-								GM_setValue("amlgDeleteAttempt_" + uid, 0);
-							} else {
-								reject(
-									new Error("HTTP " + response.status + " " + response.response),
-								);
-							}
-						},
-						onerror: function (error) {
-							reject(new Error("Network error: " + error.message));
-						},
-						ontimeout: function () {
-							reject(new Error("Request timeout"));
-						},
-					});
+					onload: function (response) {
+						if (response.status >= 200 && response.status < 300) {
+							resolve(response);
+							GM_setValue("SlogenDeleted_" + uid, true);
+						} else {
+							reject(
+								new Error("HTTP " + response.status + " " + response.response),
+							);
+						}
+					},
+					onerror: function (error) {
+						reject(new Error("Network error: " + error.message));
+					},
+					ontimeout: function () {
+						reject(new Error("Request timeout"));
+					},
 				});
-			} catch (e) {
-				console.log(e);
-			}
-		}
-		async function unregister(uid) {
-			console.log("开始清除用户 " + uid + " 的本地数据");
-			const keys = [
-				"amlgEmail_" + uid,
-				"amlgPassword_" + uid,
-				"amlgDate_" + uid,
-				"SlogenDeleted_" + uid,
-				"amlgDeleteAttempt_" + uid,
-				"Intro2Verify_" + uid,
-				"Intro2Restore_" + uid,
-			];
-			let deletedCount = 0;
-			keys.forEach(function (key) {
-				if (GM_getValue(key) !== undefined) {
-					GM_deleteValue(key);
-					deletedCount++;
-				}
 			});
-			console.log("已清除 " + deletedCount + " 条本地数据");
-			if (heartbeatInterval) {
-				clearInterval(heartbeatInterval);
-				heartbeatInterval = null;
-			}
-			if (pollInterval) {
-				clearInterval(pollInterval);
-				pollInterval = null;
-			}
-			onlineInitialized = false;
-			console.log("用户 " + uid + " 本地数据已清除，账号仍保留在服务端");
+		} catch (e) {
+			console.log(e);
 		}
-		unsafeWindow.unregister = unregister;
 	}
+	async function unregister(uid) {
+		console.log("开始清除用户 " + uid + " 的本地数据");
+		const keys = [
+			"amlgEmail_" + uid,
+			"amlgPassword_" + uid,
+			"amlgDate_" + uid,
+			"SlogenDeleted_" + uid,
+			"amlgDeleteAttempt_" + uid,
+			"Intro2Verify_" + uid,
+			"Intro2Restore_" + uid,
+		];
+		let deletedCount = 0;
+		keys.forEach(function (key) {
+			if (GM_getValue(key) !== undefined) {
+				GM_deleteValue(key);
+				deletedCount++;
+			}
+		});
+		console.log("已清除 " + deletedCount + " 条本地数据");
+		if (heartbeatInterval) {
+			clearInterval(heartbeatInterval);
+			heartbeatInterval = null;
+		}
+		if (pollInterval) {
+			clearInterval(pollInterval);
+			pollInterval = null;
+		}
+		onlineInitialized = false;
+		console.log("用户 " + uid + " 本地数据已清除，账号仍保留在服务端");
+	}
+	// unsafeWindow.unregister = unregister;
 }
 (function patch() {
 	const raw = {};
