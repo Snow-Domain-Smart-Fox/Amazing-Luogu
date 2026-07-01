@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.1.9
+// @version      1.2.0
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -2008,7 +2008,7 @@ async function all() {
 				{
 					key: "userMarkEnabled",
 					label: "用户标记",
-					desc: "在用户主页显示用户标记，标记可以在首页设置",
+					desc: "在用户主页显示用户标记，标记可以在插件面板设置，个人主页也可以在用户名旁设置标记",
 					tag: "功能",
 					status: "stable",
 				},
@@ -3625,8 +3625,7 @@ async function all() {
 					exploreScripts = [
 						{ name: 'GenGen RMJ', icon: 'fas fa-rocket', type: 'scriptcat', desc: '新的 RMJ', link: 'https://gengen.qzz.io/projects/rmj/' },
 						{ name: 'Better Luogu', icon: 'fas fa-puzzle-piece', type: 'tampermonkey', desc: '强大的洛谷插件', link: 'https://blg.volatiles.dpdns.org/' },
-						{ name: 'Argon Luogu', icon: 'fa-brands fa-css', type: 'software', desc: '漂亮的洛谷样式', link: 'https://userstyles.world/style/24127/default-slug' },
-						{ name: 'Argon Luogu Dev 2026', icon: 'fa-brands fa-css', type: 'software', desc: '比 Argon Luogu 更兼容 Amazing Luogu ，而且更美丽', link: 'https://userstyles.world/style/28284/argon-luogu-dev-2026' },
+						{ name: 'Argon Luogu 2026', icon: 'fa-brands fa-css', type: 'software', desc: '比 Argon Luogu 更兼容 Amazing Luogu ，而且更美丽', link: 'https://userstyles.world/style/28284/argon-luogu-dev-2026' },
 						{ name: 'OI CPP', icon: 'fa-solid fa-code', type: 'software', desc: '强大的 IDE', link: 'https://oicpp.mywwzh.top/' },
 						{ name: '洛谷仓库', icon: 'fa-regular fa-floppy-disk', type: 'website', desc: '强大的洛谷保存站。', link: 'https://luogu.store/' },
 						{ name: 'S-A-OJ', icon: 'fa-brands fa-css', type: 'software', desc: '完美的 OJ - OJ 样式修改', link: 'https://userstyles.world/style/26790/sa-oj-oj-luoguatcoder'}
@@ -4213,6 +4212,13 @@ async function all() {
 			<div id="aml-memo-disabled-notice" class="disabled-notice" style="display: ${currentSettings.memoEnabled ? "none" : "block"};">备忘录功能已关闭，请在功能开关中开启。</div>
 		</div>
 		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fas fa-user-tag"></i> &nbsp;用户标记设置</h4>
+			<div id="aml-usermarkenabled-section" style="display: ${currentSettings.userMarkEnabled ? "block" : "none"};">
+				<div id="aml-comment-management"></div>
+			</div>
+			<div id="aml-usermarkenabled-disabled-notice" class="disabled-notice" style="display: ${currentSettings.userMarkEnabled ? "none" : "block"};">用户标记功能已关闭，请在功能开关中开启。</div>
+		</div>
+		<div class="aml-settings-section aml-home-card">
 			<h4><i class="fas fa-paint-brush"></i> &nbsp;自定义样式</h4>
 			<div id="aml-customcss-section" style="display: ${currentSettings.customStyleEnabled ? "block" : "none"};">
 				<div class="aml-input-group">
@@ -4262,6 +4268,9 @@ async function all() {
 				const amlSettingsHTML = createAMLSettingsHTML(currentAMLSettings);
 				document.getElementById("aml-settings-container").innerHTML =
 					amlSettingsHTML;
+				if (currentAMLSettings.userMarkEnabled) {
+					renderCommentManagement('aml-comment-management');
+				}
 				const chatNotificationToggle = document.getElementById(
 					"aml-chatNotificationEnabled",
 				);
@@ -4515,6 +4524,21 @@ async function all() {
 								} else {
 									memoSection.style.display = "none";
 									memoNotice.style.display = "block";
+								}
+							}
+							if (feature.key === "userMarkEnabled") {
+								const userMarkEnabledSection = document.getElementById(
+									"aml-usermarkenabled-section",
+								);
+								const userMarkEnabledNotice = document.getElementById(
+									"aml-usermarkenabled-disabled-notice",
+								);
+								if (newValue) {
+									userMarkEnabledSection.style.display = "block";
+									userMarkEnabledNotice.style.display = "none";
+								} else {
+									userMarkEnabledSection.style.display = "none";
+									userMarkEnabledNotice.style.display = "block";
 								}
 							}
 							if (feature.key === "vscodeLuoguEnabled") {
@@ -5466,7 +5490,7 @@ async function all() {
 		.aml-notif-time { font-size: 12px; color: #94a3b8; }
 		.aml-notification-modal {
 			position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-			background: rgba(0,0,0,0.5); 
+			background: rgba(0,0,0,0.5);
 			z-index: 1002;
 			display: flex; justify-content: center; align-items: center;
 			opacity: 0; transition: opacity 0.3s;
@@ -8150,165 +8174,244 @@ async function all() {
 					console.log(e);
 				}
 			}
-			if (currentAMLSettings.userMarkEnabled && location.pathname == "/") {
-				try {
-					GM_addStyle(`
-        .aml-mark-content pre {
-            padding: 0;
-            margin: 0;
-            border: none;
-            border-radius: 0;
-        }
-        .aml-mark-content pre code {
-            font-size: 1em !important;
-            font-weight: normal !important;
-        }
-        .aml-mark-content {
-            font-family: LXGW Wenkai Screen;
-            margin-top:15px;
-        }
-        .aml-mark-content .codecopy-btn {
-            top: 10px !important;
-        }
-        .mark-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px dashed #eee;
-        }
-        .mark-input {
-            width: 100%;
-            padding: 8px;
-            margin-top:10px;
-            border: 1px solid #ddd;
-            border-radius:4px;
-        }
-        .mark-add-btn {
-            margin-top:8px;
-            padding:6px 12px;
-            background:#2d8cf0;
-            color:#fff;
-            border:none;
-            border-radius:4px;
-            cursor:pointer;
-        }
-        .mark-del-btn {
-            padding:4px 8px;
-            background:#ff4d4f;
-            color:#fff;
-            border:none;
-            border-radius:4px;
-            cursor:pointer;
-            font-size:12px;
-        }
-        `);
-					window.markRenderFunc = null;
-					function getMarkData() {
-						return GM_getValue("MARK", {});
-					}
-					function saveMarkData(data) {
-						GM_setValue("MARK", data);
-					}
-					function setUserMark(uid, text) {
-						if (!uid || !text.trim() || isNaN(uid)) return;
-						let data = getMarkData();
-						data[uid] = text.trim();
-						saveMarkData(data);
-						markRenderFunc?.();
-					}
-					function delUserMark(uid) {
-						let data = getMarkData();
-						delete data[uid];
-						saveMarkData(data);
-						markRenderFunc?.();
-					}
-					function renderMarkContent() {
-						let container = document.createElement("div");
-						container.className = "aml-mark-content";
-						let markData = getMarkData();
-						let listWrap = document.createElement("div");
-						let keys = Object.keys(markData);
-						if (keys.length === 0) {
-							listWrap.innerHTML = "<div style='padding:6px 0;color:#999'>暂无用户标记</div>";
-						} else {
-							keys.forEach(uid => {
-								let item = document.createElement("div");
-								item.className = "mark-item";
-								let spanText = document.createElement("span");
-								spanText.innerText = `ID:${uid} → ${markData[uid]}`;
-								let delBtn = document.createElement("button");
-								delBtn.className = "mark-del-btn";
-								delBtn.innerText = "删除";
-								delBtn.onclick = function () {
-									delUserMark(uid);
-								};
-								item.appendChild(spanText);
-								item.appendChild(delBtn);
-								listWrap.appendChild(item);
-							})
-						}
-						let uidInput = document.createElement("input");
-						uidInput.className = "mark-input";
-						uidInput.placeholder = "输入用户ID（仅限数字）";
-						let textInput = document.createElement("input");
-						textInput.className = "mark-input";
-						textInput.placeholder = "输入对应标记内容";
-						let addBtn = document.createElement("button");
-						addBtn.className = "mark-add-btn";
-						addBtn.innerText = "设置/覆盖标记";
-						addBtn.onclick = () => {
-							let uid = uidInput.value.trim();
-							let txt = textInput.value.trim();
-							if (isNaN(uid)) {
-								alert("ID必须是纯数字！");
-								return;
-							}
-							setUserMark(uid, txt);
-							uidInput.value = "";
-							textInput.value = "";
-						};
-						container.appendChild(listWrap);
-						container.appendChild(uidInput);
-						container.appendChild(textInput);
-						container.appendChild(addBtn);
-						markRenderFunc = function () {
-							const parent = container.parentNode;
-							if (parent) parent.removeChild(container);
-							const newDom = renderMarkContent();
-							parent.appendChild(newDom);
-						};
-						return container;
-					}
-					function createMarkElement() {
-						if (!currentAMLSettings.userMarkEnabled) return;
-						const markDiv = document.createElement("div");
-						markDiv.id = "aml-mark-container";
-						markDiv.className = "lg-article";
-						const renderedContent = renderMarkContent();
-						markDiv.appendChild(renderedContent);
-						let targetDiv = document.querySelector("div.lg-index-benben > div:nth-child(2)");
-						if (targetDiv) {
-							targetDiv.insertAdjacentElement("afterend", markDiv);
-						}
-					}
-					createMarkElement();
-				} catch (e) {
-					console.log(e);
-				}
+			function renderCommentManagement(containerId) {
+			    GM_addStyle(`
+			        .mark-item {
+			            display: flex;
+			            justify-content: space-between;
+			            align-items: center;
+			            padding: 6px 0;
+			            border-bottom: 1px solid #00000000;
+			        }
+			        .aml-mark-edit-btn,
+			        .aml-mark-del-btn {
+			            padding: 4px 8px;
+			            color: #fff;
+			            border: none;
+			            border-radius: 4px;
+			            cursor: pointer;
+			            font-size: 12px;
+			            margin-left: 5px;
+			        }
+			        .aml-mark-edit-btn {
+			            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+			        }
+			        .aml-mark-del-btn {
+			            background: linear-gradient(135deg, #ef4444, #f97316) !important;
+			        }
+			    `);
+			    const container = document.getElementById(containerId);
+			    if (!container) return;
+			    container.innerHTML = '';
+			    const data = GM_getValue("MARK", {});
+			    const listWrap = document.createElement("div");
+			    const keys = Object.keys(data);
+			    if (keys.length === 0) {
+			        listWrap.innerHTML = "<div style='padding:6px 0;color:#999'>暂无用户标记</div>";
+			    } else {
+			        keys.forEach(uid => {
+			            const item = document.createElement("div");
+			            item.className = "mark-item";
+			            const spanText = document.createElement("span");
+			            spanText.innerText = `ID:${uid} → ${data[uid]}`;
+			            spanText.style.color = "#6366f1";
+			            const editBtn = document.createElement("button");
+			            editBtn.className = "aml-mark-edit-btn";
+			            editBtn.innerText = "修改";
+			            editBtn.onclick = function () {
+			                Swal.fire({
+			                    title: "修改标记",
+			                    input: "text",
+			                    inputLabel: "请输入新的标记内容",
+			                    inputValue: data[uid] || "",
+			                    showCancelButton: true,
+			                    confirmButtonText: "确定",
+			                    cancelButtonText: "取消",
+			                    inputValidator: (value) => {
+			                        if (!value || value.trim() === "") {
+			                            return "标记内容不能为空！";
+			                        }
+			                    }
+			                }).then(result => {
+			                    if (result.isConfirmed) {
+			                        const newText = result.value.trim();
+			                        let markData = GM_getValue("MARK", {});
+			                        markData[uid] = newText;
+			                        GM_setValue("MARK", markData);
+			                        renderCommentManagement(containerId);
+			                        Swal.fire({
+			                            title: "成功",
+			                            text: "标记已更新",
+			                            icon: "success",
+			                            confirmButtonText: "确定",
+			                        });
+			                    }
+			                });
+			            };
+			            const delBtn = document.createElement("button");
+			            delBtn.className = "aml-mark-del-btn";
+			            delBtn.innerText = "删除";
+			            delBtn.onclick = function () {
+			                Swal.fire({
+			                    title: "确认删除",
+			                    text: `确定要删除用户 ${uid} 的标记吗？`,
+			                    icon: "warning",
+			                    showCancelButton: true,
+			                    confirmButtonText: "确定",
+			                    cancelButtonText: "取消"
+			                }).then(result => {
+			                    if (result.isConfirmed) {
+			                        let markData = GM_getValue("MARK", {});
+			                        delete markData[uid];
+			                        GM_setValue("MARK", markData);
+			                        renderCommentManagement(containerId);
+			                        Swal.fire({
+			                            title: "成功",
+			                            text: "标记已删除",
+			                            icon: "success",
+			                            confirmButtonText: "确定",
+			                        });
+			                    }
+			                });
+			            };
+			            const btnGroup = document.createElement("div");
+			            btnGroup.style.display = "flex";
+			            btnGroup.style.gap = "5px";
+			            btnGroup.appendChild(editBtn);
+			            btnGroup.appendChild(delBtn);
+			            item.appendChild(spanText);
+			            item.appendChild(btnGroup);
+			            listWrap.appendChild(item);
+			        });
+			    }
+			    const uidInput = document.createElement("input");
+			    uidInput.id = "aml-mark-input";
+			    uidInput.type = "text";
+			    uidInput.placeholder = "输入用户ID（仅限数字）";
+			    const textInput = document.createElement("input");
+			    textInput.id = "aml-mark-input";
+			    textInput.type = "text";
+			    textInput.placeholder = "输入标记内容";
+			    const addBtn = document.createElement("button");
+			    addBtn.className = "aml-primary-btn";
+			    addBtn.innerText = "添加/更新标记";
+			    addBtn.onclick = function () {
+			        const uid = uidInput.value.trim();
+			        const txt = textInput.value.trim();
+			        if (isNaN(uid) || uid === "") {
+			            Swal.fire({
+			                title: "错误",
+			                text: "请输入有效的数字ID",
+			                icon: "error",
+			                confirmButtonText: "确定",
+			            });
+			            return;
+			        }
+			        if (txt === "") {
+			            Swal.fire({
+			                title: "错误",
+			                text: "标记内容不能为空",
+			                icon: "error",
+			                confirmButtonText: "确定",
+			            });
+			            return;
+			        }
+			        let markData = GM_getValue("MARK", {});
+			        markData[uid] = txt;
+			        GM_setValue("MARK", markData);
+			        uidInput.value = "";
+			        textInput.value = "";
+			        renderCommentManagement(containerId);
+			        Swal.fire({
+			            title: "成功",
+			            text: "标记已更新",
+			            icon: "success",
+			            confirmButtonText: "确定",
+			        });
+			    };
+			    container.appendChild(listWrap);
+			    container.appendChild(uidInput);
+			    container.appendChild(textInput);
+			    container.appendChild(addBtn);
 			}
 			if (currentAMLSettings.userMarkEnabled && location.pathname.startsWith("/user/")) {
-				try {
-					const uid = JSON.parse(document.getElementById('lentille-context').innerHTML).data.user.uid;
-					if (!uid || isNaN(uid)) {
-						throw new Error("用户ID无效");
-					}
-					const mark = GM_getValue("MARK", {})[uid];
-					if (!mark) throw new Error("用户未设置标记");
-					document.querySelector("#app > div.main-container.lside-nav > main > div > div.l-card > div.user-header-top > div.user-info.desktop-layout > div.luogu-username.user-name > span:nth-child(1)").innerHTML = JSON.parse(document.getElementById('lentille-context').innerHTML).data.user.name + "(" + mark + ")";
-				} catch (e) {
-					console.log(e);
-				}
+			    try {
+			        const data = JSON.parse(document.getElementById('lentille-context').innerHTML);
+			        const uid = data.data.user.uid;
+			        if (!uid || isNaN(uid)) return;
+			        const currentUserId = getCurrentUserId();
+			        if (uid != currentUserId && currentUserId) {
+			            const mark = GM_getValue("MARK", {})[uid];
+			            const userContainer = document.querySelector(".luogu-username.user-name");
+			            if (userContainer) {
+			                const usernameSpan = userContainer.querySelector("span:first-child");
+			                if (usernameSpan) {
+			                    const originalName = data.data.user.name;
+			                    if (mark) {
+			                        usernameSpan.textContent = originalName + " (" + mark + ")";
+			                    } else {
+			                        usernameSpan.textContent = originalName;
+			                    }
+			                    const editBtn = document.createElement("span");
+			                    editBtn.innerHTML = '<i class="fas fa-edit" style="font-size: 1.1em; color: #ffffff;"></i>';
+			                    editBtn.style.cursor = "pointer";
+			                    editBtn.style.marginLeft = "8px";
+			                    editBtn.style.padding = "3px 6px";
+			                    editBtn.style.borderRadius = "4px";
+			                    editBtn.style.backgroundColor = "#4a90d9";
+			                    editBtn.style.border = "1px solid #4a90d9";
+			                    editBtn.onmouseenter = function() {
+			                        editBtn.style.backgroundColor = "#3a7bc8";
+			                        editBtn.style.borderColor = "#3a7bc8";
+			                    };
+			                    editBtn.onmouseleave = function() {
+			                        editBtn.style.backgroundColor = "#4a90d9";
+			                        editBtn.style.borderColor = "#4a90d9";
+			                    };
+			                    editBtn.onclick = function (e) {
+			                        e.stopPropagation();
+			                        Swal.fire({
+			                            title: "修改标记",
+			                            input: "text",
+                        			    inputLabel: `请输入给 ${originalName} 的标记：`,
+            			                inputValue: mark || "",
+			                            showCancelButton: true,
+                        			    confirmButtonText: "确定",
+            			                cancelButtonText: "取消",
+			                            inputValidator: (value) => {
+                        			        return null;
+            			                }
+			                        }).then(result => {
+                        			    if (result.isConfirmed) {
+            			                    const newMark = result.value ? result.value.trim() : "";
+			                                let markData = GM_getValue("MARK", {});
+                        			        if (newMark === "") {
+            			                        delete markData[uid];
+			                                } else {
+                                    			markData[uid] = newMark;
+                        			        }
+            			                    GM_setValue("MARK", markData);
+			                                if (newMark !== "") {
+			                                    usernameSpan.textContent = originalName + " (" + newMark + ")";
+			                                } else {
+			                                    usernameSpan.textContent = originalName;
+			                                }
+			                                Swal.fire({
+			                                    title: "成功",
+			                                    text: "标记已更新",
+			                                    icon: "success",
+			                                    confirmButtonText: "确定"
+                                });
+			                            }
+			                        });
+			                    };
+			                    userContainer.appendChild(editBtn);
+			                }
+			            }
+			        }
+			    } catch (e) {
+			        console.log(e);
+			    }
 			}
 			if (currentAMLSettings.userEloColorEnabled && location.pathname.startsWith('/user/')) {
 				try {
@@ -9245,10 +9348,14 @@ async function all() {
 								addManagedEventListener(copyBtn, "click", function () {
 									GM_setClipboard(it);
 									Swal.fire({
-										title: "Amazing Luogu",
-										text: "用户信息已复制到剪贴板",
+										title: "复制成功",
+										text: "用户信息已复制到剪贴板！",
 										icon: "success",
-										topLayer: true,
+										confirmButtonText: "确定",
+										timer: 2000,
+										timerProgressBar: true,
+										allowOutsideClick: false,
+										allowEscapeKey: false,
 									});
 								});
 								renderBtn.onclick = function () {
