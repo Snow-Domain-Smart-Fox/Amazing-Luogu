@@ -1,7 +1,7 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -8347,61 +8347,49 @@ async function all() {
 			                const usernameSpan = userContainer.querySelector("span:first-child");
 			                if (usernameSpan) {
 			                    const originalName = data.data.user.name;
-			                    if (mark) {
-			                        usernameSpan.textContent = originalName + " (" + mark + ")";
-			                    } else {
-			                        usernameSpan.textContent = originalName;
-			                    }
+			                    usernameSpan.textContent = mark ? originalName + " (" + mark + ")" : originalName;
+						        const existingBtn = userContainer.querySelector('.user-mark-edit-btn');
+			                    if (existingBtn) existingBtn.remove();
 			                    const editBtn = document.createElement("span");
+			                    editBtn.className = 'user-mark-edit-btn';
 			                    editBtn.innerHTML = '<i class="fas fa-edit" style="font-size: 1.1em; color: #ffffff;"></i>';
-			                    editBtn.style.cursor = "pointer";
-			                    editBtn.style.marginLeft = "8px";
-			                    editBtn.style.padding = "3px 6px";
-			                    editBtn.style.borderRadius = "4px";
-			                    editBtn.style.backgroundColor = "#4a90d9";
-			                    editBtn.style.border = "1px solid #4a90d9";
-			                    editBtn.onmouseenter = function() {
+			                    editBtn.style.cssText = 'cursor:pointer;margin-left:8px;padding:3px 6px;border-radius:4px;background-color:#4a90d9;border:1px solid #4a90d9;';
+			                    editBtn.onmouseenter = () => {
 			                        editBtn.style.backgroundColor = "#3a7bc8";
 			                        editBtn.style.borderColor = "#3a7bc8";
 			                    };
-			                    editBtn.onmouseleave = function() {
+			                    editBtn.onmouseleave = () => {
 			                        editBtn.style.backgroundColor = "#4a90d9";
 			                        editBtn.style.borderColor = "#4a90d9";
 			                    };
-			                    editBtn.onclick = function (e) {
+			                    editBtn.onclick = function(e) {
 			                        e.stopPropagation();
 			                        Swal.fire({
 			                            title: "修改标记",
 			                            input: "text",
-                        			    inputLabel: `请输入给 ${originalName} 的标记：`,
-            			                inputValue: mark || "",
+			                            inputLabel: `请输入给 ${originalName} 的标记：`,
+			                            inputValue: mark || "",
 			                            showCancelButton: true,
-                        			    confirmButtonText: "确定",
-            			                cancelButtonText: "取消",
-			                            inputValidator: (value) => {
-                        			        return null;
-            			                }
+			                            confirmButtonText: "确定",
+			                            cancelButtonText: "取消",
+			                            inputValidator: (value) => null
 			                        }).then(result => {
-                        			    if (result.isConfirmed) {
-            			                    const newMark = result.value ? result.value.trim() : "";
+			                            if (result.isConfirmed) {
+			                                const newMark = result.value ? result.value.trim() : "";
 			                                let markData = GM_getValue("MARK", {});
-                        			        if (newMark === "") {
-            			                        delete markData[uid];
+			                                if (newMark === "") {
+			                                    delete markData[uid];
 			                                } else {
-                                    			markData[uid] = newMark;
-                        			        }
-            			                    GM_setValue("MARK", markData);
-			                                if (newMark !== "") {
-			                                    usernameSpan.textContent = originalName + " (" + newMark + ")";
-			                                } else {
-			                                    usernameSpan.textContent = originalName;
+			                                    markData[uid] = newMark;
 			                                }
+			                                GM_setValue("MARK", markData);
+			                                usernameSpan.textContent = newMark ? originalName + " (" + newMark + ")" : originalName;
 			                                Swal.fire({
 			                                    title: "成功",
 			                                    text: "标记已更新",
 			                                    icon: "success",
 			                                    confirmButtonText: "确定"
-                                });
+			                                });
 			                            }
 			                        });
 			                    };
