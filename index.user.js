@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.1
+// @version      1.2.2
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -8340,7 +8340,7 @@ async function all() {
 			        const uid = data.data.user.uid;
 			        if (!uid || isNaN(uid)) return;
 			        const currentUserId = getCurrentUserId();
-			        if (uid != currentUserId && currentUserId) {
+			        if (true) {
 			            const mark = GM_getValue("MARK", {})[uid];
 			            const userContainer = document.querySelector(".luogu-username.user-name");
 			            if (userContainer) {
