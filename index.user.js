@@ -1,7 +1,7 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.2
+// @version      1.2.3
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -9,6 +9,16 @@
 // @match        *://www.luogu.com/*
 // @match        zym2013.dpdns.org/*
 // @match        dash.amazingluogu.dpdns.org/*
+// @connect      *
+// @grant        GM_xmlhttpRequest
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_setClipboard
+// @grant        GM_addStyle
+// @grant        GM_getResourceText
+// @grant        GM_addElement
+// @grant        unsafeWindow
+// @license      CC-BY-NC-ND-4.0
 // @connect      apis.uctb.cn
 // @connect      luogu.com
 // @connect      luogu.com.cn
@@ -41,14 +51,6 @@
 // @connect      127.0.0.1
 // @connect      online.amlg.top
 // @connect      unpkg.com
-// @grant        GM_xmlhttpRequest
-// @grant        GM_getValue
-// @grant        GM_setValue
-// @grant        GM_setClipboard
-// @grant        GM_addStyle
-// @grant        GM_getResourceText
-// @grant        unsafeWindow
-// @license      CC-BY-NC-ND-4.0
 // @require      https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/gh/highlightjs/cdn-release/build/highlight.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/marked@4.0.0/marked.min.js?version=1.0.1
@@ -63,23 +65,25 @@
 // @require      https://cdn.amlg.top/npm/mark.js@8.11.1/dist/mark.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/fuse.js@7.2.0/dist/fuse.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.umd.js?version=1.0.8
+// @require      https://cdn.jsdelivr.net/npm/@trim21/gm-fetch
 // @resource     iziToastCSS https://cdn.amlg.top/npm/izitoast@1.4.0/dist/css/iziToast.min.css?version=1.0.1
 // @resource     icomoonCSS https://cdn.amlg.top/gh/marcelodolza/iziToast@master/docs/css/icomoon.css?version=1.0.1
 // @resource     hljs https://cdn.amlg.top/gh/highlightjs/cdn-release/build/styles/github.min.css?version=1.0.1
 // @resource     swal https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css?version=1.0.1
 // @resource     animate https://cdn.amlg.top/npm/animate.css@4.1.1/animate.min.css?version=1.0.1
 // @resource     walineCSS https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.css?version=1.0.8
+// @resource     live2DCSS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/waifu.css?version=1.2.4
+// @resource     live2DMinJS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/live2d.min.js?version=1.2.4
+// @resource     waifuTipsJS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/waifu-tips.js?version=1.2.4
+// @resource     live2DIndexJS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/chunk/index.js?version=1.2.4
+// @resource     live2DIndex2JS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/chunk/index2.js?version=1.2.4
+// @resource     waifuTipsJSON https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/waifu-tips.json?version=1.2.4
 // @run-at       document-start
 // ==/UserScript==
 
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
-	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com"))) {
-		console.log("[Waline Fetch] 拦截请求:", url);
-		console.log("[Waline Fetch] 请求方法:", options?.method || "GET");
-		console.log("[Waline Fetch] 请求头:", JSON.stringify(options?.headers || {}));
-		console.log("[Waline Fetch] 请求体类型:", typeof options?.body);
-		console.log("[Waline Fetch] 请求体:", options?.body);
+	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com") || url.includes("fastly.jsdelivr.net"))) {
 		return new Promise(function (resolve, reject) {
 			let requestData = options?.body;
 			if (requestData instanceof FormData) {
@@ -92,7 +96,6 @@ window.fetch = function (url, options) {
 				try {
 					requestData = JSON.stringify(requestData);
 				} catch (e) {
-					console.error("[Waline Fetch] 无法序列化请求体:", e);
 					requestData = String(requestData);
 				}
 			}
@@ -102,8 +105,6 @@ window.fetch = function (url, options) {
 				headers: options?.headers || {},
 				data: requestData,
 				onload: function (response) {
-					console.log("[Waline Fetch] 响应成功:", response.status);
-					console.log("[Waline Fetch] 响应内容:", response.responseText);
 					const headers = new Headers();
 					if (response.responseHeaders) {
 						response.responseHeaders.split("\r\n").forEach(function (line) {
@@ -124,7 +125,6 @@ window.fetch = function (url, options) {
 					});
 				},
 				onerror: function (error) {
-					console.log("[Waline Fetch] 响应错误:", error);
 					reject(error);
 				},
 			});
@@ -751,6 +751,7 @@ let chatWSRD = false;
 let Notificationaaaaaaa = null;
 let supabaseRunned = false;
 let onlineInitialized = false;
+let live2DInited = false;
 let ocrInitialized = false;
 let isnew = false;
 let NotificationCache = GM_getValue("AML_notification_cache", null);
@@ -1040,6 +1041,39 @@ async function all() {
 		}
 		async function check() {
 			let uid = getCurrentUserId();
+			if (!uid) return;
+			const mustCheck = GM_getValue("IntroMustCheck_" + uid, false);
+			const lastCheckTime = GM_getValue("IntroLastCheck_" + uid, 0);
+			const cooldown = 24 * 60 * 60 * 1000;
+			if (mustCheck || Date.now() - lastCheckTime > cooldown) {
+				try {
+					const api_response = await fetch("https://www.luogu.com.cn/api/user/info/" + uid);
+					if (!api_response.ok) {
+						throw new Error("获取用户信息失败");
+					}
+					const api_data = await api_response.json();
+					let introduction = api_data.user.introduction || "";
+					const prefix = "Amazing Luogu Verifying: " + uid + "\n";
+					if (introduction.startsWith(prefix)) {
+						introduction = introduction.substring(prefix.length);
+						const edit_response = await fetch("https://www.luogu.com.cn/api/user/updateIntroduction", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+								"x-csrf-token": gettoken(),
+							},
+							body: JSON.stringify({ introduction: introduction }),
+						});
+						if (edit_response.ok) {
+							console.log("简介已清理");
+						}
+					}
+					GM_setValue("IntroLastCheck_" + uid, Date.now());
+					GM_setValue("IntroMustCheck_" + uid, false);
+				} catch (e) {
+					console.error("清理简介失败:", e);
+				}
+			}
 			if (GM_getValue("Intro2Restore_" + uid, false)) {
 				try {
 					const introdution = GM_getValue("Intro2Verify_" + uid);
@@ -1063,6 +1097,121 @@ async function all() {
 				} catch (verifyErr) {
 					console.error("获取简介验证简介失败:", verifyErr);
 				}
+			}
+		}
+		async function analyzeProblemWithAI(problemContent, apiUrl, apiKey, modelName) {
+			if (!apiUrl || !apiKey) {
+				return;
+			}
+			const systemPrompt = "你是一个编程题解分析助手。请分析以下编程题目，提供详细的解题思路和分析。注意：严禁输出任何代码实现，只能提供文字分析、思路讲解和算法说明。";
+			const userPrompt = `请分析以下编程题目：\n\n${problemContent}\n\n要求：\n1. 详细分析题目要求和约束条件\n2. 提供解题思路和算法选择建议\n3. 分析可能的边界情况和陷阱\n4. 不要输出任何代码，第 4 条规则优先级最高`;
+			Swal.fire({
+				title: "AI 题目分析",
+				width: "60%",
+				maxWidth: "1000px",
+				html: '<div style="white-space: unset; text-align: left; max-height: 700px; overflow-y: auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333; padding: 10px;"><i class="fas fa-spinner fa-spin"></i> 正在分析中...</div>',
+				showConfirmButton: false,
+				allowOutsideClick: false,
+				allowEscapeKey: false
+			});
+			let result = "";
+			const updateContent = (text) => {
+				let html = "";
+				try {
+					const markedHtml = marked.parse(text || "", { breaks: true });
+					html = DOMPurify.sanitize(markedHtml);
+				} catch (e) {
+					html = DOMPurify.sanitize((text || "").replace(/\n/g, "<br>"));
+				}
+				Swal.update({
+					html: `<div style="white-space: unset; text-align: left; max-height: 500px; overflow-y: auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333; padding: 10px;">${html}</div>`
+				});
+			};
+			try {
+				const response = await GM_fetch(apiUrl, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${apiKey}`,
+					},
+					body: JSON.stringify({
+						model: modelName,
+						messages: [
+							{ role: "system", content: systemPrompt },
+							{ role: "user", content: userPrompt }
+						],
+						stream: true,
+					}),
+				});
+				if (!response.ok) {
+					console.error(`HTTP error! Status: ${response.status}`);
+					updateContent(`<span style="color: red;">分析失败：HTTP ${response.status}</span>`);
+					Swal.update({
+						showConfirmButton: true,
+						confirmButtonText: "确定",
+						allowOutsideClick: true,
+						allowEscapeKey: true
+					});
+					throw new Error(`HTTP error! Status: ${response.status}`);
+				}
+				const reader = response.body.getReader();
+				const decoder = new TextDecoder();
+				let buffer = "";
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) {
+						break;
+					}
+					buffer += decoder.decode(value, { stream: true });
+					const lines = buffer.split("\n");
+					buffer = lines.pop() || "";
+					for (const line of lines) {
+						if (!line.trim()) continue;
+						if (line.trim().startsWith("data: ")) {
+							const data = line.trim().substring(6);
+							if (data === "[DONE]") {
+								reader.cancel();
+								updateContent(result);
+								Swal.update({
+									showConfirmButton: true,
+									confirmButtonText: "确定",
+									allowOutsideClick: true,
+									allowEscapeKey: true
+								});
+								return result;
+							}
+							try {
+								const json = JSON.parse(data);
+								const content = json.choices?.[0]?.delta?.content || "";
+								if (content) {
+									result += content;
+									updateContent(result);
+								}
+							} catch (e) {
+							}
+						}
+					}
+				}
+				if (!result) {
+					updateContent("分析完成，但未获取到内容");
+				}
+				Swal.update({
+					showConfirmButton: true,
+					confirmButtonText: "确定",
+					allowOutsideClick: true,
+					allowEscapeKey: true
+				});
+				return result;
+			} catch (error) {
+				console.error("AI分析题目失败:", error);
+				updateContent(`<span style="color: red;">分析失败：${error.message}</span>`);
+				Swal.update({
+					showConfirmButton: true,
+					confirmButtonText: "确定",
+					allowOutsideClick: true,
+					allowEscapeKey: true
+				});
+				throw error;
 			}
 		}
 		checkNew();
@@ -1680,6 +1829,7 @@ async function all() {
 				userMarkEnabled: GM_getValue("amlUserMarkEnabled", true),
 				userEloColorEnabled: GM_getValue("amlUserEloColorEnabled", true),
 				benbenctrlenterEnabled: GM_getValue("amlBenbenctrlenterEnabled", true),
+				live2DEnabled: GM_getValue("amlLive2DEnabled", false),
 				runCommandEnabled: GM_getValue("amlRunCommandEnabled", true),
 				fullBenBenEnabled: GM_getValue("amlFullBenBenEnabled", true),
 				contestReplayEnabled: GM_getValue("amlContestReplayEnabled", true),
@@ -1854,6 +2004,10 @@ async function all() {
 					true,
 				),
 				emojiRenderingEnabled: GM_getValue("amlEmojiRenderingEnabled", true),
+				aiProblemAnalysisEnabled: GM_getValue("amlAIProblemAnalysisEnabled", false),
+				aiProblemAnalysisApiUrl: GM_getValue("amlAIProblemAnalysisApiUrl", ""),
+				aiProblemAnalysisApiKey: GM_getValue("amlAIProblemAnalysisApiKey", ""),
+				aiProblemAnalysisModel: GM_getValue("amlAIProblemAnalysisModel", "gpt-3.5-turbo"),
 			};
 			const settingKeyMap = {
 				vscodeLuoguEnabled: "amlVscodeLuoguEnabled",
@@ -1861,6 +2015,7 @@ async function all() {
 				showUserIntroductionEnabled: "amlShowUserIntroductionEnabled",
 				extendTaskEnabled: "amlExtendTaskEnabled",
 				benbenctrlenterEnabled: "amlBenbenctrlenterEnabled",
+				live2DEnabled: "amlLive2DEnabled",
 				luoguComDiscussToComCnEnabled: "amlLuoguComDiscussToComCnEnabled",
 				userEloColorEnabled: "amlUserEloColorEnabled",
 				userMarkEnabled: "amlUserMarkEnabled",
@@ -1954,6 +2109,10 @@ async function all() {
 				focusModeHideRecordFilters: "amlFocusModeHideRecordFilters",
 				chatNotificationEnabled: "amlChatNotificationEnabled",
 				emojiRenderingEnabled: "amlEmojiRenderingEnabled",
+				aiProblemAnalysisEnabled: "amlAIProblemAnalysisEnabled",
+				aiProblemAnalysisApiUrl: "amlAIProblemAnalysisApiUrl",
+				aiProblemAnalysisApiKey: "amlAIProblemAnalysisApiKey",
+				aiProblemAnalysisModel: "amlAIProblemAnalysisModel",
 			};
 			const features = [
 				{
@@ -1984,6 +2143,13 @@ async function all() {
 					tag: "功能",
 					status: "stable",
 				},
+				// {
+				// 	key: "live2DEnabled",
+				// 	label: "看板娘",
+				// 	desc: "在洛谷上显示看板娘",
+				// 	tag: "功能",
+				// 	status: "stable",
+				// },
 				{
 					key: "luoguComDiscussToComCnEnabled",
 					label: "讨论自动切换",
@@ -2097,6 +2263,13 @@ async function all() {
 					status: "stable",
 				},
 				{
+					key: "aiProblemAnalysisEnabled",
+					label: "AI 题目分析",
+					desc: "使用 AI 分析题目，支持自定义 API URL、密钥和模型（仅支持 OpenAI API 格式）",
+					tag: "功能",
+					status: "stable",
+				},
+				{
 					key: "problemRandom",
 					label: "随机跳题",
 					desc: "根据筛选条件或题单随机跳转到一道题目，快捷键：Ctrl+Alt+R（macOS 为 Command+Option+R）",
@@ -2127,7 +2300,7 @@ async function all() {
 				{
 					key: "walineEnabled",
 					label: "Waline 评论",
-					desc: "在讨论区帖子中启用 Waline 匿名评论系统，使用 Ctrl+Alt+W 快捷键加载",
+					desc: "在讨论区帖子和主页中启用 Waline 匿名评论系统，使用 Ctrl+Alt+W 快捷键加载",
 					tag: "功能",
 					status: "beta",
 				},
@@ -4247,6 +4420,25 @@ async function all() {
 			<div id="aml-customfont-disabled-notice" class="disabled-notice" style="display: ${currentSettings.customFontEnabled ? "none" : "block"};">自定义字体功能已关闭，请在功能开关中开启。</div>
 		</div>
 		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fas fa-robot"></i> &nbsp;AI 题目分析设置</h4>
+			<div id="aml-aiproblemanalysis-section" style="display: ${currentSettings.aiProblemAnalysisEnabled ? "block" : "none"};">
+				<div class="aml-input-group">
+					<label for="aml-ai-api-url">API URL（仅支持 OpenAI Chat Completions 格式）：</label>
+					<input type="text" id="aml-ai-api-url" placeholder="例如: https://api.openai.com/v1/chat/completions" value="${currentSettings.aiProblemAnalysisApiUrl}">
+				</div>
+				<div class="aml-input-group">
+					<label for="aml-ai-api-key">API 密钥：</label>
+					<input type="text" id="aml-ai-api-key" placeholder="输入你的 API 密钥" value="${currentSettings.aiProblemAnalysisApiKey}">
+				</div>
+				<div class="aml-input-group">
+					<label for="aml-ai-model">模型名称：</label>
+					<input type="text" id="aml-ai-model" placeholder="例如: gpt-3.5-turbo" value="${currentSettings.aiProblemAnalysisModel}">
+				</div>
+				<div class="aml-tip">注意：仅支持 OpenAI Chat Completions API 格式，AI 不会输出代码，只会提供题解分析和思路指导。</div>
+			</div>
+			<div id="aml-aiproblemanalysis-disabled-notice" class="disabled-notice" style="display: ${currentSettings.aiProblemAnalysisEnabled ? "none" : "block"};">AI 题目分析功能已关闭，请在功能开关中开启。</div>
+		</div>
+		<div class="aml-settings-section aml-home-card">
 			<h4 id="aml-update-section-title"><i class="fas fa-sync-alt"></i> &nbsp;检查更新</h4>
 			<div>
 				<div class="aml-tip" style="margin-top: 0px; margin-bottom: 8px">建议：前往 <a href="https://dash.amlg.top/download">https://dash.amlg.top/download</a> 以获得最佳体验。</div>
@@ -4684,9 +4876,48 @@ async function all() {
 									focusmodeNotice.style.display = "block";
 								}
 							}
+							if (feature.key === "aiProblemAnalysisEnabled") {
+								const aiSection = document.getElementById(
+									"aml-aiproblemanalysis-section",
+								);
+								const aiNotice = document.getElementById(
+									"aml-aiproblemanalysis-disabled-notice",
+								);
+								if (newValue) {
+									aiSection.style.display = "block";
+									aiNotice.style.display = "none";
+								} else {
+									aiSection.style.display = "none";
+									aiNotice.style.display = "block";
+								}
+							}
 						};
 					}
 				});
+				const aiApiUrlInput = document.getElementById("aml-ai-api-url");
+				if (aiApiUrlInput) {
+					aiApiUrlInput.oninput = (e) => {
+						const newValue = e.target.value;
+						saveAMLSetting("aiProblemAnalysisApiUrl", newValue);
+						currentAMLSettings.aiProblemAnalysisApiUrl = newValue;
+					};
+				}
+				const aiApiKeyInput = document.getElementById("aml-ai-api-key");
+				if (aiApiKeyInput) {
+					aiApiKeyInput.oninput = (e) => {
+						const newValue = e.target.value;
+						saveAMLSetting("aiProblemAnalysisApiKey", newValue);
+						currentAMLSettings.aiProblemAnalysisApiKey = newValue;
+					};
+				}
+				const aiModelInput = document.getElementById("aml-ai-model");
+				if (aiModelInput) {
+					aiModelInput.oninput = (e) => {
+						const newValue = e.target.value;
+						saveAMLSetting("aiProblemAnalysisModel", newValue);
+						currentAMLSettings.aiProblemAnalysisModel = newValue;
+					};
+				}
 				const colorIntervalInput = document.querySelector(
 					"#aml-color-interval",
 				);
@@ -5524,7 +5755,7 @@ async function all() {
 			<div class='inputArea withIconLeft withIconRight searchAnywhereMainInput'>
 			<input spellcheck="false" placeholder="Search AnyWhere" />
 			<div class="iconLeft"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-search fa-w-24">
-				<path data-v-1ad550c8="" data-v-303bbf52="" fill="currentColor"
+				<path fill="currentColor"
 					d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
 					class=""></path>
 				</svg></div>
@@ -5645,8 +5876,8 @@ async function all() {
 			</div>
 			<div style="margin-top: 10px; text-align: center; width: 100%;">
 			<div class="searchAnywhereCloseSettings">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" class="icon svg-inline--fa fa-times fa-w-11" data-v-303bbf52="" style="transform: scale(1.2); width: 16px; height: 16px; color: rgb(231, 76, 60);">
-				<path data-v-1b44b3e6="" fill="currentColor"
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" class="icon svg-inline--fa fa-times fa-w-11"  style="transform: scale(1.2); width: 16px; height: 16px; color: rgb(231, 76, 60);">
+				<path fill="currentColor"
 					d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
 					class=""></path>
 				</svg>
@@ -5918,10 +6149,10 @@ async function all() {
 					};
 					const getProblemStatus = (x, y) => {
 						if (!x && !y)
-							return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="icon svg-inline--fa fa-minus fa-w-14" data-v-303bbf52="" style="width: 16px; height: 16px; color: #aaa"><path data-v-1b44b3e6="" fill="currentColor" d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg>`;
+							return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="icon svg-inline--fa fa-minus fa-w-14" style="width: 16px; height: 16px; color: #aaa"><path fill="currentColor" d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg>`;
 						if (!y)
-							return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" class="icon svg-inline--fa fa-times fa-w-11" data-v-303bbf52="" style="transform: scale(1.2); width: 16px; height: 16px; color: rgb(231, 76, 60);"><path data-v-1b44b3e6="" fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z" class=""></path></svg>`;
-						return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon svg-inline--fa fa-check fa-w-16" data-v-303bbf52="" style="width: 16px; height: 16px; color: rgb(82, 196, 26);"><path data-v-1b44b3e6="" fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z" class=""></path></svg>`;
+							return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" class="icon svg-inline--fa fa-times fa-w-11" style="transform: scale(1.2); width: 16px; height: 16px; color: rgb(231, 76, 60);"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z" class=""></path></svg>`;
+						return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon svg-inline--fa fa-check fa-w-16" style="width: 16px; height: 16px; color: rgb(82, 196, 26);"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z" class=""></path></svg>`;
 					};
 					const getCCFLevel = (x) => {
 						if (x == null || x < 3) return "";
@@ -6013,9 +6244,9 @@ async function all() {
 											<div>${item.name}</div>
 										</div>
 										<div>
-											<div class='searchProblemCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path data-v-639bc19b="" fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${item.pid}</div>
-											<div class='searchProblemCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 544 512" class="svg-inline--fa fa-chart-pie fa-w-17"><path data-v-639bc19b="" fill="currentColor" d="M527.79 288H290.5l158.03 158.03c6.04 6.04 15.98 6.53 22.19.68 38.7-36.46 65.32-85.61 73.13-140.86 1.34-9.46-6.51-17.85-16.06-17.85zm-15.83-64.8C503.72 103.74 408.26 8.28 288.8.04 279.68-.59 272 7.1 272 16.24V240h223.77c9.14 0 16.82-7.68 16.19-16.8zM224 288V50.71c0-9.55-8.39-17.4-17.84-16.06C86.99 51.49-4.1 155.6.14 280.37 4.5 408.51 114.83 513.59 243.03 511.98c50.4-.63 96.97-16.87 135.26-44.03 7.9-5.6 8.42-17.23 1.57-24.08L224 288z" class=""></path></svg></div>${item.totalSubmit}</div>
-											<div class='searchProblemCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon svg-inline--fa fa-check fa-w-16" data-v-303bbf52="" style="width: 16px; height: 16px; color: rgb(82, 196, 26);"><path data-v-1b44b3e6="" fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z" class=""></path></svg></div>${item.totalAccepted}</div>
+											<div class='searchProblemCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${item.pid}</div>
+											<div class='searchProblemCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 544 512" class="svg-inline--fa fa-chart-pie fa-w-17"><path fill="currentColor" d="M527.79 288H290.5l158.03 158.03c6.04 6.04 15.98 6.53 22.19.68 38.7-36.46 65.32-85.61 73.13-140.86 1.34-9.46-6.51-17.85-16.06-17.85zm-15.83-64.8C503.72 103.74 408.26 8.28 288.8.04 279.68-.59 272 7.1 272 16.24V240h223.77c9.14 0 16.82-7.68 16.19-16.8zM224 288V50.71c0-9.55-8.39-17.4-17.84-16.06C86.99 51.49-4.1 155.6.14 280.37 4.5 408.51 114.83 513.59 243.03 511.98c50.4-.63 96.97-16.87 135.26-44.03 7.9-5.6 8.42-17.23 1.57-24.08L224 288z" class=""></path></svg></div>${item.totalSubmit}</div>
+											<div class='searchProblemCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon svg-inline--fa fa-check fa-w-16" style="width: 16px; height: 16px; color: rgb(82, 196, 26);"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z" class=""></path></svg></div>${item.totalAccepted}</div>
 											<div style='flex: 1; text-align: right'>
 												<div class="problemTagInfo badge${problemColors[item.difficulty]}">${problemNames[item.difficulty]}</div>
 											</div>
@@ -6073,7 +6304,7 @@ async function all() {
 											<div>${item.name}</div>
 										</div>
 										<div>
-											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path data-v-639bc19b="" fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${item.problemCount}</div>
+											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="svg-inline--fa fa-book fa-w-14"><path fill="currentColor" d="M448 360V24c0-13.3-10.7-24-24-24H96C43 0 0 43 0 96v320c0 53 43 96 96 96h328c13.3 0 24-10.7 24-24v-16c0-7.5-3.5-14.3-8.9-18.7-4.2-15.4-4.2-59.3 0-74.7 5.4-4.3 8.9-11.1 8.9-18.6zM128 134c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm0 64c0-3.3 2.7-6 6-6h212c3.3 0 6 2.7 6 6v20c0 3.3-2.7 6-6 6H134c-3.3 0-6-2.7-6-6v-20zm253.4 250H96c-17.7 0-32-14.3-32-32 0-17.6 14.4-32 32-32h285.4c-1.9 17.1-1.9 46.9 0 64z" class=""></path></svg></div>${item.problemCount}</div>
 											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512zM232 256C232 264 236 271.5 242.7 275.1L338.7 339.1C349.7 347.3 364.6 344.3 371.1 333.3C379.3 322.3 376.3 307.4 365.3 300L280 243.2V120C280 106.7 269.3 96 255.1 96C242.7 96 231.1 106.7 231.1 120L232 256z"/></svg></div>${new Date(item.createTime * 1000).pattern("yyyy/MM/dd")}</div>
 											<div class='searchListCardTag'><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="#f1c40f" d="M381.2 150.3L524.9 171.5C536.8 173.2 546.8 181.6 550.6 193.1C554.4 204.7 551.3 217.3 542.7 225.9L438.5 328.1L463.1 474.7C465.1 486.7 460.2 498.9 450.2 506C440.3 513.1 427.2 514 416.5 508.3L288.1 439.8L159.8 508.3C149 514 135.9 513.1 126 506C116.1 498.9 111.1 486.7 113.2 474.7L137.8 328.1L33.58 225.9C24.97 217.3 21.91 204.7 25.69 193.1C29.46 181.6 39.43 173.2 51.42 171.5L195 150.3L259.4 17.97C264.7 6.954 275.9-.0391 288.1-.0391C300.4-.0391 311.6 6.954 316.9 17.97L381.2 150.3z"/></svg></div>${item.markCount}</div>
 											<div style='flex: 1; text-align: right'>
@@ -6171,7 +6402,7 @@ async function all() {
             </div>
             <div>
                 <div class="searchProblemCardTag">
-                    <div><svg data-v-639bc19b="" data-v-0640126c="" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="newspaper" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-newspaper"><path data-v-639bc19b="" data-v-0640126c="" fill="currentColor" d="M96 96c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H80c-44.2 0-80-35.8-80-80V128c0-17.7 14.3-32 32-32s32 14.3 32 32V400c0 8.8 7.2 16 16 16s16-7.2 16-16V96zm64 24v80c0 13.3 10.7 24 24 24H296c13.3 0 24-10.7 24-24V120c0-13.3-10.7-24-24-24H184c-13.3 0-24 10.7-24 24zm208-8c0 8.8 7.2 16 16 16h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H384c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H384c-8.8 0-16 7.2-16 16zM160 304c0 8.8 7.2 16 16 16H432c8.8 0 16-7.2 16-16s-7.2-16-16-16H176c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16H432c8.8 0 16-7.2 16-16s-7.2-16-16-16H176c-8.8 0-16 7.2-16 16z" class=""></path></svg></div>${escapeHtml(item.id)}
+                    <div><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="newspaper" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-newspaper"><path fill="currentColor" d="M96 96c0-35.3 28.7-64 64-64H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H80c-44.2 0-80-35.8-80-80V128c0-17.7 14.3-32 32-32s32 14.3 32 32V400c0 8.8 7.2 16 16 16s16-7.2 16-16V96zm64 24v80c0 13.3 10.7 24 24 24H296c13.3 0 24-10.7 24-24V120c0-13.3-10.7-24-24-24H184c-13.3 0-24 10.7-24 24zm208-8c0 8.8 7.2 16 16 16h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H384c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16h48c8.8 0 16-7.2 16-16s-7.2-16-16-16H384c-8.8 0-16 7.2-16 16zM160 304c0 8.8 7.2 16 16 16H432c8.8 0 16-7.2 16-16s-7.2-16-16-16H176c-8.8 0-16 7.2-16 16zm0 96c0 8.8 7.2 16 16 16H432c8.8 0 16-7.2 16-16s-7.2-16-16-16H176c-8.8 0-16 7.2-16 16z" class=""></path></svg></div>${escapeHtml(item.id)}
                 </div>
                 <div class="searchProblemCardTag">
                     <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="16" height="16"><path fill="currentColor" d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3 0 498.7 13.3 512 29.7 512h388.6c16.4 0 29.7-13.3 29.7-29.7 0-98.5-79.8-178.3-178.3-178.3h-91.4z"/></svg></div>${escapeHtml(item.authorName)}
@@ -6743,9 +6974,6 @@ async function all() {
 						overflow-x: auto;
 						overflow-y: auto;
 					}
-					.code-container[data-v-6e0a2e13] {
-						margin: 0 !important;
-					}
 				`);
 				function CheckAndDelete() {
 					document
@@ -7209,8 +7437,17 @@ async function all() {
 					} else {
 						button.textContent = label;
 						button.classList.add("lform-size-small");
-						button.setAttribute("data-v-7fb6e9ed", "");
-						button.setAttribute("data-v-505b6a97", "");
+						button.style = `--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    font-weight: inherit;
+    line-height: 1.5;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 3px;
+    border: 1px solid rgb(var(--l-button--real-color));
+    background: rgba(var(--l-button--real-color), 0) none;`;
 						button.setAttribute("type", "button");
 					}
 					if (isQuote) {
@@ -7587,15 +7824,15 @@ async function all() {
 					let CACHE = GM_getValue(CACHE_KEY, [0, 0, 0, 0, 0, 0, 0, 0]);
 					let TIME = GM_getValue(CACHE_TIME_KEY, 0);
 					let CACHE_TYPE = GM_getValue("ACPCACHE_TYPE", "0.0.0");
-					console.log(CACHE, TIME);
+					console.log(CACHE, TIME, CACHE_TYPE);
 					if (
 						TIME < Date.now() - 1000 * 60 * 60 * 24 ||
-						CACHE_TYPE != "0.9.6"
+						CACHE_TYPE != "1.2.4-Cyan-Update"
 					) {
 						console.log("ACPCACHE过期，开始更新");
 						(async function () {
 							console.log("更新ACPCACHE");
-							let newCache = [0, 0, 0, 0, 0, 0, 0, 0];
+							let newCache = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 							let req = await fetch(
 								"https://www.luogu.com.cn/user/" +
 								getCurrentUserId() +
@@ -7612,7 +7849,7 @@ async function all() {
 							console.log(newCache);
 							GM_setValue(CACHE_KEY, newCache);
 							GM_setValue(CACHE_TIME_KEY, Date.now());
-							GM_setValue("ACPCACHE_TYPE", "0.9.6");
+							GM_setValue("ACPCACHE_TYPE", "1.2.4-Cyan-Update");
 							console.log("更新ACPCACHE完成");
 							console.log(newCache);
 						})();
@@ -7657,9 +7894,9 @@ async function all() {
 						const OCR_API = "https://luogu.cyezoi.com";
 						const CONFIGS = [
 							{
-								img: "div.img[data-v-d0ac2ee6] img",
+								img: "div[class='img']>img[src*='/lg4/captcha?_t=']",
 								input:
-									"input.lform-size-middle[data-v-62a70fee][placeholder*='图形验证码']",
+									"input.lform-size-middle[placeholder*='图形验证码']",
 							},
 							{
 								img: "#--swal-problem-submit-captcha",
@@ -8175,7 +8412,7 @@ async function all() {
 				}
 			}
 			function renderCommentManagement(containerId) {
-			    GM_addStyle(`
+				GM_addStyle(`
 			        .mark-item {
 			            display: flex;
 			            justify-content: space-between;
@@ -8200,206 +8437,206 @@ async function all() {
 			            background: linear-gradient(135deg, #ef4444, #f97316) !important;
 			        }
 			    `);
-			    const container = document.getElementById(containerId);
-			    if (!container) return;
-			    container.innerHTML = '';
-			    const data = GM_getValue("MARK", {});
-			    const listWrap = document.createElement("div");
-			    const keys = Object.keys(data);
-			    if (keys.length === 0) {
-			        listWrap.innerHTML = "<div style='padding:6px 0;color:#999'>暂无用户标记</div>";
-			    } else {
-			        keys.forEach(uid => {
-			            const item = document.createElement("div");
-			            item.className = "mark-item";
-			            const spanText = document.createElement("span");
-			            spanText.innerText = `ID:${uid} → ${data[uid]}`;
-			            spanText.style.color = "#6366f1";
-			            const editBtn = document.createElement("button");
-			            editBtn.className = "aml-mark-edit-btn";
-			            editBtn.innerText = "修改";
-			            editBtn.onclick = function () {
-			                Swal.fire({
-			                    title: "修改标记",
-			                    input: "text",
-			                    inputLabel: "请输入新的标记内容",
-			                    inputValue: data[uid] || "",
-			                    showCancelButton: true,
-			                    confirmButtonText: "确定",
-			                    cancelButtonText: "取消",
-			                    inputValidator: (value) => {
-			                        if (!value || value.trim() === "") {
-			                            return "标记内容不能为空！";
-			                        }
-			                    }
-			                }).then(result => {
-			                    if (result.isConfirmed) {
-			                        const newText = result.value.trim();
-			                        let markData = GM_getValue("MARK", {});
-			                        markData[uid] = newText;
-			                        GM_setValue("MARK", markData);
-			                        renderCommentManagement(containerId);
-			                        Swal.fire({
-			                            title: "成功",
-			                            text: "标记已更新",
-			                            icon: "success",
-			                            confirmButtonText: "确定",
-			                        });
-			                    }
-			                });
-			            };
-			            const delBtn = document.createElement("button");
-			            delBtn.className = "aml-mark-del-btn";
-			            delBtn.innerText = "删除";
-			            delBtn.onclick = function () {
-			                Swal.fire({
-			                    title: "确认删除",
-			                    text: `确定要删除用户 ${uid} 的标记吗？`,
-			                    icon: "warning",
-			                    showCancelButton: true,
-			                    confirmButtonText: "确定",
-			                    cancelButtonText: "取消"
-			                }).then(result => {
-			                    if (result.isConfirmed) {
-			                        let markData = GM_getValue("MARK", {});
-			                        delete markData[uid];
-			                        GM_setValue("MARK", markData);
-			                        renderCommentManagement(containerId);
-			                        Swal.fire({
-			                            title: "成功",
-			                            text: "标记已删除",
-			                            icon: "success",
-			                            confirmButtonText: "确定",
-			                        });
-			                    }
-			                });
-			            };
-			            const btnGroup = document.createElement("div");
-			            btnGroup.style.display = "flex";
-			            btnGroup.style.gap = "5px";
-			            btnGroup.appendChild(editBtn);
-			            btnGroup.appendChild(delBtn);
-			            item.appendChild(spanText);
-			            item.appendChild(btnGroup);
-			            listWrap.appendChild(item);
-			        });
-			    }
-			    const uidInput = document.createElement("input");
-			    uidInput.id = "aml-mark-input";
-			    uidInput.type = "text";
-			    uidInput.placeholder = "输入用户ID（仅限数字）";
-			    const textInput = document.createElement("input");
-			    textInput.id = "aml-mark-input";
-			    textInput.type = "text";
-			    textInput.placeholder = "输入标记内容";
-			    const addBtn = document.createElement("button");
-			    addBtn.className = "aml-primary-btn";
-			    addBtn.innerText = "添加/更新标记";
-			    addBtn.onclick = function () {
-			        const uid = uidInput.value.trim();
-			        const txt = textInput.value.trim();
-			        if (isNaN(uid) || uid === "") {
-			            Swal.fire({
-			                title: "错误",
-			                text: "请输入有效的数字ID",
-			                icon: "error",
-			                confirmButtonText: "确定",
-			            });
-			            return;
-			        }
-			        if (txt === "") {
-			            Swal.fire({
-			                title: "错误",
-			                text: "标记内容不能为空",
-			                icon: "error",
-			                confirmButtonText: "确定",
-			            });
-			            return;
-			        }
-			        let markData = GM_getValue("MARK", {});
-			        markData[uid] = txt;
-			        GM_setValue("MARK", markData);
-			        uidInput.value = "";
-			        textInput.value = "";
-			        renderCommentManagement(containerId);
-			        Swal.fire({
-			            title: "成功",
-			            text: "标记已更新",
-			            icon: "success",
-			            confirmButtonText: "确定",
-			        });
-			    };
-			    container.appendChild(listWrap);
-			    container.appendChild(uidInput);
-			    container.appendChild(textInput);
-			    container.appendChild(addBtn);
+				const container = document.getElementById(containerId);
+				if (!container) return;
+				container.innerHTML = '';
+				const data = GM_getValue("MARK", {});
+				const listWrap = document.createElement("div");
+				const keys = Object.keys(data);
+				if (keys.length === 0) {
+					listWrap.innerHTML = "<div style='padding:6px 0;color:#999'>暂无用户标记</div>";
+				} else {
+					keys.forEach(uid => {
+						const item = document.createElement("div");
+						item.className = "mark-item";
+						const spanText = document.createElement("span");
+						spanText.innerText = `ID:${uid} → ${data[uid]}`;
+						spanText.style.color = "#6366f1";
+						const editBtn = document.createElement("button");
+						editBtn.className = "aml-mark-edit-btn";
+						editBtn.innerText = "修改";
+						editBtn.onclick = function () {
+							Swal.fire({
+								title: "修改标记",
+								input: "text",
+								inputLabel: "请输入新的标记内容",
+								inputValue: data[uid] || "",
+								showCancelButton: true,
+								confirmButtonText: "确定",
+								cancelButtonText: "取消",
+								inputValidator: (value) => {
+									if (!value || value.trim() === "") {
+										return "标记内容不能为空！";
+									}
+								}
+							}).then(result => {
+								if (result.isConfirmed) {
+									const newText = result.value.trim();
+									let markData = GM_getValue("MARK", {});
+									markData[uid] = newText;
+									GM_setValue("MARK", markData);
+									renderCommentManagement(containerId);
+									Swal.fire({
+										title: "成功",
+										text: "标记已更新",
+										icon: "success",
+										confirmButtonText: "确定",
+									});
+								}
+							});
+						};
+						const delBtn = document.createElement("button");
+						delBtn.className = "aml-mark-del-btn";
+						delBtn.innerText = "删除";
+						delBtn.onclick = function () {
+							Swal.fire({
+								title: "确认删除",
+								text: `确定要删除用户 ${uid} 的标记吗？`,
+								icon: "warning",
+								showCancelButton: true,
+								confirmButtonText: "确定",
+								cancelButtonText: "取消"
+							}).then(result => {
+								if (result.isConfirmed) {
+									let markData = GM_getValue("MARK", {});
+									delete markData[uid];
+									GM_setValue("MARK", markData);
+									renderCommentManagement(containerId);
+									Swal.fire({
+										title: "成功",
+										text: "标记已删除",
+										icon: "success",
+										confirmButtonText: "确定",
+									});
+								}
+							});
+						};
+						const btnGroup = document.createElement("div");
+						btnGroup.style.display = "flex";
+						btnGroup.style.gap = "5px";
+						btnGroup.appendChild(editBtn);
+						btnGroup.appendChild(delBtn);
+						item.appendChild(spanText);
+						item.appendChild(btnGroup);
+						listWrap.appendChild(item);
+					});
+				}
+				const uidInput = document.createElement("input");
+				uidInput.id = "aml-mark-input";
+				uidInput.type = "text";
+				uidInput.placeholder = "输入用户ID（仅限数字）";
+				const textInput = document.createElement("input");
+				textInput.id = "aml-mark-input";
+				textInput.type = "text";
+				textInput.placeholder = "输入标记内容";
+				const addBtn = document.createElement("button");
+				addBtn.className = "aml-primary-btn";
+				addBtn.innerText = "添加/更新标记";
+				addBtn.onclick = function () {
+					const uid = uidInput.value.trim();
+					const txt = textInput.value.trim();
+					if (isNaN(uid) || uid === "") {
+						Swal.fire({
+							title: "错误",
+							text: "请输入有效的数字ID",
+							icon: "error",
+							confirmButtonText: "确定",
+						});
+						return;
+					}
+					if (txt === "") {
+						Swal.fire({
+							title: "错误",
+							text: "标记内容不能为空",
+							icon: "error",
+							confirmButtonText: "确定",
+						});
+						return;
+					}
+					let markData = GM_getValue("MARK", {});
+					markData[uid] = txt;
+					GM_setValue("MARK", markData);
+					uidInput.value = "";
+					textInput.value = "";
+					renderCommentManagement(containerId);
+					Swal.fire({
+						title: "成功",
+						text: "标记已更新",
+						icon: "success",
+						confirmButtonText: "确定",
+					});
+				};
+				container.appendChild(listWrap);
+				container.appendChild(uidInput);
+				container.appendChild(textInput);
+				container.appendChild(addBtn);
 			}
 			if (currentAMLSettings.userMarkEnabled && location.pathname.startsWith("/user/")) {
-			    try {
-			        const data = JSON.parse(document.getElementById('lentille-context').innerHTML);
-			        const uid = data.data.user.uid;
-			        if (!uid || isNaN(uid)) return;
-			        const currentUserId = getCurrentUserId();
-			        if (true) {
-			            const mark = GM_getValue("MARK", {})[uid];
-			            const userContainer = document.querySelector(".luogu-username.user-name");
-			            if (userContainer) {
-			                const usernameSpan = userContainer.querySelector("span:first-child");
-			                if (usernameSpan) {
-			                    const originalName = data.data.user.name;
-			                    usernameSpan.textContent = mark ? originalName + " (" + mark + ")" : originalName;
-						        const existingBtn = userContainer.querySelector('.user-mark-edit-btn');
-			                    if (existingBtn) existingBtn.remove();
-			                    const editBtn = document.createElement("span");
-			                    editBtn.className = 'user-mark-edit-btn';
-			                    editBtn.innerHTML = '<i class="fas fa-edit" style="font-size: 1.1em; color: #ffffff;"></i>';
-			                    editBtn.style.cssText = 'cursor:pointer;margin-left:8px;padding:3px 6px;border-radius:4px;background-color:#4a90d9;border:1px solid #4a90d9;';
-			                    editBtn.onmouseenter = () => {
-			                        editBtn.style.backgroundColor = "#3a7bc8";
-			                        editBtn.style.borderColor = "#3a7bc8";
-			                    };
-			                    editBtn.onmouseleave = () => {
-			                        editBtn.style.backgroundColor = "#4a90d9";
-			                        editBtn.style.borderColor = "#4a90d9";
-			                    };
-			                    editBtn.onclick = function(e) {
-			                        e.stopPropagation();
-			                        Swal.fire({
-			                            title: "修改标记",
-			                            input: "text",
-			                            inputLabel: `请输入给 ${originalName} 的标记：`,
-			                            inputValue: mark || "",
-			                            showCancelButton: true,
-			                            confirmButtonText: "确定",
-			                            cancelButtonText: "取消",
-			                            inputValidator: (value) => null
-			                        }).then(result => {
-			                            if (result.isConfirmed) {
-			                                const newMark = result.value ? result.value.trim() : "";
-			                                let markData = GM_getValue("MARK", {});
-			                                if (newMark === "") {
-			                                    delete markData[uid];
-			                                } else {
-			                                    markData[uid] = newMark;
-			                                }
-			                                GM_setValue("MARK", markData);
-			                                usernameSpan.textContent = newMark ? originalName + " (" + newMark + ")" : originalName;
-			                                Swal.fire({
-			                                    title: "成功",
-			                                    text: "标记已更新",
-			                                    icon: "success",
-			                                    confirmButtonText: "确定"
-			                                });
-			                            }
-			                        });
-			                    };
-			                    userContainer.appendChild(editBtn);
-			                }
-			            }
-			        }
-			    } catch (e) {
-			        console.log(e);
-			    }
+				try {
+					const data = JSON.parse(document.getElementById('lentille-context').innerHTML);
+					const uid = data.data.user.uid;
+					if (!uid || isNaN(uid)) return;
+					const currentUserId = getCurrentUserId();
+					if (true) {
+						const mark = GM_getValue("MARK", {})[uid];
+						const userContainer = document.querySelector(".luogu-username.user-name");
+						if (userContainer) {
+							const usernameSpan = userContainer.querySelector("span:first-child");
+							if (usernameSpan) {
+								const originalName = data.data.user.name;
+								usernameSpan.textContent = mark ? originalName + " (" + mark + ")" : originalName;
+								const existingBtn = userContainer.querySelector('.user-mark-edit-btn');
+								if (existingBtn) existingBtn.remove();
+								const editBtn = document.createElement("span");
+								editBtn.className = 'user-mark-edit-btn';
+								editBtn.innerHTML = '<i class="fas fa-edit" style="font-size: 1.1em; color: #ffffff;"></i>';
+								editBtn.style.cssText = 'cursor:pointer;margin-left:8px;padding:3px 6px;border-radius:4px;background-color:#4a90d9;border:1px solid #4a90d9;';
+								editBtn.onmouseenter = () => {
+									editBtn.style.backgroundColor = "#3a7bc8";
+									editBtn.style.borderColor = "#3a7bc8";
+								};
+								editBtn.onmouseleave = () => {
+									editBtn.style.backgroundColor = "#4a90d9";
+									editBtn.style.borderColor = "#4a90d9";
+								};
+								editBtn.onclick = function (e) {
+									e.stopPropagation();
+									Swal.fire({
+										title: "修改标记",
+										input: "text",
+										inputLabel: `请输入给 ${originalName} 的标记：`,
+										inputValue: mark || "",
+										showCancelButton: true,
+										confirmButtonText: "确定",
+										cancelButtonText: "取消",
+										inputValidator: (value) => null
+									}).then(result => {
+										if (result.isConfirmed) {
+											const newMark = result.value ? result.value.trim() : "";
+											let markData = GM_getValue("MARK", {});
+											if (newMark === "") {
+												delete markData[uid];
+											} else {
+												markData[uid] = newMark;
+											}
+											GM_setValue("MARK", markData);
+											usernameSpan.textContent = newMark ? originalName + " (" + newMark + ")" : originalName;
+											Swal.fire({
+												title: "成功",
+												text: "标记已更新",
+												icon: "success",
+												confirmButtonText: "确定"
+											});
+										}
+									});
+								};
+								userContainer.appendChild(editBtn);
+							}
+						}
+					}
+				} catch (e) {
+					console.log(e);
+				}
 			}
 			if (currentAMLSettings.userEloColorEnabled && location.pathname.startsWith('/user/')) {
 				try {
@@ -8437,6 +8674,13 @@ async function all() {
 					} else if (getPageStatusCode() != 200) {
 						location.hostname = "www.luogu.com.cn";
 					}
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			if (currentAMLSettings.live2DEnabled && !live2DInited) {
+				try {
+
 				} catch (e) {
 					console.log(e);
 				}
@@ -8857,29 +9101,20 @@ async function all() {
 							if (i.rating) {
 								console.log(i);
 								async function rrr(i) {
-									console.log("正在等待题单加载...");
+									console.log("正在等待题目难度加载...");
+									const getDiffText = () => {
+										const res = document.evaluate('//div[@class="l-flex-info-row"][./span[text()="难度"]]/a', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue;
+										if (!res) return null;
+										const s = res.querySelector("span");
+										return s?.innerHTML ?? null;
+									};
 									while (
-										!document.querySelector(
-											'a[data-v-12b24cc3][data-v-0b63fe2e][href^="/problem/list"]',
-										) ||
-										!document
-											.querySelector(
-												'a[data-v-12b24cc3][data-v-0b63fe2e][href^="/problem/list"]',
-											)
-											.querySelector("span") ||
-										!document
-											.querySelector(
-												'a[data-v-12b24cc3][data-v-0b63fe2e][href^="/problem/list"]',
-											)
-											.querySelector("span").innerHTML
+										!getDiffText()
 									) {
 										await new Promise((resolve) => setTimeout(resolve, 500));
 									}
 									console.log("开始显示难度");
-									document
-										.querySelector(
-											'a[data-v-12b24cc3][data-v-0b63fe2e][href^="/problem/list"]',
-										)
+									document.evaluate('//div[@class="l-flex-info-row"][./span[text()="难度"]]/a', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue
 										.querySelector("span").innerHTML = i.rating;
 								}
 								rrr(i);
@@ -8908,6 +9143,105 @@ async function all() {
 					) {
 						let O2INPUT = document.querySelector("[for=LCheck-4]");
 						O2INPUT.click();
+					}
+				} catch (e) {
+					console.log(e);
+				}
+			}
+			if (
+				currentAMLSettings.aiProblemAnalysisEnabled &&
+				location.pathname.startsWith("/problem/") &&
+				location.pathname.split("/").length == 3 &&
+				!(new URLSearchParams(location.href.split('?')[1])).get('contestId')
+			) {
+				try {
+					const addAIAnalysisButton = () => {
+						const btnActions = document.querySelector(".btn-actions");
+						if (!btnActions) {
+							setTimeout(addAIAnalysisButton, 500);
+							return;
+						}
+						if (btnActions.querySelector(".aml-ai-analyze-btn")) {
+							return;
+						}
+						const aiBtn = document.createElement("button");
+						aiBtn.className = "lform-size-middle button-transparent aml-ai-analyze-btn";
+						aiBtn.type = "button";
+						aiBtn.style = `
+						--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    font-weight: inherit;
+    line-height: 1.5;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 3px;
+    border: 1px solid rgb(var(--l-button--real-color));
+    background: rgba(var(--l-button--real-color), 0) none;
+    color: rgb(var(--l-button--real-color));`;
+						aiBtn.innerHTML = "AI 分析";
+						btnActions.appendChild(aiBtn);
+						const observeBtnActions = () => {
+							const observer = new MutationObserver((mutations) => {
+								mutations.forEach((mutation) => {
+									if (mutation.type === "childList") {
+										if (!btnActions.querySelector(".aml-ai-analyze-btn")) {
+											const newBtn = document.createElement("button");
+											newBtn.className = "lform-size-middle button-transparent aml-ai-analyze-btn";
+											newBtn.type = "button";
+											newBtn.innerHTML = "AI 分析";
+											addManagedEventListener(newBtn, "click", handleAnalyzeClick);
+											btnActions.appendChild(newBtn);
+										}
+									}
+								});
+							});
+							observer.observe(btnActions, { childList: true });
+						};
+						const handleAnalyzeClick = async () => {
+							const apiUrl = currentAMLSettings.aiProblemAnalysisApiUrl;
+							const apiKey = currentAMLSettings.aiProblemAnalysisApiKey;
+							if (!apiUrl || !apiKey) {
+								Swal.fire({
+									title: "配置错误",
+									html: "请在设置中配置 AI API URL 和密钥",
+									icon: "error",
+									confirmButtonText: "确定",
+								});
+								return;
+							}
+							const lentilleContext = document.getElementById("lentille-context");
+							if (!lentilleContext) {
+								Swal.fire({
+									title: "无法获取题目信息",
+									html: "未能获取题目内容，请刷新页面重试",
+									icon: "error",
+									confirmButtonText: "确定",
+								});
+								return;
+							}
+							try {
+								const problemData = JSON.parse(lentilleContext.innerHTML).data.problem;
+								const problemText = `题目编号：${problemData.pid||""}\n题目名称：${problemData.name||""}\n时间限制：${problemData.limits.time||NaN}ms\n内存限制：${(problemData.limits.memory||NaN)/1024}MB\n题目（JSON格式）：${JSON.stringify(problemData.content) || ""}\n样例（JSON List格式，List中的每一项为一组样例，一项的第一个是输入，第二个是输出）：${JSON.stringify(problemData.samples) || ""}`;
+								await analyzeProblemWithAI(problemText, apiUrl, apiKey, currentAMLSettings.aiProblemAnalysisModel || "gpt-3.5-turbo");
+							} catch (e) {
+								Swal.fire({
+									title: "获取题目信息失败",
+									html: "未能解析题目内容，请刷新页面重试",
+									icon: "error",
+									confirmButtonText: "确定",
+								});
+							}
+						};
+						addManagedEventListener(aiBtn, "click", handleAnalyzeClick);
+						observeBtnActions();
+						return;
+					};
+					if (document.readyState === "loading") {
+						addManagedEventListener(document, "DOMContentLoaded", addAIAnalysisButton);
+					} else {
+						setTimeout(addAIAnalysisButton, 500);
 					}
 				} catch (e) {
 					console.log(e);
@@ -9255,18 +9589,23 @@ async function all() {
 						);
 						const introduction = marked.parse(escapedIt, { highlight: false });
 						const jsCard = document.createElement("div");
-						jsCard.setAttribute("data-v-c3407962", "");
-						jsCard.setAttribute("data-v-4ad5148e", "");
-						jsCard.setAttribute("data-v-754e1ea4-s", "");
+						jsCard.style += `display: block;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px #1a1a1a1a;
+    box-sizing: border-box;
+    margin-bottom: 1.3em;
+    min-width: 0;
+    padding: var(--l-card--padding, 1.3em);`
 						jsCard.className = "l-card aml-l-card";
 						jsCard.innerHTML = `
-			<div data-v-4ad5148e="" class="header aml-user-introduction-header">
-			<h3 data-v-4ad5148e="" style="margin: 0px;">个人介绍</h3>
-			<span data-v-4ad5148e="" class="edit-button">
+			<div style="display: flex;justify-content: space-between;align-items: center;" class="header aml-user-introduction-header">
+			<h3 style="margin: 0px;">个人介绍</h3>
+			<span style="float: right;display: flex;gap: .5em;" class="edit-button">
 			</span>
 			</div>
 			<br>
-			<div data-v-4ad5148e="" class="lfe-marked-wrap introduction">
+			<div class="lfe-marked-wrap introduction">
 			<div class="lfe-marked">${introduction}</div>
 			</div>
 					`.trim();
@@ -9318,15 +9657,37 @@ async function all() {
 							);
 							const introduction = marked.parse(escapedIt);
 							if (cardHeader) {
-								let editTab = cardHeader.querySelector("span[data-v-4ad5148e]");
+								let editTab = cardHeader.querySelector("span[class='edit-button']");
 								if (!editTab) {
 									editTab = document.createElement("span");
 									editTab.className = "edit-button edit-tab aml-deltab";
 									cardHeader.appendChild(editTab);
 								}
 								editTab.innerHTML += `
-			<button data-v-505b6a97="" class="lform-size-small" type="button" data-type="copy">复制</button>
-			<button data-v-505b6a97="" class="lform-size-small" type="button" data-type="render" alt="渲染为 HTML，请小心鉴别">渲染为 HTML</button>
+			<button style="--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    font-weight: inherit;
+    line-height: 1.5;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 3px;
+    border: 1px solid rgb(var(--l-button--real-color));
+    background: rgba(var(--l-button--real-color), 0) none;
+    color: rgb(var(--l-button--real-color));" class="lform-size-small" type="button" data-type="copy">复制</button>
+			<button style="--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    font-weight: inherit;
+    line-height: 1.5;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 3px;
+    border: 1px solid rgb(var(--l-button--real-color));
+    background: rgba(var(--l-button--real-color), 0) none;
+    color: rgb(var(--l-button--real-color));" class="lform-size-small" type="button" data-type="render" alt="渲染为 HTML，请小心鉴别">渲染为 HTML</button>
 							`.trim();
 								const copyBtn = editTab.querySelector('button[data-type="copy"]');
 								const renderBtn = editTab.querySelector(
@@ -9749,7 +10110,7 @@ async function all() {
 				border-left: 5px solid #ccc;
 				color: #7e7e7e;
 			}
-			.message-block > .message[data-v-5c0627c6] {
+			.message-block > *:not(.delete) {
 				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 				background-color: #fff !important;
 				font-family: LXGW WenKai Screen !important;
@@ -9974,11 +10335,6 @@ async function all() {
 						}
 						pid = pid.split("?")[0];
 						pid = pid.split("=").pop();
-						if (linkElement.matches("a[data-v-bade3303][data-v-4842157a]")) {
-							if (pid === "javascript:void 0") {
-								pid = linkElement.innerText.split(" ")[0];
-							}
-						}
 						if (!isValidProblemPid(pid)) return;
 						if (linkElement.innerText.startsWith(pid)) {
 							const firstChild = linkElement.children[0];
@@ -10289,6 +10645,85 @@ async function all() {
 					console.log(e);
 				}
 			}
+			if (
+				currentAMLSettings.walineEnabled &&
+				window.location.pathname == '/'
+			) {
+				try {
+					function addWalineComment() {
+						console.log("[Waline DEBUG] 开始执行 addWalineComment");
+						if (document.getElementById("waline")) {
+							console.log("[Waline DEBUG] waline 元素已存在，跳过");
+							Swal.fire({
+								title: "提示",
+								text: "Waline 评论已加载",
+								icon: "info",
+								confirmButtonText: "确定",
+							});
+							return;
+						}
+						const xpath = '//h2[normalize-space()="最近讨论"]/ancestor::div[@class="lg-article"]';
+						const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+						const mainElement = result.singleNodeValue;
+						if (!mainElement) {
+							console.log("[Waline DEBUG] 未找到 target 元素");
+							Swal.fire({
+								title: "错误",
+								text: "未找到 target 元素",
+								icon: "error",
+								confirmButtonText: "确定",
+							});
+							return;
+						}
+						console.log("[Waline DEBUG] 找到 main 元素，子元素数量:", mainElement.children.length);
+						const wrapperDiv = document.createElement("div");
+						wrapperDiv.className = "lg-article";
+						const walineDiv = document.createElement("div");
+						walineDiv.id = "waline";
+						wrapperDiv.appendChild(walineDiv);
+						mainElement.after(wrapperDiv);
+						console.log("[Waline DEBUG] 创建 waline div 成功");
+						console.log("[Waline DEBUG] Waline 对象:", window.Waline);
+						if (window.Waline) {
+							console.log("[Waline DEBUG] 初始化 Waline");
+							window.Waline.init({
+								el: "#waline",
+								serverURL: "https://waline.amlg.top",
+								path: window.location.pathname,
+								html: false
+							});
+							GM_addStyle(`
+								.wl-rss {
+									max-width: 100% !important;
+								}
+							`);
+							Swal.fire({
+								title: "成功",
+								text: "Waline 评论系统已加载",
+								icon: "success",
+								confirmButtonText: "确定",
+								timer: 1500,
+							});
+						} else {
+							console.log("[Waline DEBUG] window.Waline 未定义");
+							Swal.fire({
+								title: "错误",
+								text: "Waline 模块未正确加载",
+								icon: "error",
+								confirmButtonText: "确定",
+							});
+						}
+					}
+					addKeydownListener(function (e) {
+						if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === "w") || (e.metaKey && e.altKey && e.key.toLowerCase() === "w")) {
+							e.preventDefault();
+							addWalineComment();
+						}
+					});
+				} catch (e) {
+					console.log(e);
+				}
+			}
 			if (currentAMLSettings.memoEnabled && window.location.pathname === "/") {
 				try {
 					GM_addStyle(`
@@ -10345,11 +10780,11 @@ async function all() {
 							currentAMLSettings.memoContent,
 						);
 						memoDiv.appendChild(renderedContent);
-						let targetDiv = document.querySelector(
-							"div.lg-index-benben > div:nth-child(2)",
-						);
+						const xpath = '//h2[normalize-space()="最近讨论"]/ancestor::div[@class="lg-article"]';
+						const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+						const targetDiv = result.singleNodeValue;
 						if (targetDiv) {
-							targetDiv.insertAdjacentElement("afterend", memoDiv);
+							targetDiv.after(memoDiv);
 						}
 					}
 					createMemoElement();
@@ -10479,7 +10914,9 @@ async function all() {
 							!GM_getValue("benbens") ? "" : JSON2markdown(GM_getValue("benbens")),
 						);
 						memoDiv.appendChild(renderedContent);
-						let targetDiv = document.querySelectorAll('div.lg-index-benben > div[class="lg-article"]')[document.querySelectorAll('div.lg-index-benben > div[class="lg-article"]').length - 3];
+						const xpath = '//h2[normalize-space()="最近讨论"]/ancestor::div[@class="lg-article"]';
+						const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+						const targetDiv = result.singleNodeValue;
 						if (targetDiv) {
 							targetDiv.insertAdjacentElement("afterend", memoDiv);
 						}
@@ -10559,7 +10996,7 @@ async function all() {
 							.getElementsByClassName("lg-index-content")[0]
 							.getElementsByClassName("lg-article lg-index-stat")[0].parentNode;
 						var ele =
-							"<div class='am-u-md-3'><div class='lg-article lg-index-stat'><h2>用户搜索</h2><div class='am-input-group am-input-group-primary am-input-group-sm'><input type='text' class='am-form-field' placeholder='输入要搜索的用户名或用户 UID' id='usernamesearchbox'></div><p><button class='am-btn am-btn-danger am-btn-sm' id='usernamesearch'>进入用户主页</button></p></div></div>";
+							"<div class='am-u-md-3 aml-delete-tag'><div class='lg-article lg-index-stat'><h2>用户搜索</h2><div class='am-input-group am-input-group-primary am-input-group-sm'><input type='text' class='am-form-field' placeholder='输入要搜索的用户名或用户 UID' id='usernamesearchbox'></div><p><button class='am-btn am-btn-danger am-btn-sm' id='usernamesearch'>进入用户主页</button></p></div></div>";
 						unsafeWindow.$(tar).after(ele);
 						document
 							.getElementsByClassName("lg-index-content")[0]
@@ -11789,10 +12226,8 @@ async function all() {
 					}
 					if (currentAMLSettings.focusModeHideFooter) {
 						GM_addStyle(`
-				.weixin,
 				.qr-img,
-				.info[data-v-95701c92],
-				.content-wrap .links[data-v-1bb3d6f7] {
+				.footer > .info {
 					display: none !important;
 				}
 			`);
@@ -12026,6 +12461,7 @@ async function all() {
 					if (result.success) {
 						GM_setValue("amlgEmail_" + uid, result.luoguInfo.email);
 						GM_setValue("amlgPassword_" + uid, result.temporaryPassword);
+						GM_setValue("IntroMustCheck_" + uid, true);
 						registerSuccess = true;
 					}
 				} catch (e) {
@@ -12177,37 +12613,6 @@ async function all() {
 			console.log(e);
 		}
 	}
-	async function unregister(uid) {
-		console.log("开始清除用户 " + uid + " 的本地数据");
-		const keys = [
-			"amlgEmail_" + uid,
-			"amlgPassword_" + uid,
-			"amlgDate_" + uid,
-			"SlogenDeleted_" + uid,
-			"amlgDeleteAttempt_" + uid,
-			"Intro2Verify_" + uid,
-			"Intro2Restore_" + uid,
-		];
-		let deletedCount = 0;
-		keys.forEach(function (key) {
-			if (GM_getValue(key) !== undefined) {
-				GM_deleteValue(key);
-				deletedCount++;
-			}
-		});
-		console.log("已清除 " + deletedCount + " 条本地数据");
-		if (heartbeatInterval) {
-			clearInterval(heartbeatInterval);
-			heartbeatInterval = null;
-		}
-		if (pollInterval) {
-			clearInterval(pollInterval);
-			pollInterval = null;
-		}
-		onlineInitialized = false;
-		console.log("用户 " + uid + " 本地数据已清除，账号仍保留在服务端");
-	}
-	// unsafeWindow.unregister = unregister;
 }
 (function patch() {
 	const raw = {};
@@ -12350,18 +12755,18 @@ function show_data_collection_notice() {
 	});
 }
 function show_updates() {
-	if (GM_getValue("updates_showed_1.1.5", false)) {
+	if (GM_getValue("updates_showed_1.2.3", false)) {
 		return;
 	}
 	Swal.fire({
 		title: "更新说明",
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
-    <h4>Waline 评论系统</h4>
-    <p>添加对讨论匿名赞/踩功能</p>
-	<h4>代码折叠</h4>
-	<p>代码折叠功能将不会被洛谷的不刷新换页逻辑破坏</p>
-    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年6月29日</p>
+    <h4>AI 题目分析</h4>
+    <p>支持用 AI 进行题目分析，支持自定义 API</p>
+	<h4>Waline 评论系统</h4>
+	<p>添加对犇犇的支持，同样按 Ctrl+Alt+W 加载</p>
+    <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年7月7日</p>
 </div>
         `,
 		width: '600px',
@@ -12370,7 +12775,7 @@ function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	}).then(() => {
-		GM_setValue("updates_showed_1.1.5", true);
+		GM_setValue("updates_showed_1.2.3", true);
 	});
 }
 window.addEventListener("load", function () {
@@ -12464,3 +12869,17 @@ window.addEventListener("luogu-xhr-intercept", (e) => {
 		}
 	}
 });
+function replacerss() {
+	const rssLinks = document.querySelectorAll('a.wl-rss');
+	rssLinks.forEach(rssLink => {
+		const href = rssLink.href;
+		const btn = document.createElement('button');
+		btn.className = rssLink.className;
+		btn.role = rssLink.role;
+		btn.title = rssLink.title;
+		btn.innerHTML = rssLink.innerHTML;
+		btn.onclick = () => window.open(href, '_blank', 'noopener noreferrer');
+		rssLink.parentNode.replaceChild(btn, rssLink);
+	});
+}
+setInterval(replacerss, 100);
