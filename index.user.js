@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.3
+// @version      1.2.4
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -2300,7 +2300,7 @@ async function all() {
 				{
 					key: "walineEnabled",
 					label: "Waline 评论",
-					desc: "在讨论区帖子和主页中启用 Waline 匿名评论系统，使用 Ctrl+Alt+W 快捷键加载",
+					desc: "在讨论区帖子中启用 Waline 匿名评论系统，使用 Ctrl+Alt+W 快捷键加载，在主页中启用 Waline 匿名犇犇，可在犇犇导航栏加载",
 					tag: "功能",
 					status: "beta",
 				},
@@ -10645,84 +10645,133 @@ async function all() {
 					console.log(e);
 				}
 			}
-			if (
-				currentAMLSettings.walineEnabled &&
-				window.location.pathname == '/'
-			) {
-				try {
-					function addWalineComment() {
-						console.log("[Waline DEBUG] 开始执行 addWalineComment");
-						if (document.getElementById("waline")) {
-							console.log("[Waline DEBUG] waline 元素已存在，跳过");
-							Swal.fire({
-								title: "提示",
-								text: "Waline 评论已加载",
-								icon: "info",
-								confirmButtonText: "确定",
-							});
-							return;
-						}
-						const xpath = '//h2[normalize-space()="最近讨论"]/ancestor::div[@class="lg-article"]';
-						const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-						const mainElement = result.singleNodeValue;
-						if (!mainElement) {
-							console.log("[Waline DEBUG] 未找到 target 元素");
-							Swal.fire({
-								title: "错误",
-								text: "未找到 target 元素",
-								icon: "error",
-								confirmButtonText: "确定",
-							});
-							return;
-						}
-						console.log("[Waline DEBUG] 找到 main 元素，子元素数量:", mainElement.children.length);
-						const wrapperDiv = document.createElement("div");
-						wrapperDiv.className = "lg-article";
-						const walineDiv = document.createElement("div");
-						walineDiv.id = "waline";
-						wrapperDiv.appendChild(walineDiv);
-						mainElement.after(wrapperDiv);
-						console.log("[Waline DEBUG] 创建 waline div 成功");
-						console.log("[Waline DEBUG] Waline 对象:", window.Waline);
-						if (window.Waline) {
-							console.log("[Waline DEBUG] 初始化 Waline");
-							window.Waline.init({
-								el: "#waline",
-								serverURL: "https://waline.amlg.top",
-								path: window.location.pathname,
-								html: false
-							});
-							GM_addStyle(`
-								.wl-rss {
-									max-width: 100% !important;
-								}
-							`);
-							Swal.fire({
-								title: "成功",
-								text: "Waline 评论系统已加载",
-								icon: "success",
-								confirmButtonText: "确定",
-								timer: 1500,
-							});
-						} else {
-							console.log("[Waline DEBUG] window.Waline 未定义");
-							Swal.fire({
-								title: "错误",
-								text: "Waline 模块未正确加载",
-								icon: "error",
-								confirmButtonText: "确定",
-							});
-						}
-					}
-					addKeydownListener(function (e) {
-						if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === "w") || (e.metaKey && e.altKey && e.key.toLowerCase() === "w")) {
-							e.preventDefault();
-							addWalineComment();
-						}
-					});
-				} catch (e) {
-					console.log(e);
-				}
+            // 重点修改此处
+			if (currentAMLSettings.walineEnabled && window.location.pathname == '/') {
+			    try {
+			        let walineInitialized = false;
+			        let currentMode = 'watching';
+			        function getBenbenContainer() {
+			            const feed = document.querySelector('#feed');
+			            if (feed) {
+			                let parent = feed.closest('.lg-index-benben');
+			                if (parent) return parent;
+			                return feed.closest('.lg-article')?.parentNode || feed.parentNode;
+			            }
+			            return null;
+			        }
+			        function ensureWalineContainer() {
+			            let container = document.getElementById('waline-container');
+			            if (container) return container;
+			            const parent = getBenbenContainer();
+			            if (!parent) return null;
+			            container = document.createElement('div');
+			            container.id = 'waline-container';
+			            container.className = 'lg-article';
+			            container.style.display = 'none';
+			            const walineDiv = document.createElement('div');
+			            walineDiv.id = 'waline';
+			            container.appendChild(walineDiv);
+			            parent.appendChild(container);
+			            return container;
+			        }
+			        function showWaline() {
+			            const feed = document.querySelector('#feed');
+			            const feedMore = document.querySelector('#feed-more');
+			            const walineContainer = ensureWalineContainer();
+			            if (!walineContainer) {
+			                setTimeout(showWaline, 300);
+			                return;
+			            }
+			            if (feed) feed.style.display = 'none';
+			            if (feedMore) feedMore.style.display = 'none';
+			            walineContainer.style.display = '';
+			            if (!walineInitialized && window.Waline) {
+ 			               window.Waline.init({
+ 			                   el: '#waline',
+			                    serverURL: 'https://waline.amlg.top',
+			                    path: window.location.pathname,
+			                    html: false
+			                });
+			                walineInitialized = true;
+			                GM_addStyle(`.wl-rss { max-width: 100% !important; }`);
+			            } else if (!window.Waline) {
+			                console.warn('[Waline] 模块未加载');
+			            }
+			            currentMode = 'waline';
+			        }
+			        function hideWalineAndRestore() {
+			            const feed = document.querySelector('#feed');
+			            const feedMore = document.querySelector('#feed-more');
+			            const walineContainer = document.getElementById('waline-container');
+			            if (feed) feed.style.display = '';
+			            if (feedMore) feedMore.style.display = '';
+			            if (walineContainer) walineContainer.style.display = 'none';
+			            currentMode = 'watching';
+			        }
+			        function addWalineTab() {
+			            const nav = document.querySelector('#home-center-nav');
+			            if (!nav) {
+			                setTimeout(addWalineTab, 500);
+			                return;
+			            }
+			            if (nav.querySelector('[data-mode="waline"]')) return;
+			            const li = document.createElement('li');
+			            li.className = 'feed-selector';
+			            li.setAttribute('data-mode', 'waline');
+			            const a = document.createElement('a');
+			            a.style.cursor = 'pointer';
+			            a.textContent = '匿名犇犇';
+			            li.appendChild(a);
+			            const allTab = nav.querySelector('[data-mode="all"]');
+			            if (allTab) {
+			                allTab.parentNode.insertBefore(li, allTab.nextSibling);
+			            } else {
+			                nav.appendChild(li);
+			            }
+			            li.addEventListener('click', function(e) {
+			                e.preventDefault();
+			                e.stopPropagation();
+			                document.querySelectorAll('.feed-selector').forEach(el => el.classList.remove('am-active'));
+			                this.classList.add('am-active');
+			                showWaline();
+			            });
+			        }
+			        function setupNavInterceptor() {
+			            const nav = document.querySelector('#home-center-nav');
+			            if (!nav) {
+			                setTimeout(setupNavInterceptor, 500);
+			                return;
+			            }
+			            nav.addEventListener('click', function(e) {
+			                const target = e.target.closest('.feed-selector');
+			                if (!target) return;
+			                const mode = target.dataset.mode;
+			                if (mode === 'waline') return;
+			                if (currentMode === 'waline') {
+			                    hideWalineAndRestore();
+			                }
+			            }, true);
+			        }
+			        setTimeout(addWalineTab, 1500);
+			        setTimeout(setupNavInterceptor, 1600);
+			        addKeydownListener(function(e) {
+			            if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === 'w') ||
+			                (e.metaKey && e.altKey && e.key.toLowerCase() === 'w')) {
+			                e.preventDefault();
+			                if (currentMode === 'waline') {
+			                    hideWalineAndRestore();
+			                    const watchingTab = document.querySelector('[data-mode="watching"]');
+			                    if (watchingTab) watchingTab.click();
+			                } else {
+			                    const walineTab = document.querySelector('[data-mode="waline"]');
+			                    if (walineTab) walineTab.click();
+			                    else showWaline();
+			                }
+			            }
+			        });
+			    } catch (e) {
+			        console.log('[Waline Home] 错误:', e);
+			    }
 			}
 			if (currentAMLSettings.memoEnabled && window.location.pathname === "/") {
 				try {
@@ -12755,17 +12804,15 @@ function show_data_collection_notice() {
 	});
 }
 function show_updates() {
-	if (GM_getValue("updates_showed_1.2.3", false)) {
+	if (GM_getValue("updates_showed_1.2.4", false)) {
 		return;
 	}
 	Swal.fire({
 		title: "更新说明",
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
-    <h4>AI 题目分析</h4>
-    <p>支持用 AI 进行题目分析，支持自定义 API</p>
 	<h4>Waline 评论系统</h4>
-	<p>添加对犇犇的支持，同样按 Ctrl+Alt+W 加载</p>
+	<p>匿名犇犇可在首页犇犇导航栏加载&使用</p>
     <p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年7月7日</p>
 </div>
         `,
@@ -12775,7 +12822,7 @@ function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	}).then(() => {
-		GM_setValue("updates_showed_1.2.3", true);
+		GM_setValue("updates_showed_1.2.4", true);
 	});
 }
 window.addEventListener("load", function () {
