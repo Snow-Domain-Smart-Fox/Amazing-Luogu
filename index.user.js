@@ -81,7 +81,6 @@ function unregister(uid){
 	GM_setValue("amlgEmail_" + uid, "");
 	GM_setValue("amlgPassword_" + uid, "");
 }
-unsafeWindow.unregister = unregister;
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
 	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com") || url.includes("fastly.jsdelivr.net"))) {
