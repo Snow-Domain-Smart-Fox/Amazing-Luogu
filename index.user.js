@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.6
+// @version      1.2.7
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1077,9 +1077,9 @@ async function all() {
 			}
 		}
 		async function check126(){
-			if(!GM_getValue("check126", false)){
+			if(!GM_getValue("check127", false)){
 				unregister(getCurrentUserId());
-				GM_setValue("check126", true);
+				GM_setValue("check127", true);
 			}
 		}
 		async function analyzeProblemWithAI(problemContent, apiUrl, apiKey, modelName) {
@@ -12626,6 +12626,7 @@ async function all() {
 					GM_getValue("amlgPassword_" + uid)
 				) {
 					if (currentAMLSettings.slogenTimeEnabled) {
+						console.log(GM_getValue("amlgEmail_" + uid), GM_getValue("amlgPassword_" + uid));
 						checkUpdate(uid);
 						if (heartbeatInterval) clearInterval(heartbeatInterval);
 						heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
