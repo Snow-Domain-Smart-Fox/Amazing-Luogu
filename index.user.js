@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.5
+// @version      1.2.6
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -49,6 +49,7 @@
 // @connect      codeforces.com
 // @connect      127.0.0.1
 // @connect      online.amlg.top
+// @connect      www.cpoauth.com
 // @connect      unpkg.com
 // @connect      fastly.jsdelivr.net
 // @connect      *
@@ -76,6 +77,11 @@
 // @run-at       document-start
 // ==/UserScript==
 
+function unregister(uid){
+	GM_setValue("amlgEmail_" + uid, "");
+	GM_setValue("amlgPassword_" + uid, "");
+}
+unsafeWindow.unregister = unregister;
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
 	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com") || url.includes("fastly.jsdelivr.net"))) {
@@ -1064,34 +1070,17 @@ async function all() {
 						}
 					}
 					GM_setValue("IntroLastCheck_" + uid, Date.now());
-					GM_setValue("IntroMustCheck_" + uid, false);
 				} catch (e) {
 					console.error("清理简介失败:", e);
+				} finally {
+					GM_setValue("IntroMustCheck_" + uid, false);
 				}
 			}
-			if (GM_getValue("Intro2Restore_" + uid, false)) {
-				try {
-					const introdution = GM_getValue("Intro2Verify_" + uid);
-					const edit_introdution_2 = await fetch(
-						"https://www.luogu.com.cn/api/user/updateIntroduction",
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-								"x-csrf-token": gettoken(),
-							},
-							body: JSON.stringify({
-								introduction: introdution,
-							}),
-						},
-					);
-					if (!edit_introdution_2.ok) {
-						throw new Error("恢复简介失败");
-					}
-					GM_setValue("Intro2Restore_" + uid, false);
-				} catch (verifyErr) {
-					console.error("获取简介验证简介失败:", verifyErr);
-				}
+		}
+		async function check126(){
+			if(!GM_getValue("check126", false)){
+				unregister(getCurrentUserId());
+				GM_setValue("check126", true);
 			}
 		}
 		async function analyzeProblemWithAI(problemContent, apiUrl, apiKey, modelName) {
@@ -1211,6 +1200,7 @@ async function all() {
 		}
 		checkNew();
 		check();
+		check126();
 		if (foldingInterval) {
 			clearInterval(foldingInterval);
 		}
@@ -3633,6 +3623,18 @@ async function all() {
 					<div class="aml-tab-content" data-tab-pane="update" role="tabpanel" id="update-panel">
 						<h4><i class="fas fa-list" aria-hidden="true"></i> 日志</h4>
 						<div class="announcement-section aml-home-card" style="margin-top: 20px;">
+							<h5><i class="fas fa-rocket"></i> v1.2.5 - 2026/7/14</h5>
+							<div class="announcement-content">
+								<p><strong>注册流程升级，接入 CP OAuth 统一身份认证平台！</strong></p>
+							</div>
+							<div class="features-section aml-home-card" style="margin-top: 10px">
+								<h5><i class="fas fa-key"></i> 安全升级</h5>
+								<ul class="announcement-content" style="list-style: none; padding-left: 0;">
+									<li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color: #6366f1; margin-right: 8px;"></i>使用 CP OAuth 授权码模式替代简介验证，无需修改个人简介</li>
+									<li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color: #6366f1; margin-right: 8px;"></i>实现 PKCE 安全流程，防止授权码被窃取</li>
+									<li style="margin-bottom: 8px;"><i class="fas fa-check-circle" style="color: #6366f1; margin-right: 8px;"></i>弹窗授权方式，用户体验更友好</li>
+								</ul>
+							</div>
 							<h5><i class="fas fa-rocket"></i> v0.8.6 - 2026/2/24</h5>
 							<div class="announcement-content">
 								<p><strong>Amazing Luogu 大更新，欢迎使用 Amazing Luogu 4 - Beta！</strong></p>
@@ -12456,100 +12458,107 @@ async function all() {
 		try {
 			let heartbeatInterval = null;
 			let pollInterval = null;
-			async function register(uid) {
-				let updated1 = false;
-				let introdution;
-				let registerSuccess = false;
-				try {
-					const api_response = await fetch(
-						"https://www.luogu.com.cn/api/user/info/" + uid,
-					);
-					const api_data = await api_response.json();
-					introdution = api_data.user.introduction || "";
-					const edit_introdution_1 = await fetch(
-						"https://www.luogu.com.cn/api/user/updateIntroduction",
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-								"x-csrf-token": gettoken(),
-							},
-							body: JSON.stringify({
-								introduction:
-									"Amazing Luogu Verifying: " + uid + "\n" + introdution,
-							}),
-						},
-					);
-					if (!edit_introdution_1.ok) {
-						throw new Error("首次修改简介失败");
-					}
-					updated1 = true;
-					GM_setValue("Intro2Verify_" + uid, introdution);
-					GM_setValue("Intro2Restore_" + uid, true);
-					const result = await new Promise((resolve, reject) => {
-						GM_xmlhttpRequest({
-							method: "POST",
-							url: "https://online.amlg.top/api/register",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							data: JSON.stringify({
-								luoguuid: uid,
-							}),
-							onload: function (response) {
-								try {
-									const data = JSON.parse(response.responseText);
-									resolve(data);
-								} catch (e) {
-									reject(new Error("解析响应数据失败: " + e.message));
-								}
-							},
-							onerror: function (error) {
-								reject(new Error("register请求失败: " + error));
-							},
-							onabort: function () {
-								reject(new Error("register请求被中止"));
-							},
-							ontimeout: function () {
-								reject(new Error("register请求超时"));
-							},
-						});
-					});
-					if (result.success) {
-						GM_setValue("amlgEmail_" + uid, result.luoguInfo.email);
-						GM_setValue("amlgPassword_" + uid, result.temporaryPassword);
-						GM_setValue("IntroMustCheck_" + uid, true);
-						registerSuccess = true;
-					}
-				} catch (e) {
-					console.error("注册过程出错:", e);
-				} finally {
-					if (updated1) {
-						try {
-							const edit_introdution_2 = await fetch(
-								"https://www.luogu.com.cn/api/user/updateIntroduction",
-								{
-									method: "POST",
-									headers: {
-										"Content-Type": "application/json",
-										"x-csrf-token": gettoken(),
-									},
-									body: JSON.stringify({
-										introduction: introdution,
-									}),
-								},
-							);
-							if (!edit_introdution_2.ok) {
-								throw new Error("恢复简介失败");
-							}
-							GM_setValue("Intro2Restore_" + uid, false);
-						} catch (restoreErr) {
-							console.error("恢复简介时发生异常:", restoreErr);
-						}
-					}
+			function generateRandomString(length) {
+					const array = new Uint32Array(length);
+					crypto.getRandomValues(array);
+					return Array.from(array, dec => dec.toString(36)).join("").slice(0, length);
 				}
-				return registerSuccess;
-			}
+				async function generateCodeChallenge(codeVerifier) {
+					const data = new TextEncoder().encode(codeVerifier);
+					const digest = await crypto.subtle.digest("SHA-256", data);
+					return btoa(String.fromCharCode(...new Uint8Array(digest)))
+						.replace(/\+/g, "-")
+						.replace(/\//g, "_")
+						.replace(/=+$/, "");
+				}
+				async function register(uid) {
+					let registerSuccess = false;
+					try {
+						const codeVerifier = generateRandomString(128);
+						const codeChallenge = await generateCodeChallenge(codeVerifier);
+						const CLIENT_ID = "c154522a-0b65-41f8-bdbd-4530d3248fef";
+						const REDIRECT_URI = "https://online.amlg.top/api/cpoauth-callback";
+						const authUrl = "https://www.cpoauth.com/oauth/authorize?" + new URLSearchParams({
+							client_id: CLIENT_ID,
+							redirect_uri: REDIRECT_URI,
+							response_type: "code",
+							scope: "openid profile link:luogu",
+							code_challenge: codeChallenge,
+							code_challenge_method: "S256",
+							state: uid,
+						}).toString();
+						const authCode = await new Promise((resolve, reject) => {
+							const popup = window.open(authUrl, "_blank", "width=600,height=700,left=50%,top=50%,transform=translate(-50%,-50%)");
+							if (!popup) {
+								reject(new Error("无法打开授权弹窗，请检查浏览器弹窗设置"));
+								return;
+							}
+							const messageHandler = function (event) {
+								if (event.origin !== "https://online.amlg.top") return;
+								const data = event.data;
+								if (data && data.type === "cpoauth_code") {
+									window.removeEventListener("message", messageHandler);
+									popup.close();
+									resolve(data.code);
+								} else if (data && data.type === "cpoauth_error") {
+									window.removeEventListener("message", messageHandler);
+									popup.close();
+									reject(new Error(data.error || "授权失败"));
+								}
+							};
+							window.addEventListener("message", messageHandler);
+							const checkClosed = setInterval(() => {
+								if (popup.closed) {
+									clearInterval(checkClosed);
+									window.removeEventListener("message", messageHandler);
+									reject(new Error("用户关闭了授权弹窗"));
+								}
+							}, 1000);
+						});
+						const result = await new Promise((resolve, reject) => {
+							GM_xmlhttpRequest({
+								method: "POST",
+								url: "https://online.amlg.top/api/register",
+								headers: {
+									"Content-Type": "application/json",
+								},
+								data: JSON.stringify({
+									luoguuid: uid,
+									code: authCode,
+									code_verifier: codeVerifier,
+									state: uid,
+								}),
+								onload: function (response) {
+									try {
+										const data = JSON.parse(response.responseText);
+										resolve(data);
+									} catch (e) {
+										reject(new Error("解析响应数据失败: " + e.message));
+									}
+								},
+								onerror: function (error) {
+									reject(new Error("register请求失败: " + error));
+								},
+								onabort: function () {
+									reject(new Error("register请求被中止"));
+								},
+								ontimeout: function () {
+									reject(new Error("register请求超时"));
+								},
+							});
+						});
+						if (result.success) {
+							GM_setValue("amlgEmail_" + uid, result.email);
+							GM_setValue("amlgPassword_" + uid, result.temporaryPassword);
+							registerSuccess = true;
+						} else {
+							console.log("[AML Register] 用户" + uid + "注册失败，服务器返回失败: " + (result.message || "未知原因"));
+						}
+					} catch (e) {
+						console.error("注册过程出错:", e);
+					}
+					return registerSuccess;
+				}
 			async function supabaseUpsert(uid) {
 				if (
 					!GM_getValue("amlgEmail_" + uid, "") ||
@@ -12614,21 +12623,88 @@ async function all() {
 				}
 				onlineInitialized = true;
 				if (
-					!GM_getValue("amlgEmail_" + uid) ||
-					!GM_getValue("amlgPassword_" + uid)
+					GM_getValue("amlgEmail_" + uid) &&
+					GM_getValue("amlgPassword_" + uid)
 				) {
-					console.log("用户" + uid + "未注册，开始注册");
-					if (!(await register(uid))) {
-						console.error("用户" + uid + "注册失败");
-						return;
+					if (currentAMLSettings.slogenTimeEnabled) {
+						checkUpdate(uid);
+						if (heartbeatInterval) clearInterval(heartbeatInterval);
+						heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
 					}
 				} else {
+					console.log("用户" + uid + "未注册，等待用户触发注册");
+					showRegisterPrompt(uid);
 				}
-				if (currentAMLSettings.slogenTimeEnabled) {
-					checkUpdate(uid);
-					if (heartbeatInterval) clearInterval(heartbeatInterval);
-					heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
-				}
+			}
+			function showRegisterPrompt(uid) {
+				Swal.fire({
+					title: "需要授权注册",
+					text: "请先通过 CP OAuth 授权您的洛谷账号，我们不会向第三方分享您的账号信息，仅用于提供“签名与网站时间提示“功能与内部数据分析。",
+					icon: "info",
+					confirmButtonText: "立即授权注册",
+					confirmButtonColor: "#6366f1",
+					showCancelButton: false,
+					allowOutsideClick: false,
+					allowEscapeKey: false,
+					width: "400px"
+				}).then(async (result) => {
+					if (result.isConfirmed) {
+						const loading = Swal.fire({
+							title: "授权中...",
+							text: "正在打开 CP OAuth 授权页面",
+							icon: "info",
+							allowOutsideClick: false,
+							showConfirmButton: false
+						});
+						try {
+							if (await register(uid)) {
+								loading.close();
+								Swal.fire({
+									title: "注册成功",
+									text: "已成功通过 CP OAuth 授权",
+									icon: "success",
+									confirmButtonText: "确定",
+									confirmButtonColor: "#6366f1",
+									width: "400px"
+								});
+								if (currentAMLSettings.slogenTimeEnabled) {
+									checkUpdate(uid);
+									if (heartbeatInterval) clearInterval(heartbeatInterval);
+									heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
+								}
+							} else {
+								loading.close();
+								Swal.fire({
+									title: "注册失败",
+									text: "服务器返回失败，请重试",
+									icon: "error",
+									confirmButtonText: "重试",
+									confirmButtonColor: "#6366f1",
+									width: "400px"
+								}).then((retryResult) => {
+									if (retryResult.isConfirmed) {
+										showRegisterPrompt(uid);
+									}
+								});
+							}
+						} catch (e) {
+							loading.close();
+							console.error("注册失败:", e);
+							Swal.fire({
+								title: "注册失败",
+								text: e.message || "授权过程中发生错误",
+								icon: "error",
+								confirmButtonText: "重试",
+								confirmButtonColor: "#6366f1",
+								width: "400px"
+							}).then((retryResult) => {
+								if (retryResult.isConfirmed) {
+									showRegisterPrompt(uid);
+								}
+							});
+						}
+					}
+				});
 			}
 			initOnlineModule();
 		} catch (e) {
