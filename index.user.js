@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.4
+// @version      1.2.5
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -9,7 +9,6 @@
 // @match        *://www.luogu.com/*
 // @match        zym2013.dpdns.org/*
 // @match        dash.amazingluogu.dpdns.org/*
-// @connect      *
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -51,6 +50,8 @@
 // @connect      127.0.0.1
 // @connect      online.amlg.top
 // @connect      unpkg.com
+// @connect      fastly.jsdelivr.net
+// @connect      *
 // @require      https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/gh/highlightjs/cdn-release/build/highlight.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/marked@4.0.0/marked.min.js?version=1.0.1
@@ -65,19 +66,13 @@
 // @require      https://cdn.amlg.top/npm/mark.js@8.11.1/dist/mark.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/fuse.js@7.2.0/dist/fuse.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.umd.js?version=1.0.8
-// @require      https://cdn.jsdelivr.net/npm/@trim21/gm-fetch
+// @require      https://cdn.amlg.top/npm/@trim21/gm-fetch@0.3.0/dist/gm_fetch.js?version=1.2.5
 // @resource     iziToastCSS https://cdn.amlg.top/npm/izitoast@1.4.0/dist/css/iziToast.min.css?version=1.0.1
 // @resource     icomoonCSS https://cdn.amlg.top/gh/marcelodolza/iziToast@master/docs/css/icomoon.css?version=1.0.1
 // @resource     hljs https://cdn.amlg.top/gh/highlightjs/cdn-release/build/styles/github.min.css?version=1.0.1
 // @resource     swal https://cdn.amlg.top/npm/sweetalert2@11.26.17/dist/sweetalert2.min.css?version=1.0.1
 // @resource     animate https://cdn.amlg.top/npm/animate.css@4.1.1/animate.min.css?version=1.0.1
 // @resource     walineCSS https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.css?version=1.0.8
-// @resource     live2DCSS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/waifu.css?version=1.2.4
-// @resource     live2DMinJS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/live2d.min.js?version=1.2.4
-// @resource     waifuTipsJS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/waifu-tips.js?version=1.2.4
-// @resource     live2DIndexJS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/chunk/index.js?version=1.2.4
-// @resource     live2DIndex2JS https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/chunk/index2.js?version=1.2.4
-// @resource     waifuTipsJSON https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/waifu-tips.json?version=1.2.4
 // @run-at       document-start
 // ==/UserScript==
 
@@ -8680,7 +8675,7 @@ async function all() {
 			}
 			if (currentAMLSettings.live2DEnabled && !live2DInited) {
 				try {
-
+					
 				} catch (e) {
 					console.log(e);
 				}
@@ -9190,6 +9185,19 @@ async function all() {
 											const newBtn = document.createElement("button");
 											newBtn.className = "lform-size-middle button-transparent aml-ai-analyze-btn";
 											newBtn.type = "button";
+											newBtn.style = `
+											--l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));
+											display: inline-block;
+											outline: none;
+											cursor: pointer;
+											font-weight: inherit;
+											line-height: 1.5;
+											text-align: center;
+											vertical-align: middle;
+											border-radius: 3px;
+											border: 1px solid rgb(var(--l-button--real-color));
+											background: rgba(var(--l-button--real-color), 0) none;
+											color: rgb(var(--l-button--real-color));`;
 											newBtn.innerHTML = "AI 分析";
 											addManagedEventListener(newBtn, "click", handleAnalyzeClick);
 											btnActions.appendChild(newBtn);
@@ -9223,7 +9231,7 @@ async function all() {
 							}
 							try {
 								const problemData = JSON.parse(lentilleContext.innerHTML).data.problem;
-								const problemText = `题目编号：${problemData.pid||""}\n题目名称：${problemData.name||""}\n时间限制：${problemData.limits.time||NaN}ms\n内存限制：${(problemData.limits.memory||NaN)/1024}MB\n题目（JSON格式）：${JSON.stringify(problemData.content) || ""}\n样例（JSON List格式，List中的每一项为一组样例，一项的第一个是输入，第二个是输出）：${JSON.stringify(problemData.samples) || ""}`;
+								const problemText = `题目编号：${problemData.pid || ""}\n题目名称：${problemData.name || ""}\n时间限制：${problemData.limits.time || NaN}ms\n内存限制：${(problemData.limits.memory || NaN) / 1024}MB\n题目（JSON格式）：${JSON.stringify(problemData.content) || ""}\n样例（JSON List格式，List中的每一项为一组样例，一项的第一个是输入，第二个是输出）：${JSON.stringify(problemData.samples) || ""}`;
 								await analyzeProblemWithAI(problemText, apiUrl, apiKey, currentAMLSettings.aiProblemAnalysisModel || "gpt-3.5-turbo");
 							} catch (e) {
 								Swal.fire({
@@ -10645,133 +10653,133 @@ async function all() {
 					console.log(e);
 				}
 			}
-            // 重点修改此处
+			// 重点修改此处
 			if (currentAMLSettings.walineEnabled && window.location.pathname == '/') {
-			    try {
-			        let walineInitialized = false;
-			        let currentMode = 'watching';
-			        function getBenbenContainer() {
-			            const feed = document.querySelector('#feed');
-			            if (feed) {
-			                let parent = feed.closest('.lg-index-benben');
-			                if (parent) return parent;
-			                return feed.closest('.lg-article')?.parentNode || feed.parentNode;
-			            }
-			            return null;
-			        }
-			        function ensureWalineContainer() {
-			            let container = document.getElementById('waline-container');
-			            if (container) return container;
-			            const parent = getBenbenContainer();
-			            if (!parent) return null;
-			            container = document.createElement('div');
-			            container.id = 'waline-container';
-			            container.className = 'lg-article';
-			            container.style.display = 'none';
-			            const walineDiv = document.createElement('div');
-			            walineDiv.id = 'waline';
-			            container.appendChild(walineDiv);
-			            parent.appendChild(container);
-			            return container;
-			        }
-			        function showWaline() {
-			            const feed = document.querySelector('#feed');
-			            const feedMore = document.querySelector('#feed-more');
-			            const walineContainer = ensureWalineContainer();
-			            if (!walineContainer) {
-			                setTimeout(showWaline, 300);
-			                return;
-			            }
-			            if (feed) feed.style.display = 'none';
-			            if (feedMore) feedMore.style.display = 'none';
-			            walineContainer.style.display = '';
-			            if (!walineInitialized && window.Waline) {
- 			               window.Waline.init({
- 			                   el: '#waline',
-			                    serverURL: 'https://waline.amlg.top',
-			                    path: window.location.pathname,
-			                    html: false
-			                });
-			                walineInitialized = true;
-			                GM_addStyle(`.wl-rss { max-width: 100% !important; }`);
-			            } else if (!window.Waline) {
-			                console.warn('[Waline] 模块未加载');
-			            }
-			            currentMode = 'waline';
-			        }
-			        function hideWalineAndRestore() {
-			            const feed = document.querySelector('#feed');
-			            const feedMore = document.querySelector('#feed-more');
-			            const walineContainer = document.getElementById('waline-container');
-			            if (feed) feed.style.display = '';
-			            if (feedMore) feedMore.style.display = '';
-			            if (walineContainer) walineContainer.style.display = 'none';
-			            currentMode = 'watching';
-			        }
-			        function addWalineTab() {
-			            const nav = document.querySelector('#home-center-nav');
-			            if (!nav) {
-			                setTimeout(addWalineTab, 500);
-			                return;
-			            }
-			            if (nav.querySelector('[data-mode="waline"]')) return;
-			            const li = document.createElement('li');
-			            li.className = 'feed-selector';
-			            li.setAttribute('data-mode', 'waline');
-			            const a = document.createElement('a');
-			            a.style.cursor = 'pointer';
-			            a.textContent = '匿名犇犇';
-			            li.appendChild(a);
-			            const allTab = nav.querySelector('[data-mode="all"]');
-			            if (allTab) {
-			                allTab.parentNode.insertBefore(li, allTab.nextSibling);
-			            } else {
-			                nav.appendChild(li);
-			            }
-			            li.addEventListener('click', function(e) {
-			                e.preventDefault();
-			                e.stopPropagation();
-			                document.querySelectorAll('.feed-selector').forEach(el => el.classList.remove('am-active'));
-			                this.classList.add('am-active');
-			                showWaline();
-			            });
-			        }
-			        function setupNavInterceptor() {
-			            const nav = document.querySelector('#home-center-nav');
-			            if (!nav) {
-			                setTimeout(setupNavInterceptor, 500);
-			                return;
-			            }
-			            nav.addEventListener('click', function(e) {
-			                const target = e.target.closest('.feed-selector');
-			                if (!target) return;
-			                const mode = target.dataset.mode;
-			                if (mode === 'waline') return;
-			                if (currentMode === 'waline') {
-			                    hideWalineAndRestore();
-			                }
-			            }, true);
-			        }
-			        setTimeout(addWalineTab, 1500);
-			        setTimeout(setupNavInterceptor, 1600);
-			        addKeydownListener(function(e) {
-			            if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === 'w') ||
-			                (e.metaKey && e.altKey && e.key.toLowerCase() === 'w')) {
-			                e.preventDefault();
-			                if (currentMode === 'waline') {
-			                    hideWalineAndRestore();
-			                    const watchingTab = document.querySelector('[data-mode="watching"]');
-			                    if (watchingTab) watchingTab.click();
-			                } else {
-			                    const walineTab = document.querySelector('[data-mode="waline"]');
-			                    if (walineTab) walineTab.click();
-			                    else showWaline();
-			                }
-			            }
-			        });
-			    } catch (e) {
-			        console.log('[Waline Home] 错误:', e);
-			    }
+				try {
+					let walineInitialized = false;
+					let currentMode = 'watching';
+					function getBenbenContainer() {
+						const feed = document.querySelector('#feed');
+						if (feed) {
+							let parent = feed.closest('.lg-index-benben');
+							if (parent) return parent;
+							return feed.closest('.lg-article')?.parentNode || feed.parentNode;
+						}
+						return null;
+					}
+					function ensureWalineContainer() {
+						let container = document.getElementById('waline-container');
+						if (container) return container;
+						const parent = getBenbenContainer();
+						if (!parent) return null;
+						container = document.createElement('div');
+						container.id = 'waline-container';
+						container.className = 'lg-article';
+						container.style.display = 'none';
+						const walineDiv = document.createElement('div');
+						walineDiv.id = 'waline';
+						container.appendChild(walineDiv);
+						parent.appendChild(container);
+						return container;
+					}
+					function showWaline() {
+						const feed = document.querySelector('#feed');
+						const feedMore = document.querySelector('#feed-more');
+						const walineContainer = ensureWalineContainer();
+						if (!walineContainer) {
+							setTimeout(showWaline, 300);
+							return;
+						}
+						if (feed) feed.style.display = 'none';
+						if (feedMore) feedMore.style.display = 'none';
+						walineContainer.style.display = '';
+						if (!walineInitialized && window.Waline) {
+							window.Waline.init({
+								el: '#waline',
+								serverURL: 'https://waline.amlg.top',
+								path: window.location.pathname,
+								html: false
+							});
+							walineInitialized = true;
+							GM_addStyle(`.wl-rss { max-width: 100% !important; }`);
+						} else if (!window.Waline) {
+							console.warn('[Waline] 模块未加载');
+						}
+						currentMode = 'waline';
+					}
+					function hideWalineAndRestore() {
+						const feed = document.querySelector('#feed');
+						const feedMore = document.querySelector('#feed-more');
+						const walineContainer = document.getElementById('waline-container');
+						if (feed) feed.style.display = '';
+						if (feedMore) feedMore.style.display = '';
+						if (walineContainer) walineContainer.style.display = 'none';
+						currentMode = 'watching';
+					}
+					function addWalineTab() {
+						const nav = document.querySelector('#home-center-nav');
+						if (!nav) {
+							setTimeout(addWalineTab, 500);
+							return;
+						}
+						if (nav.querySelector('[data-mode="waline"]')) return;
+						const li = document.createElement('li');
+						li.className = 'feed-selector';
+						li.setAttribute('data-mode', 'waline');
+						const a = document.createElement('a');
+						a.style.cursor = 'pointer';
+						a.textContent = '匿名犇犇';
+						li.appendChild(a);
+						const allTab = nav.querySelector('[data-mode="all"]');
+						if (allTab) {
+							allTab.parentNode.insertBefore(li, allTab.nextSibling);
+						} else {
+							nav.appendChild(li);
+						}
+						li.addEventListener('click', function (e) {
+							e.preventDefault();
+							e.stopPropagation();
+							document.querySelectorAll('.feed-selector').forEach(el => el.classList.remove('am-active'));
+							this.classList.add('am-active');
+							showWaline();
+						});
+					}
+					function setupNavInterceptor() {
+						const nav = document.querySelector('#home-center-nav');
+						if (!nav) {
+							setTimeout(setupNavInterceptor, 500);
+							return;
+						}
+						nav.addEventListener('click', function (e) {
+							const target = e.target.closest('.feed-selector');
+							if (!target) return;
+							const mode = target.dataset.mode;
+							if (mode === 'waline') return;
+							if (currentMode === 'waline') {
+								hideWalineAndRestore();
+							}
+						}, true);
+					}
+					setTimeout(addWalineTab, 1500);
+					setTimeout(setupNavInterceptor, 1600);
+					addKeydownListener(function (e) {
+						if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === 'w') ||
+							(e.metaKey && e.altKey && e.key.toLowerCase() === 'w')) {
+							e.preventDefault();
+							if (currentMode === 'waline') {
+								hideWalineAndRestore();
+								const watchingTab = document.querySelector('[data-mode="watching"]');
+								if (watchingTab) watchingTab.click();
+							} else {
+								const walineTab = document.querySelector('[data-mode="waline"]');
+								if (walineTab) walineTab.click();
+								else showWaline();
+							}
+						}
+					});
+				} catch (e) {
+					console.log('[Waline Home] 错误:', e);
+				}
 			}
 			if (currentAMLSettings.memoEnabled && window.location.pathname === "/") {
 				try {
