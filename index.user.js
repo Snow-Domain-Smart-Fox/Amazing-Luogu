@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.2.9
+// @version      1.3.0
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -754,9 +754,9 @@ function getCurrentUserId() {
 			}
 		}
 		if(isnew){
-			return JSON.parse(document.getElementById("lentille-context").innerHTML).user.uid;
+			return JSON.parse(document.getElementById("lentille-context").innerHTML).user.uid.toString();
 		}else{
-			return _feInjection.currentUser.uid;
+			return _feInjection.currentUser.uid.toString();
 		}
 	}catch(e){
 		console.log(e);
@@ -7824,7 +7824,7 @@ async function all() {
 					let aa = 0;
 					for (let i of document.getElementsByClassName("difficulty-tags")[0]
 						.children) {
-						if (Number(i.children[1].innerHTML.replaceAll("题", "")) == NaN) {
+						if (isNaN(Number(i.children[1].innerHTML.replaceAll("题", "")))) {
 							continue;
 						}
 						if (
@@ -12669,6 +12669,23 @@ async function reportActive(uid) {
 		await supabaseUpsert(uid);
 	} catch (e) {
 		console.warn("Supabase 心跳失败:", e);
+		const msg = e.message || "";
+		if (
+			msg.includes("凭据验证失败") ||
+			msg.includes("未找到匹配的用户") ||
+			msg.includes("该用户未绑定洛谷 UID") ||
+			msg.includes("验证流程异常")
+		) {
+			console.log("凭据不匹配，清除旧数据并重新授权");
+			GM_setValue("amlgEmail_" + uid, "");
+			GM_setValue("amlgPassword_" + uid, "");
+			GM_setValue("SlogenDeleted_" + uid, false);
+			if (heartbeatInterval) clearInterval(heartbeatInterval);
+			await showRegisterPrompt(uid);
+			checkUpdate(uid);
+			if (heartbeatInterval) clearInterval(heartbeatInterval);
+			heartbeatInterval = setInterval(() => checkUpdate(uid), 300_000);
+		}
 	}
 }
 function checkUpdate(uid) {
@@ -12682,6 +12699,49 @@ function checkUpdate(uid) {
 		GM_setValue("amlgDate_" + uid, a.getTime());
 		console.log("User " + uid + " updated.");
 		return;
+	}
+}
+async function deleteSlogenData(uid) {
+	const email = GM_getValue("amlgEmail_" + uid, "");
+	const password = GM_getValue("amlgPassword_" + uid, "");
+	if (!email || !password) return;
+	return new Promise((resolve, reject) => {
+		GM_xmlhttpRequest({
+			method: "POST",
+			url: "https://online.amlg.top/api/delete",
+			data: JSON.stringify({ email, password }),
+			onload: function (response) {
+				if (response.status >= 200 && response.status < 300) {
+					resolve(response);
+				} else {
+					reject(new Error("HTTP " + response.status + " " + response.response));
+				}
+			},
+			onerror: function (error) {
+				reject(new Error("Network error: " + error.message));
+			},
+			ontimeout: function () {
+				reject(new Error("Request timeout"));
+			},
+		});
+	});
+}
+async function checkAndDeleteIfDisabled(uid) {
+	const lastCheckDate = GM_getValue("amlgLastDeleteCheck_" + uid, 0);
+	const today = new Date().setHours(0, 0, 0, 0);
+	if (lastCheckDate >= today) return;
+	GM_setValue("amlgLastDeleteCheck_" + uid, today);
+	if (!currentAMLSettings.slogenTimeEnabled) {
+		const hasUploaded = GM_getValue("amlgDate_" + uid, 0) > 0;
+		if (hasUploaded) {
+			try {
+				await deleteSlogenData(uid);
+				GM_setValue("amlgDate_" + uid, 0);
+				console.log("用户" + uid + "已关闭slogenTimeEnabled，已删除上传数据");
+			} catch (e) {
+				console.warn("删除用户" + uid + "数据失败:", e);
+			}
+		}
 	}
 }
 function generateRandomString(length) {
@@ -12749,10 +12809,10 @@ async function register(uid) {
 					"Content-Type": "application/json",
 				},
 				data: JSON.stringify({
-					luoguuid: uid,
+					luoguuid: String(uid),
 					code: authCode,
 					code_verifier: codeVerifier,
-					state: uid,
+					state: String(uid),
 				}),
 				onload: function (response) {
 					try {
@@ -12825,9 +12885,10 @@ async function showRegisterPrompt(uid) {
 			}
 		} else {
 			loading.close();
+			const errorMsg = result.message || "服务器返回失败，请重试";
 			const retryResult = await Swal.fire({
 				title: "注册失败",
-				text: "服务器返回失败，请重试",
+				text: errorMsg,
 				icon: "error",
 				confirmButtonText: "重试",
 				confirmButtonColor: "#6366f1",
@@ -12866,6 +12927,7 @@ window.addEventListener("load", async function () {
 				}
 				await showRegisterPrompt(uid);
 			}
+			checkAndDeleteIfDisabled(uid);
 		} catch (e) {
 			console.error("注册提示显示失败:", e);
 		}
