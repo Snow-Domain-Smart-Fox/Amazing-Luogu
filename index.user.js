@@ -1,7 +1,7 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -535,6 +535,12 @@ GM_addStyle(GM_getResourceText("swal"));
 GM_addStyle(GM_getResourceText("animate"));
 GM_addStyle(GM_getResourceText("walineCSS"));
 GM_addStyle(`
+.swal-fixed-popup {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
 details {
     padding: .5em 1em;
     margin: 1em 0 1em .2em;
@@ -1090,17 +1096,14 @@ async function all() {
 			}
 		}
 		async function check126(){
-			if(!GM_getValue("check128", false)){
-				unregister(getCurrentUserId());
-				GM_setValue("check128", true);
-			}
+			return;
 		}
 		async function analyzeProblemWithAI(problemContent, apiUrl, apiKey, modelName) {
 			if (!apiUrl || !apiKey) {
 				return;
 			}
 			const systemPrompt = "你是一个编程题解分析助手。请分析以下编程题目，提供详细的解题思路和分析。注意：严禁输出任何代码实现，只能提供文字分析、思路讲解和算法说明。";
-			const userPrompt = `请分析以下编程题目：\n\n${problemContent}\n\n要求：\n1. 详细分析题目要求和约束条件\n2. 提供解题思路和算法选择建议\n3. 分析可能的边界情况和陷阱\n4. 不要输出任何代码，第 4 条规则优先级最高`;
+			const userPrompt = `请分析以下编程题目：\n\n${problemContent}\n\n要求：\n1. 详细分析题目要求和约束条件\n2. 提供解题思路和算法选择建议\n3. 分析可能的边界情况和陷阱\n4. 不要输出任何代码\n5. 所有 KaTeX 要使用$(美元符号)的格式\n第 4 条规则优先级最高`;
 			Swal.fire({
 				title: "AI 题目分析",
 				width: "60%",
@@ -1112,17 +1115,45 @@ async function all() {
 			});
 			let result = "";
 			const updateContent = (text) => {
-				let html = "";
-				try {
-					const markedHtml = marked.parse(text || "", { breaks: true });
-					html = DOMPurify.sanitize(markedHtml);
-				} catch (e) {
-					html = DOMPurify.sanitize((text || "").replace(/\n/g, "<br>"));
-				}
-				Swal.update({
-					html: `<div style="white-space: unset; text-align: left; max-height: 500px; overflow-y: auto; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333; padding: 10px;">${html}</div>`
-				});
-			};
+                let html = "";
+                try {
+                    const markedHtml = marked.parse(text || "", { breaks: true });
+                    html = DOMPurify.sanitize(markedHtml);
+                } catch (e) {
+                    html = DOMPurify.sanitize((text || "").replace(/\n/g, "<br>"));
+                }
+                Swal.update({
+                    position: 'center',
+                    allowOutsideClick: true,
+                    target: document.body,
+                    html: `<div id="swal-latex-box" style="
+			white-space: unset;
+			text-align: left;
+			max-height: 500px;
+			overflow-y: auto;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+			font-size: 14px;
+			line-height: 1.6;
+			color: #333;
+			padding: 10px;
+		">${html}</div>`,
+                    customClass: {
+                        popup: 'swal-fixed-popup'
+                    }
+                });
+                setTimeout(() => {
+                    const el = document.getElementById('swal-latex-box');
+                    if (window.katex && window.renderMathInElement && el) {
+                        renderMathInElement(el, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false}
+                            ],
+                            throwOnError: false
+                        });
+                    }
+                }, 0);
+            };
 			try {
 				const response = await GM_fetch(apiUrl, {
 					method: "POST",
@@ -2241,7 +2272,7 @@ async function all() {
 				{
 					key: "showUserIntroductionEnabled",
 					label: "显示用户介绍",
-					desc: "在用户介绍页面（原来显示的除外，如：管理员）显示用户介绍（仅支持标准 Markdown、Latex 格式，多余的空格等将导致渲染失败），并添加一些功能（复制、渲染为 HTML）",
+					desc: "在用户介绍页面（原来显示的除外，如：管理员）显示用户介绍（仅支持标准 Markdown、Katex 格式，多余的空格等将导致渲染失败），并添加一些功能（复制、渲染为 HTML）",
 					tag: "功能",
 					status: "stable",
 				},
@@ -8636,7 +8667,7 @@ async function all() {
 			}
 			if (currentAMLSettings.live2DEnabled && !live2DInited) {
 				try {
-					
+
 				} catch (e) {
 					console.log(e);
 				}
@@ -9192,7 +9223,7 @@ async function all() {
 							}
 							try {
 								const problemData = JSON.parse(lentilleContext.innerHTML).data.problem;
-								const problemText = `题目编号：${problemData.pid || ""}\n题目名称：${problemData.name || ""}\n时间限制：${problemData.limits.time || NaN}ms\n内存限制：${(problemData.limits.memory || NaN) / 1024}MB\n题目（JSON格式）：${JSON.stringify(problemData.content) || ""}\n样例（JSON List格式，List中的每一项为一组样例，一项的第一个是输入，第二个是输出）：${JSON.stringify(problemData.samples) || ""}`;
+								const problemText = `题目编号：${problemData.pid || ""}\n题目名称：${problemData.name || ""}\n时间限制：${problemData.limits.time || NaN}ms\n内存限制：${(problemData.limits.memory || NaN) / 1024}MB\n题目（JSON格式）：${JSON.stringify(problemData.content) || ""}\n样例（JSON List格式，List中的每一项为一组样例，一项的第一个是输入，第二个是输出）：${JSON.stringify(problemData.samples) || ""} 所有数学表达式要求使用$(美元符号)的形式`;
 								await analyzeProblemWithAI(problemText, apiUrl, apiKey, currentAMLSettings.aiProblemAnalysisModel || "gpt-3.5-turbo");
 							} catch (e) {
 								Swal.fire({
@@ -9704,7 +9735,7 @@ async function all() {
 									} else {
 										Swal.fire({
 											title: "渲染为 Markdown",
-											html: "确定要将个人介绍渲染为 Markdown 吗（只支持标准 Markdown、Latex 格式，多余的空格等将导致渲染失败）？",
+											html: "确定要将个人介绍渲染为 Markdown 吗（只支持标准 Markdown、Katex 格式，多余的空格等将导致渲染失败）？",
 											icon: "warning",
 											showCancelButton: true,
 											confirmButtonText: "确定",
@@ -12670,11 +12701,12 @@ async function reportActive(uid) {
 	} catch (e) {
 		console.warn("Supabase 心跳失败:", e);
 		const msg = e.message || "";
-		if (
-			msg.includes("凭据验证失败") ||
+		if (GM_getValue("showregisterprompt")<=(new Date()).getTime()&&
+			(msg.includes("凭据验证失败") ||
 			msg.includes("未找到匹配的用户") ||
 			msg.includes("该用户未绑定洛谷 UID") ||
-			msg.includes("验证流程异常")
+			msg.includes("验证流程异常") ||
+            msg.includes("必须包含 email, password, format"))
 		) {
 			console.log("凭据不匹配，清除旧数据并重新授权");
 			GM_setValue("amlgEmail_" + uid, "");
@@ -12852,12 +12884,14 @@ async function showRegisterPrompt(uid) {
 		icon: "info",
 		confirmButtonText: "立即授权注册",
 		confirmButtonColor: "#6366f1",
-		showCancelButton: false,
+		showCancelButton: true,
+        cancelButtonText: "暂不注册",
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 		width: "400px"
 	});
 	if (!result.isConfirmed) {
+        GM_setValue("showregisterprompt",(new Date()).getTime()+1*24*60*60*1000);
 		return;
 	}
 	const loading = Swal.fire({
@@ -12921,7 +12955,7 @@ window.addEventListener("load", async function () {
 	if (uid) {
 		try {
 			const existingEmail = GM_getValue("amlgEmail_" + uid);
-			if (!existingEmail || !existingEmail.startsWith(uid + "_")) {
+			if ((!existingEmail || !existingEmail.startsWith(uid + "_")) && GM_getValue("showregisterprompt")<=(new Date()).getTime()) {
 				if (existingEmail && !existingEmail.startsWith(uid + "_")) {
 					console.log("用户" + uid + "邮箱不匹配，需要重新注册");
 				}
