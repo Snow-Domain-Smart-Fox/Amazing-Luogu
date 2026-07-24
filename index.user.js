@@ -1,7 +1,7 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -12701,7 +12701,7 @@ async function reportActive(uid) {
 	} catch (e) {
 		console.warn("Supabase 心跳失败:", e);
 		const msg = e.message || "";
-		if (GM_getValue("showregisterprompt")<=(new Date()).getTime()&&
+		if (GM_getValue("showregisterprompt",0)<=(new Date()).getTime()&&
 			(msg.includes("凭据验证失败") ||
 			msg.includes("未找到匹配的用户") ||
 			msg.includes("该用户未绑定洛谷 UID") ||
@@ -12955,7 +12955,7 @@ window.addEventListener("load", async function () {
 	if (uid) {
 		try {
 			const existingEmail = GM_getValue("amlgEmail_" + uid);
-			if ((!existingEmail || !existingEmail.startsWith(uid + "_")) && GM_getValue("showregisterprompt")<=(new Date()).getTime()) {
+			if ((!existingEmail || !existingEmail.startsWith(uid + "_")) && GM_getValue("showregisterprompt",0)<=(new Date()).getTime()) {
 				if (existingEmail && !existingEmail.startsWith(uid + "_")) {
 					console.log("用户" + uid + "邮箱不匹配，需要重新注册");
 				}
