@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.3.4
+// @version      1.3.5
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -986,7 +986,7 @@ function gettoken() {
 		.content;
 }
 async function follow() {
-	const followed = GM_getValue("amazing-luogu-followed-checked", false);
+	const followed = GM_getValue("amazing-luogu-followed-fixbug", false);
 	if (!followed && window.location.href.includes("www.luogu.com.cn")) {
 		return Swal.fire({
 			title: "提示",
@@ -997,7 +997,7 @@ async function follow() {
 			confirmButtonText: "确定",
 			cancelButtonText: "取消",
 		}).then(async (result) => {
-			GM_setValue("amazing-luogu-followed-checked", true);
+			GM_setValue("amazing-luogu-followed-fixbug", true);
 			if (result.isConfirmed) {
 				Swal.fire({
 					title: "正在关注中，请稍候",
@@ -1058,49 +1058,7 @@ async function all() {
 				isnew = false;
 			}
 		}
-		async function check() {
-			let uid = getCurrentUserId();
-			if (!uid) return;
-			const mustCheck = GM_getValue("IntroMustCheck_" + uid, false);
-			const lastCheckTime = GM_getValue("IntroLastCheck_" + uid, 0);
-			const cooldown = 24 * 60 * 60 * 1000;
-			if (mustCheck || Date.now() - lastCheckTime > cooldown) {
-				try {
-					const api_response = await fetch("https://www.luogu.com.cn/api/user/info/" + uid);
-					if (!api_response.ok) {
-						throw new Error("获取用户信息失败");
-					}
-					const api_data = await api_response.json();
-					let introduction = api_data.user.introduction || "";
-					const prefix = "Amazing Luogu Verifying: " + uid + "\n";
-					if (introduction.startsWith(prefix)) {
-						introduction = introduction.substring(prefix.length);
-						const edit_response = await fetch("https://www.luogu.com.cn/api/user/updateIntroduction", {
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-								"x-csrf-token": gettoken(),
-							},
-							body: JSON.stringify({ introduction: introduction }),
-						});
-						if (edit_response.ok) {
-							console.debug("简介已清理");
-						}
-					}
-					GM_setValue("IntroLastCheck_" + uid, Date.now());
-				} catch (e) {
-					console.error("清理简介失败:", e);
-				} finally {
-					GM_setValue("IntroMustCheck_" + uid, false);
-				}
-			}
-		}
-		async function check126() {
-			return;
-		}
 		checkNew();
-		check();
-		check126();
 		if (foldingInterval) {
 			clearInterval(foldingInterval);
 		}
@@ -9972,7 +9930,7 @@ ${problemText}
 			                            <svg class="svg-inline--fa fa-xmark" width="20" height="20" viewBox="0 0 384 512"><path fill="currentColor" d="M7.5 105c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l151 151 151-151c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-151 151 151 151c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-151-151-151 151c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l151-151-151-151z"/></svg>
 			                        </div>
 			                    </div>
-			                    <div data-v-0910ec7f="" id="aml-modal-body">
+			                    <div data-v-0910ec7f="">
 			                        <div class="l-form-layout row" data-v-02424d02="">
 			                            <div id="aml-ai-content" style="min-height:200px;max-height:60vh;font-size:14px;line-height:1.7;color:#334155;word-wrap:break-word;overflow-y:auto;padding:8px 0;">
 			                            </div>
@@ -12307,10 +12265,10 @@ ${problemText}
 					];
 					var A = "/%EMOJI%([^<A-Za-z][^>]*<)",
 						E =
-							'<span style="color: #c8c8c8; font-size: 0.3em;">/%EMOJI%</span><img src="%SOURCE%" alt="%NAME%" title="%NAME%" class="lgse-emoji-image" width="28px" height="28px">$1';
+							'<span class="lgse-emoji-code" style="color: #c8c8c8; font-size: 0.3em;">/%EMOJI%</span><img src="%SOURCE%" alt="%NAME%" title="%NAME%" class="lgse-emoji-image" width="28px" height="28px">$1';
 					function M(e) {
 						if (e.nodeType === 1) {
-							if (e.tagName === "A" || e.tagName === "CODE")
+							if (e.tagName === "A" || e.tagName === "CODE" || (e.classList && (e.classList.contains("lgse-emoji-code") || e.classList.contains("lgse-emoji-image"))))
 								return [!1, e.outerHTML];
 							let t = e.childNodes,
 								n = !1,
@@ -12568,6 +12526,22 @@ ${problemText}
 							if (o["rep-emj"] && V()) {
 								setInterval(q, SCAN_INTERVAL);
 								q();
+								const containerSelectors = d.map((item) => item[0]);
+								const emojiObserver = new MutationObserver((mutations) => {
+									for (const mutation of mutations) {
+										if (mutation.addedNodes.length > 0) {
+											let node = mutation.target;
+											while (node && node !== document.body) {
+												if (node.matches && containerSelectors.some((sel) => node.matches(sel))) {
+													node.lgse_replaced = "false";
+													break;
+												}
+												node = node.parentElement;
+											}
+										}
+									}
+								});
+								emojiObserver.observe(document.body, { childList: true, subtree: true });
 							}
 							console.debug("初始化完成");
 						} catch (error) {
