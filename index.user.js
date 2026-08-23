@@ -7494,7 +7494,6 @@ async function all() {
 								processSingleReply(c);
 							}
 						});
-						fixReplyTexts();
 					}, 1000);
 				}
 				function getContentAfterFirstReportReply(str) {
