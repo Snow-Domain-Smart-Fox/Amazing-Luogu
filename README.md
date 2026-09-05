@@ -1,3 +1,5 @@
+> 📢 Extend-Luogu 已停止维护，**Amazing‑Luogu 复原了大量 Extend-Luogu 的经典功能**，作为其替代脚本继续为洛谷提供增强体验。
+
 # Amazing Luogu
 
 > **让洛谷变得更好的篡改猴插件**  
