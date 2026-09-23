@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.3.6
+// @version      1.3.7
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -11564,18 +11564,18 @@ ${problemText}
 							.setAttribute("class", "am-u-md-6");
 						function searchname() {
 							var username = document.getElementById("usernamesearchbox").value;
-							unsafeWindow.$.get(
+							fetch(
 								"https://www.luogu.com.cn/api/user/search?keyword=" + username,
-								async function (data) {
-									var arr = eval(data);
-									if (arr["users"][0] == null) {
-										await Swal.fire("提示", "找不到用户", "warning");
-										return;
-									}
-									var tarid = arr["users"][0].uid;
-									location.href = "https://www.luogu.com.cn/user/" + tarid;
-								},
-							);
+							).then(async (response) => {
+								var arr = await response.json();
+								if (arr["users"][0] == null) {
+									await Swal.fire("提示", "找不到用户", "warning");
+									return;
+								}
+								var tarid = arr["users"][0].uid;
+								console.debug(tarid);
+								location.href = "https://www.luogu.com.cn/user/" + tarid;
+							});
 						}
 						document.getElementById("usernamesearch").onclick = function () {
 							searchname();
