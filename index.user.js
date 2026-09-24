@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.3.7
+// @version      1.3.8
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -7637,6 +7637,7 @@ async function all() {
 				});
 				addManagedEventListener(document, "click", (e) => {
 					if (e.target.closest && e.target.closest("a")) {
+						if (e.target.closest("a.aml-copy-md-btn")) return;
 						cleanupForNavigation();
 					}
 				}, true);
