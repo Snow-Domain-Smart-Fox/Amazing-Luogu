@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.3.8
+// @version      1.3.9
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -7932,8 +7932,12 @@ async function all() {
 								input: ".swal2-input[placeholder*='输入上面的验证码']",
 							},
 							{
-								img: "#--swal-image-hosting-upload-captcha",
-								input: "body > div.swal2-container.swal2-center.swal2-fade.swal2-shown > div > div.swal2-content > input.swal2-input",
+								img: "#--swal-upload-captcha",
+								input: ".swal2-input[placeholder*='输入上面的验证码']",
+							},
+							{
+								img: "#--swal-retry-captcha",
+								input: ".swal2-input[placeholder*='输入上面的验证码']",
 							},
 						];
 						let lastSig = "";
@@ -8621,7 +8625,7 @@ async function all() {
 						return 0;
 					}
 					if (location.hostname.includes('.cn') && getPageStatusCode() != 200) {
-						location.href = location.href.replace("www.luogu.com.cn", "luogu.ac.cn").replace("luogu.com.cn", "luogu.ac.cn").replace("discuss", 'd');
+						location.href = location.href.replace("www.luogu.com.cn", "luogu.ac.cn").replace("luogu.com.cn", "luogu.ac.cn");
 					} else if (getPageStatusCode() != 200) {
 						location.hostname = "www.luogu.com.cn";
 					}
