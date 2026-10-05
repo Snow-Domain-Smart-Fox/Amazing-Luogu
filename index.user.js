@@ -1,7 +1,7 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.3.9
+// @version      1.4.0
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1593,6 +1593,15 @@ async function all() {
 				});
 				return `<table><colgroup>${header.match(/<th[^>]*>/g)?.map(() => '<col class="">').join('')}</colgroup><thead>${header}</thead><tbody>${processedRows.join('')}</tbody></table>`;
 			};
+			renderer.link = function (href, title, text) {
+				let realHref = href || "";
+				if (realHref.startsWith("luogu://")) {
+					realHref = "/" + realHref.slice(8);
+				}
+				realHref = realHref.replace(/"/g, "%22");
+				const titleAttr = title ? ` title="${title}"` : "";
+				return `<a href="${realHref}"${titleAttr}>${text}</a>`;
+			};
 			marked.setOptions({
 				renderer: renderer,
 				breaks: false,
@@ -1759,6 +1768,7 @@ async function all() {
 				focusModeHideTicket: GM_getValue("amlFocusModeHideTicket", true),
 				focusModeHideHelp: GM_getValue("amlFocusModeHideHelp", true),
 				focusModeHideFooter: GM_getValue("amlFocusModeHideFooter", true),
+				focusModeHideZhiNeng: GM_getValue("amlFocusModeHideZhiNeng", true),
 				focusModeHideHome: GM_getValue("amlFocusModeHideHome", true),
 				focusModeHideAD: GM_getValue("amlFocusModeHideAD", true),
 				focusModeHidePunchAndAd: GM_getValue(
@@ -1925,6 +1935,7 @@ async function all() {
 				focusModeHideTicket: "amlFocusModeHideTicket",
 				focusModeHideHelp: "amlFocusModeHideHelp",
 				focusModeHideFooter: "amlFocusModeHideFooter",
+				focusModeHideZhiNeng: "amlFocusModeHideZhiNeng",
 				focusModeHideHome: "amlFocusModeHideHome",
 				focusModeHideAD: "amlFocusModeHideAD",
 				focusModeHidePunchAndAd: "amlFocusModeHidePunchAndAd",
@@ -4149,6 +4160,7 @@ async function all() {
 					<div class="aml-setting-item"><input type="checkbox" id="aml-focusModeHideTicket" ${currentSettings.focusModeHideTicket ? "checked" : ""}><label for="aml-focusModeHideTicket">隐藏工单</label></div>
 					<div class="aml-setting-item"><input type="checkbox" id="aml-focusModeHideHelp" ${currentSettings.focusModeHideHelp ? "checked" : ""}><label for="aml-focusModeHideHelp">隐藏帮助中心</label></div>
 					<div class="aml-setting-item"><input type="checkbox" id="aml-focusModeHideFooter" ${currentSettings.focusModeHideFooter ? "checked" : ""}><label for="aml-focusModeHideFooter">隐藏页脚</label></div>
+					<div class="aml-setting-item"><input type="checkbox" id="aml-focusModeHideZhiNeng" ${currentSettings.focusModeHideZhiNeng ? "checked" : ""}><label for="aml-focusModeHideZhiNeng">隐藏首页“智能推荐”</label></div>
 					<div class="aml-setting-item"><input type="checkbox" id="aml-focusModeHideHome" ${currentSettings.focusModeHideHome ? "checked" : ""}><label for="aml-focusModeHideHome">隐藏首页内容</label></div>
 					<div class="aml-setting-item"><input type="checkbox" id="aml-focusModeHideAD" ${currentSettings.focusModeHideAD ? "checked" : ""}><label for="aml-focusModeHideAD">隐藏首页广告</label></div>
 					<div class="aml-setting-item"><input type="checkbox" id="aml-focusModeHidePunchAndAd" ${currentSettings.focusModeHidePunchAndAd ? "checked" : ""}><label for="aml-focusModeHidePunchAndAd">隐藏运势和广告</label></div>
@@ -4264,6 +4276,15 @@ async function all() {
 			<div id="aml-live2d-disabled-notice" class="disabled-notice" style="display: ${currentSettings.live2DEnabled ? "none" : "block"};">Live2d 功能已关闭，请在功能开关中开启。</div>
 		</div>
 		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fas fa-bell"></i> &nbsp;授权注册提示</h4>
+			<div>
+				<button id="aml-reset-register-prompt-btn" class="aml-primary-btn" style="width: 100%;">
+					<i class="fas fa-undo"></i> 复原 CP OAuth 注册提示
+				</button>
+				<div class="aml-tip" style="margin-top: 8px;">若您此前选择了“不再提示”，点击后可重新开启注册授权弹窗。</div>
+			</div>
+		</div>
+		<div class="aml-settings-section aml-home-card">
 			<h4 id="aml-update-section-title"><i class="fas fa-sync-alt"></i> &nbsp;检查更新</h4>
 			<div>
 				<div class="aml-tip" style="margin-top: 0px; margin-bottom: 8px">建议：前往 <a href="https://dash.amlg.top/download">https://dash.amlg.top/download</a> 以获得最佳体验。</div>
@@ -4361,6 +4382,7 @@ async function all() {
 					"focusModeHideTicket",
 					"focusModeHideHelp",
 					"focusModeHideFooter",
+					"focusModeHideZhiNeng",
 					"focusModeHideHome",
 					"focusModeHideAD",
 					"focusModeHidePunchAndAd",
@@ -4425,7 +4447,18 @@ async function all() {
 						currentAMLSettings[key] = newValue;
 					});
 				});
-				const checkUpdateBtn = document.getElementById("aml-check-update-btn");
+				const resetPromptBtn = document.getElementById("aml-reset-register-prompt-btn");
+					resetPromptBtn && addManagedEventListener(resetPromptBtn, "click", async function (e) {
+						e.preventDefault();
+						GM_setValue("showregisterprompt", 0);
+						await Swal.fire({
+							title: "已复原",
+							text: "CP OAuth 注册提示已重新开启，刷新页面后将再次显示。",
+							icon: "success",
+							confirmButtonText: "确定",
+						});
+					});
+					const checkUpdateBtn = document.getElementById("aml-check-update-btn");
 				checkUpdateBtn && addManagedEventListener(checkUpdateBtn, "click", function (e) {
 					e.preventDefault();
 					const statusDiv = document.getElementById("aml-update-status");
@@ -12578,6 +12611,9 @@ ${problemText}
 			setTimeout(checkScriptVersion(1), 1500);
 			if (currentAMLSettings.focusModeEnabled) {
 				try {
+					if(location.href=='https://www.luogu.com.cn/problem/U0?focus=true'){
+						document.documentElement.innerHTML=document.documentElement.innerHTML.replace('找不到题目','请认真学习哦！');
+					}
 					const path = window.location.pathname;
 					if (currentAMLSettings.focusModeHidePage) {
 						const hidePagePaths = {
@@ -12599,43 +12635,7 @@ ${problemText}
 						};
 						for (const [key, val] of Object.entries(hidePagePaths)) {
 							if (currentAMLSettings[key] && path.startsWith(val)) {
-								document.body.innerHTML = "";
-								document.body.style = "";
-								document.head.innerHTML = "";
-								const newdiv = document.createElement("div");
-								newdiv.style.display = "flex";
-								newdiv.style.flexDirection = "column";
-								newdiv.style.justifyContent = "center";
-								newdiv.style.alignItems = "center";
-								newdiv.style.height = "100vh";
-								newdiv.style.textAlign = "center";
-								newdiv.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
-								const message = document.createElement("h1");
-								message.textContent = "请认真学习哦！";
-								message.style.marginBottom = "20px";
-								message.style.fontWeight = "bold";
-								message.style.color = "#333";
-								message.style.fontSize = "2em";
-								const newcount = document.createElement("p");
-								newcount.style.fontSize = "1.5em";
-								newcount.style.color = "#666";
-								let cnt = 3;
-								newcount.textContent = `页面关闭倒计时：${cnt} 秒`;
-								newdiv.appendChild(message);
-								newdiv.appendChild(newcount);
-								document.body.appendChild(newdiv);
-								const setIntervaldiv = setInterval(() => {
-									cnt--;
-									if (cnt > 0) newcount.textContent = `页面关闭倒计时：${cnt} 秒`;
-									else {
-										newcount.textContent = "即将关闭……";
-										clearInterval(setIntervaldiv);
-										setTimeout(() => {
-											window.location.href = "about:blank";
-											if (window.close) window.close();
-										}, 500);
-									}
-								}, 1000);
+								location.href='https://www.luogu.com.cn/problem/U0?focus=true';
 								return;
 							}
 						}
@@ -12646,11 +12646,11 @@ ${problemText}
 							focusModeHideNotification: "/user/notification",
 							focusModeHideArticle: "/article",
 							focusModeHidePaste: "/paste",
-							focusModeHideSolution: "/problem/solution",
+							focusModeHideSolution: "/problem/solution/*",
 							focusModeHideContest: "/contest/list",
-							focusModeHideTicket: "/ticket",
+							focusModeHideTicket: "/ticket/*",
 							focusModeHidediscuss: "/discuss",
-							focusModeHideThemeList: "/theme/list",
+							focusModeHideThemeList: "/theme/*",
 							focusModeHideImageHosting: "/image",
 							focusModeHideRank: "/ranking",
 							focusModeHideRank2: "/ranking/elo",
@@ -12659,10 +12659,20 @@ ${problemText}
 						setInterval(function () {
 							for (const [key, val] of Object.entries(hideButtonPaths)) {
 								if (currentAMLSettings[key]) {
-									const link = document.querySelector(`a[href="${val}"]`);
-									if (link) link.remove();
-									const button = document.querySelector(`button[href="${val}"]`);
-									if (button) button.remove();
+									if (val.endsWith("/*")) {
+										const base = val.slice(0, -2);
+										document
+											.querySelectorAll(`a[href="${base}"], a[href^="${base}/"], a[href^="${base}?"]`)
+											.forEach((el) => el.remove());
+										document
+											.querySelectorAll(`button[href="${base}"], button[href^="${base}/"], button[href^="${base}?"]`)
+											.forEach((el) => el.remove());
+									} else {
+										const link = document.querySelector(`a[href="${val}"]`);
+										if (link) link.remove();
+										const button = document.querySelector(`button[href="${val}"]`);
+										if (button) button.remove();
+									}
 								}
 							}
 							if (currentAMLSettings.focusModeHideRank) {
@@ -12790,10 +12800,24 @@ ${problemText}
 					) {
 						GM_addStyle(`#feed-more { display: none !important; }`);
 					}
+					if (currentAMLSettings.focusModeHideZhiNeng) {
+						const hideZhiNeng = () => {
+							document.querySelectorAll("h2").forEach((h2) => {
+								if (h2.textContent.trim() !== "智能推荐") return;
+								h2.style.setProperty("display", "none", "important");
+								let el = h2.nextElementSibling;
+								while (el && el.tagName !== "H2") {
+									el.style.setProperty("display", "none", "important");
+									el = el.nextElementSibling;
+								}
+							});
+						};
+						hideZhiNeng();
+						setInterval(hideZhiNeng, 1000);
+					}
 					if (currentAMLSettings.focusModeHideFooter) {
 						GM_addStyle(`
-				.qr-img,
-				.footer > .info {
+				footer {
 					display: none !important;
 				}
 			`);
@@ -13439,12 +13463,18 @@ async function showRegisterPrompt(uid) {
 		icon: "info",
 		confirmButtonText: "立即授权注册",
 		confirmButtonColor: "#6366f1",
+		showDenyButton: true,
+		denyButtonText: "不再提示",
 		showCancelButton: true,
 		cancelButtonText: "暂不注册",
 		allowOutsideClick: false,
 		allowEscapeKey: false,
-		width: "400px"
+		width: "520px"
 	});
+	if (result.isDenied) {
+		GM_setValue("showregisterprompt", Number.MAX_SAFE_INTEGER);
+		return;
+	}
 	if (!result.isConfirmed) {
 		GM_setValue("showregisterprompt", (new Date()).getTime() + 1 * 24 * 60 * 60 * 1000);
 		return;
