@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.0
+// @version      1.4.1
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -7514,14 +7514,79 @@ async function all() {
 				}
 				let replyObserver = null;
 				let replyScanTimer = null;
+				const replyContentMap = new Map();
+				function replyTimeToSec(t) {
+					if (t === undefined || t === null || t === "") return null;
+					if (typeof t === "number") return t < 1e12 ? t : Math.round(t / 1000);
+					const s = String(t).trim();
+					if (/^\d+$/.test(s)) {
+						const n = Number(s);
+						return n < 1e12 ? n : Math.round(n / 1000);
+					}
+					const ms = Date.parse(s);
+					return Number.isNaN(ms) ? null : Math.round(ms / 1000);
+				}
+				function addReplyToMap(reply) {
+					if (
+						reply &&
+						typeof reply.content === "string"
+					) {
+						if (reply.id !== undefined && reply.id !== null) {
+							replyContentMap.set("id:" + String(reply.id), reply.content);
+						}
+						const ts = replyTimeToSec(reply.time);
+						if (ts !== null) {
+							replyContentMap.set("time:" + ts, reply.content);
+						}
+					}
+				}
+				function mergeReplyPageData(pageData) {
+					try {
+						const d = pageData && pageData.data;
+						if (!d) return;
+						if (d.post && d.post.pinnedReply) {
+							addReplyToMap(d.post.pinnedReply);
+						}
+						if (d.replies && Array.isArray(d.replies.result)) {
+							d.replies.result.forEach(addReplyToMap);
+						}
+					} catch (e) {}
+				}
+				function getReplyKeysFromElement(commentWrap) {
+					const keys = [];
+					const byId = commentWrap.querySelector("[id^='reply-']");
+					if (byId) {
+						const m = byId.id.match(/^reply-(\d+)$/);
+						if (m) keys.push("id:" + m[1]);
+					}
+					const anchors = commentWrap.querySelectorAll("a[href*='#reply-']");
+					for (const a of anchors) {
+						const m = (a.getAttribute("href") || "").match(/#reply-(\d+)/);
+						if (m) keys.push("id:" + m[1]);
+					}
+					const timeEl = commentWrap.querySelector("time[datetime]");
+					if (timeEl) {
+						const ts = replyTimeToSec(timeEl.getAttribute("datetime"));
+						if (ts !== null) keys.push("time:" + ts);
+					}
+					return keys;
+				}
+				function getReplyContentByElement(commentWrap) {
+					for (const key of getReplyKeysFromElement(commentWrap)) {
+						if (replyContentMap.has(key)) return replyContentMap.get(key);
+					}
+					return null;
+				}
 				function processReplies() {
 					if (replyScanTimer) {
 						clearInterval(replyScanTimer);
 						replyScanTimer = null;
 					}
-					document.querySelectorAll(".comment").forEach(processSingleReply);
+					mergeReplyPageData(getPageDataFromScript());
+					document.querySelectorAll("div.comment").forEach(processSingleReply);
 					replyScanTimer = setInterval(() => {
-						document.querySelectorAll(".comment").forEach((c) => {
+						mergeReplyPageData(getPageDataFromScript());
+						document.querySelectorAll("div.comment").forEach((c) => {
 							const action = c.querySelector(".action");
 							if (action && !action.querySelector(".aml-copy-md-btn-reply")) {
 								processSingleReply(c);
@@ -7543,32 +7608,17 @@ async function all() {
 						return;
 					}
 					if (actionContainer.querySelector(".aml-copy-md-btn-reply")) return;
-					const allCommentWraps = Array.from(
-						document.querySelectorAll(".comment"),
-					);
-					const replyIndex = allCommentWraps.indexOf(commentWrap);
-					const pageData = getPageDataFromScript();
-					let replyContent = null;
-					if (
-						pageData &&
-						pageData.data &&
-						pageData.data.replies &&
-						Array.isArray(pageData.data.replies.result)
-					) {
-						const replies = pageData.data.replies.result;
-						if (
-							replyIndex >= 0 &&
-							replyIndex <= replies.length &&
-							pageData.data.post.pinnedReply
-						) {
-							if (!replyIndex) {
-								replyContent = pageData.data.post.pinnedReply.content;
-							} else {
-								replyContent = replies[replyIndex - 1].content;
-							}
-						} else if (replyIndex >= 0 && replyIndex <= replies.length) {
-							replyContent = replies[replyIndex].content;
-						}
+					mergeReplyPageData(getPageDataFromScript());
+					let replyContent = getReplyContentByElement(commentWrap);
+					if (!replyContent) {
+						const allCommentWraps = Array.from(
+							document.querySelectorAll("div.comment"),
+						);
+						const replyIndex = allCommentWraps.indexOf(commentWrap);
+						replyContent = getReplyContentByIndex(
+							replyIndex,
+							getPageDataFromScript(),
+						);
 					}
 					if (replyContent) {
 						const button = createCopyButton(
@@ -7589,20 +7639,22 @@ async function all() {
 						actionContainer.appendChild(quoteButton);
 					}
 				}
-				function getReplyContentByIndex(replyIndex) {
-					const pageData = getPageDataFromScript();
+				function getReplyContentByIndex(replyIndex, pageData) {
 					if (!pageData || !pageData.data || !pageData.data.replies || !Array.isArray(pageData.data.replies.result)) return null;
 					const replies = pageData.data.replies.result;
-					if (replyIndex >= 0 && replyIndex <= replies.length && pageData.data.post.pinnedReply) {
-						if (!replyIndex) return pageData.data.post.pinnedReply.content;
-						return replies[replyIndex - 1].content;
+					if (replyIndex < 0) return null;
+					if (pageData.data.post && pageData.data.post.pinnedReply) {
+						if (replyIndex === 0) return pageData.data.post.pinnedReply.content;
+						const target = replies[replyIndex - 1];
+						return target ? target.content : null;
 					}
-					if (replyIndex >= 0 && replyIndex < replies.length) return replies[replyIndex].content;
-					return null;
+					const target = replies[replyIndex];
+					return target ? target.content : null;
 				}
 				function fixReplyTexts() {
-					document.querySelectorAll(".comment").forEach((comment, index) => {
-						const expectedContent = getReplyContentByIndex(index);
+					mergeReplyPageData(getPageDataFromScript());
+					document.querySelectorAll("div.comment").forEach((comment) => {
+						const expectedContent = getReplyContentByElement(comment);
 						if (!expectedContent) return;
 						const markedInner = comment.querySelector(".lfe-marked-wrap.content .lfe-marked") || comment.querySelector(".lfe-marked-wrap.content");
 						if (!markedInner) return;
@@ -7626,6 +7678,7 @@ async function all() {
 						clearInterval(replyScanTimer);
 						replyScanTimer = null;
 					}
+					replyContentMap.clear();
 					document.querySelectorAll(".aml-copy-md-btn-main, .aml-copy-md-btn-reply").forEach((el) => el.remove());
 					if (typeof unwrapAllCodeBlocks === "function") unwrapAllCodeBlocks();
 				};
@@ -7674,6 +7727,18 @@ async function all() {
 						cleanupForNavigation();
 					}
 				}, true);
+				addManagedEventListener(window, "luogu-xhr-intercept", (e) => {
+					try {
+						const data = e.detail && e.detail.response && e.detail.response.data;
+						if (!data || typeof data !== "object") return;
+						if (data.data && data.data.replies) {
+							mergeReplyPageData(data);
+						}
+						if (data.replies && Array.isArray(data.replies.result)) {
+							data.replies.result.forEach(addReplyToMap);
+						}
+					} catch (err) {}
+				});
 				setInterval(checkUrlChange, 300);
 				processMainContent();
 				processReplies();
