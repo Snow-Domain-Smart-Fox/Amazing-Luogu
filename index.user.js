@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.2
+// @version      1.4.3
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -8670,12 +8670,57 @@ async function all() {
 						waifuPath: CDN + 'waifu-tips.json',
 						cubism2Path: CDN + 'live2d.min.js',
 						cubism5Path: 'https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js',
-						tools: ['hitokoto', 'asteroids', 'switch-model', 'switch-texture', 'photo', 'info', 'quit'],
+						tools: ['switch-model', 'switch-texture', 'photo', 'info'],
 						logLevel: 'warn',
 						drag: false
 					};
 					const CUSTOM_MODELS = null;
 					const GH_MIRROR = 'https://cdn.amlg.top/amlg/live2dapi/';
+					const L2D_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+					const L2D_CACHE_DB = 'aml_l2d_cache';
+					const L2D_CACHE_STORE = 'files';
+					const l2dInflight = Object.create(null);
+					function openCacheDB() {
+						return new Promise(function (resolve, reject) {
+							var req = indexedDB.open(L2D_CACHE_DB, 1);
+							req.onupgradeneeded = function () {
+								var db = req.result;
+								if (!db.objectStoreNames.contains(L2D_CACHE_STORE)) {
+									db.createObjectStore(L2D_CACHE_STORE, { keyPath: 'url' });
+								}
+							};
+							req.onsuccess = function () { resolve(req.result); };
+							req.onerror = function () { reject(req.error); };
+						});
+					}
+					function readCache(url) {
+						return openCacheDB().then(function (db) {
+							return new Promise(function (resolve, reject) {
+								var tx = db.transaction(L2D_CACHE_STORE, 'readonly');
+								var req = tx.objectStore(L2D_CACHE_STORE).get(url);
+								req.onsuccess = function () {
+									var entry = req.result;
+									if (!entry) return resolve(null);
+									if (Date.now() - entry.ts > L2D_CACHE_TTL) return resolve(null);
+									resolve(entry.data);
+								};
+								req.onerror = function () { reject(req.error); };
+							});
+						}).catch(function () { return null; });
+					}
+					function writeCache(url, data) {
+						if (data && data.buffer && data.byteOffset !== undefined) {
+							data = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+						}
+						openCacheDB().then(function (db) {
+							return new Promise(function (resolve, reject) {
+								var tx = db.transaction(L2D_CACHE_STORE, 'readwrite');
+								tx.objectStore(L2D_CACHE_STORE).put({ url: url, ts: Date.now(), data: data });
+								tx.oncomplete = function () { resolve(); };
+								tx.onerror = function () { reject(tx.error); };
+							});
+						}).catch(function () { });
+					}
 					function normalizeUrl(url) {
 						if (!/^https?:/i.test(url)) return url;
 						if (url.indexOf(GH_MIRROR) === 0) return url;
@@ -8685,30 +8730,38 @@ async function all() {
 					}
 					function gmFetch(url) {
 						url = normalizeUrl(url);
-						return new Promise(function (resolve, reject) {
-							GM_xmlhttpRequest({
-								method: 'GET',
-								url: url,
-								timeout: 20000,
-								responseType: 'arraybuffer',
-								onload: function (r) {
-									if (r.status >= 200 && r.status < 300) {
-										resolve(r.response);
-									} else {
-										console.error('[L2D] GM 拉取失败 HTTP ' + r.status + ' ' + url);
-										reject(new Error('HTTP ' + r.status + ' ' + url));
+						if (l2dInflight[url]) return l2dInflight[url];
+						var p = readCache(url).then(function (cached) {
+							if (cached) return cached;
+							return new Promise(function (resolve, reject) {
+								GM_xmlhttpRequest({
+									method: 'GET',
+									url: url,
+									timeout: 20000,
+									responseType: 'arraybuffer',
+									onload: function (r) {
+										if (r.status >= 200 && r.status < 300) {
+											writeCache(url, r.response);
+											resolve(r.response);
+										} else {
+											console.error('[L2D] GM 拉取失败 HTTP ' + r.status + ' ' + url);
+											reject(new Error('HTTP ' + r.status + ' ' + url));
+										}
+									},
+									onerror: function () {
+										console.error('[L2D] GM 网络错误 ' + url);
+										reject(new Error('NETWORK ' + url));
+									},
+									ontimeout: function () {
+										console.error('[L2D] GM 超时 ' + url);
+										reject(new Error('TIMEOUT ' + url));
 									}
-								},
-								onerror: function () {
-									console.error('[L2D] GM 网络错误 ' + url);
-									reject(new Error('NETWORK ' + url));
-								},
-								ontimeout: function () {
-									console.error('[L2D] GM 超时 ' + url);
-									reject(new Error('TIMEOUT ' + url));
-								}
+								});
 							});
 						});
+						l2dInflight[url] = p;
+						p.then(function () { delete l2dInflight[url]; }, function () { delete l2dInflight[url]; });
+						return p;
 					}
 					function gmText(url) {
 						return gmFetch(url).then(function (buf) {
@@ -8876,7 +8929,7 @@ async function all() {
 					gmText(CDN + 'waifu.css').then(injectCSS).catch(function (e) {
 						console.error('[L2D] CSS 加载失败', e);
 					});
-					GM_addStyle('#waifu{left:64px !important;}#waifu-toggle{left:80px !important;}');
+					GM_addStyle('#waifu{left:64px !important;}#waifu-toggle{display:none !important;left:80px !important;}');
 				})();
 			}
 			if (currentAMLSettings.benbenctrlenterEnabled && !benbenctrlenterInited) {
