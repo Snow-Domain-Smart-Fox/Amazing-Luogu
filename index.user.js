@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.1
+// @version      1.4.2
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -1864,7 +1864,6 @@ async function all() {
 				aiProblemAnalysisApiUrl: GM_getValue("amlAIProblemAnalysisApiUrl", ""),
 				aiProblemAnalysisApiKey: GM_getValue("amlAIProblemAnalysisApiKey", ""),
 				aiProblemAnalysisModel: GM_getValue("amlAIProblemAnalysisModel", "gpt-3.5-turbo"),
-				live2dLol: GM_getValue("amlLive2dLol", "body click 600 text:⚡\nbody keydown 600 text:⌨️"),
 			};
 			const settingKeyMap = {
 				vscodeLuoguEnabled: "amlVscodeLuoguEnabled",
@@ -1971,7 +1970,6 @@ async function all() {
 				aiProblemAnalysisApiUrl: "amlAIProblemAnalysisApiUrl",
 				aiProblemAnalysisApiKey: "amlAIProblemAnalysisApiKey",
 				aiProblemAnalysisModel: "amlAIProblemAnalysisModel",
-				live2dLol: "amlLive2dLol",
 			};
 			const features = [
 				{
@@ -2043,6 +2041,13 @@ async function all() {
 					desc: "自动填充字母识别验证码（本地 TF.js 模型推理，无需联网）",
 					tag: "功能",
 					status: "stable",
+				},
+				{
+					key: "live2DEnabled",
+					label: "Live2D 看板娘",
+					desc: "在页面左下角显示 Live2D 看板娘",
+					tag: "功能",
+					status: "beta",
 				},
 				{
 					key: "acceptedProblemCmpEnabled",
@@ -4266,16 +4271,6 @@ async function all() {
 			<div id="aml-aiproblemanalysis-disabled-notice" class="disabled-notice" style="display: ${currentSettings.aiProblemAnalysisEnabled ? "none" : "block"};">AI 题目分析功能已关闭，请在功能开关中开启。</div>
 		</div>
         <div class="aml-settings-section aml-home-card">
-			<h4><i class="fas fa-gem"></i> &nbsp;Live2d设置</h4>
-			<div id="aml-live2d-section" style="display: ${currentSettings.live2DEnabled ? "block" : "none"};">
-				<div class="aml-input-group">
-					<label for="aml-live2d-lol-input">LOL 脚本代码：</label>
-					<textarea id="aml-live2d-lol-input" placeholder="请输入包含 text: 的有效规则，例如：body click 600 text:⚡️……">${currentSettings.live2dLol}</textarea>
-				</div>
-			</div>
-			<div id="aml-live2d-disabled-notice" class="disabled-notice" style="display: ${currentSettings.live2DEnabled ? "none" : "block"};">Live2d 功能已关闭，请在功能开关中开启。</div>
-		</div>
-		<div class="aml-settings-section aml-home-card">
 			<h4><i class="fas fa-bell"></i> &nbsp;授权注册提示</h4>
 			<div>
 				<button id="aml-reset-register-prompt-btn" class="aml-primary-btn" style="width: 100%;">
@@ -4448,17 +4443,17 @@ async function all() {
 					});
 				});
 				const resetPromptBtn = document.getElementById("aml-reset-register-prompt-btn");
-					resetPromptBtn && addManagedEventListener(resetPromptBtn, "click", async function (e) {
-						e.preventDefault();
-						GM_setValue("showregisterprompt", 0);
-						await Swal.fire({
-							title: "已复原",
-							text: "CP OAuth 注册提示已重新开启，刷新页面后将再次显示。",
-							icon: "success",
-							confirmButtonText: "确定",
-						});
+				resetPromptBtn && addManagedEventListener(resetPromptBtn, "click", async function (e) {
+					e.preventDefault();
+					GM_setValue("showregisterprompt", 0);
+					await Swal.fire({
+						title: "已复原",
+						text: "CP OAuth 注册提示已重新开启，刷新页面后将再次显示。",
+						icon: "success",
+						confirmButtonText: "确定",
 					});
-					const checkUpdateBtn = document.getElementById("aml-check-update-btn");
+				});
+				const checkUpdateBtn = document.getElementById("aml-check-update-btn");
 				checkUpdateBtn && addManagedEventListener(checkUpdateBtn, "click", function (e) {
 					e.preventDefault();
 					const statusDiv = document.getElementById("aml-update-status");
@@ -4733,21 +4728,6 @@ async function all() {
 									aiNotice.style.display = "block";
 								}
 							}
-							if (feature.key === "live2DEnabled") {
-								const lolSection = document.getElementById(
-									"aml-live2d-section",
-								);
-								const lolNotice = document.getElementById(
-									"aml-live2d-disabled-notice",
-								);
-								if (newValue) {
-									lolSection.style.display = "block";
-									lolNotice.style.display = "none";
-								} else {
-									lolSection.style.display = "none";
-									lolNotice.style.display = "block";
-								}
-							}
 						};
 					}
 				});
@@ -4773,17 +4753,6 @@ async function all() {
 						const newValue = e.target.value;
 						saveAMLSetting("aiProblemAnalysisModel", newValue);
 						currentAMLSettings.aiProblemAnalysisModel = newValue;
-					};
-				}
-				const live2dLolInput = document.getElementById("aml-live2d-lol-input");
-				if (live2dLolInput) {
-					live2dLolInput.oninput = (e) => {
-						const raw = e.target.value;
-						saveAMLSetting("live2dLol", raw);
-						currentAMLSettings.live2dLol = raw;
-						if (typeof applyLOLScript === 'function') {
-							applyLOLScript(raw);
-						}
 					};
 				}
 				const colorIntervalInput = document.querySelector(
@@ -7550,7 +7519,7 @@ async function all() {
 						if (d.replies && Array.isArray(d.replies.result)) {
 							d.replies.result.forEach(addReplyToMap);
 						}
-					} catch (e) {}
+					} catch (e) { }
 				}
 				function getReplyKeysFromElement(commentWrap) {
 					const keys = [];
@@ -7669,7 +7638,7 @@ async function all() {
 									throwOnError: false,
 								});
 							}
-						} catch (e) {}
+						} catch (e) { }
 					});
 				}
 				let lastUrl = location.href;
@@ -7737,7 +7706,7 @@ async function all() {
 						if (data.replies && Array.isArray(data.replies.result)) {
 							data.replies.result.forEach(addReplyToMap);
 						}
-					} catch (err) {}
+					} catch (err) { }
 				});
 				setInterval(checkUrlChange, 300);
 				processMainContent();
@@ -7955,15 +7924,15 @@ async function all() {
 								return false;
 							}
 						}
-						let loadcode=await loadCaptcha();
-						if(!loadcode){
+						let loadcode = await loadCaptcha();
+						if (!loadcode) {
 							return;
-						}else{
-							try{
+						} else {
+							try {
 								console.debug(loadcode);
 								eval(loadcode);
 								console.debug("Load captcha code success");
-							}catch(e){
+							} catch (e) {
 								console.debug("Load captcha code failed");
 								console.debug(e);
 								await Swal.fire({
@@ -7987,10 +7956,10 @@ async function all() {
 									delete l.config.batch_shape;
 								}
 								if (Array.isArray(l.inbound_nodes)) {
-									l.inbound_nodes = l.inbound_nodes.map(function(n) {
+									l.inbound_nodes = l.inbound_nodes.map(function (n) {
 										if (Array.isArray(n)) return n;
 										if (n && typeof n === "object" && Array.isArray(n.args)) {
-											return n.args.map(function(a) {
+											return n.args.map(function (a) {
 												var kh = a && a.config && a.config.keras_history;
 												return Array.isArray(kh) ? [kh[0], kh[1], kh[2], n.kwargs || {}] : null;
 											}).filter(Boolean);
@@ -8587,44 +8556,6 @@ async function all() {
 				container.appendChild(textInput);
 				container.appendChild(addBtn);
 			}
-			window.So = function (text, duration) {
-				const tip = document.getElementById('waifu-tips');
-				if (!tip) return;
-				tip.textContent = text;
-				tip.style.display = 'block';
-				clearTimeout(window._tipTimer);
-				window._tipTimer = setTimeout(() => {
-					tip.style.display = 'none';
-				}, duration);
-			};
-			function applyLOLScript(scriptText) {
-				if (!scriptText) return;
-				const lines = scriptText.split('\n').filter(line => line.trim() !== '');
-				for (const line of lines) {
-					try {
-						const parts = line.trim().split(/\s+/);
-						if (parts.length < 4) continue;
-						const selector = parts[0];
-						const event = parts[1];
-						const delay = parseInt(parts[2], 10);
-						const textPart = parts.slice(3).join(' ');
-						const text = textPart.replace(/^text:/, '').trim();
-						if (!selector || !event || isNaN(delay) || !text) continue;
-						const elements = document.querySelectorAll(selector);
-						elements.forEach(el => {
-							el.addEventListener(event, () => {
-								if (typeof window.So === 'function') {
-									window.So(text, delay, 9);
-								} else {
-									alert(text);
-								}
-							});
-						});
-					} catch (e) {
-						console.warn('[LOL] 解析规则失败:', line, e);
-					}
-				}
-			}
 			if (currentAMLSettings.userMarkEnabled && location.pathname.startsWith("/user/")) {
 				try {
 					const data = JSON.parse(document.getElementById('lentille-context').innerHTML);
@@ -8731,140 +8662,222 @@ async function all() {
 					console.debug(e);
 				}
 			}
-			if (false/*currentAMLSettings.live2DEnabled && !live2DInited*/) {
+			if (currentAMLSettings.live2DEnabled && !live2DInited) {
 				live2DInited = true;
-				GM_addStyle(`
-        #waifu {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            z-index: 999999;
-            pointer-events: none;
-            transition: bottom 0.3s;
-        }
-        #waifu canvas {
-            pointer-events: auto;
-            cursor: grab;
-        }
-        #waifu-tips {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            max-width: 200px;
-            display: none;
-        }
-    `);
-				const waifuDiv = document.createElement('div');
-				waifuDiv.id = 'waifu';
-				waifuDiv.innerHTML = `
-        <div id="waifu-tips"></div>
-        <canvas id="live2d" width="800" height="800"></canvas>
-    `;
-				document.body.appendChild(waifuDiv);
-				const LIVE2D_JS_URL = 'https://cdn.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/live2d.min.js';
-				GM_xmlhttpRequest({
-					method: 'GET',
-					url: LIVE2D_JS_URL,
-					onload: async function (res) {
-						if (res.status === 200) {
-							const script = document.createElement('script');
-							script.textContent = res.responseText;
-							document.head.appendChild(script);
-							let attempts = 0;
-							const maxAttempts = 50;
-							const waitForLoad = setInterval(async () => {
-								attempts++;
-								let loadlive2dFn = unsafeWindow.loadlive2d;
-								if (typeof loadlive2dFn !== 'undefined') {
-									clearInterval(waitForLoad);
-									window.loadlive2d = loadlive2dFn;
-									loadModel(loadlive2dFn);
-								} else if (attempts >= maxAttempts) {
-									clearInterval(waitForLoad);
-									console.error('loadlive2d 未在预期时间内定义，请检查 CDN 地址或网络');
-									await Swal.fire({
-										title: 'Live2D 加载失败',
-										text: '核心库未正确加载，请检查网络或稍后重试',
-										icon: 'error'
-									});
+				(function () {
+					const CDN = 'https://fastly.jsdelivr.net/npm/live2d-widgets@1.0.1/dist/';
+					const L2D_CONFIG = {
+						waifuPath: CDN + 'waifu-tips.json',
+						cubism2Path: CDN + 'live2d.min.js',
+						cubism5Path: 'https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js',
+						tools: ['hitokoto', 'asteroids', 'switch-model', 'switch-texture', 'photo', 'info', 'quit'],
+						logLevel: 'warn',
+						drag: false
+					};
+					const CUSTOM_MODELS = null;
+					const GH_MIRROR = 'https://cdn.amlg.top/amlg/live2dapi/';
+					function normalizeUrl(url) {
+						if (!/^https?:/i.test(url)) return url;
+						if (url.indexOf(GH_MIRROR) === 0) return url;
+						url = url.replace(/^https:\/\/(?:fastly|cdn)\.jsdelivr\.net\/gh\/fghrsh\/live2d_api\//, GH_MIRROR);
+						url = url.replace(/^https:\/\/raw\.githubusercontent\.com\/fghrsh\/live2d_api\/(?:\d+\.\d+\.\d+\/)?/, GH_MIRROR);
+						return url;
+					}
+					function gmFetch(url) {
+						url = normalizeUrl(url);
+						return new Promise(function (resolve, reject) {
+							GM_xmlhttpRequest({
+								method: 'GET',
+								url: url,
+								timeout: 20000,
+								responseType: 'arraybuffer',
+								onload: function (r) {
+									if (r.status >= 200 && r.status < 300) {
+										resolve(r.response);
+									} else {
+										console.error('[L2D] GM 拉取失败 HTTP ' + r.status + ' ' + url);
+										reject(new Error('HTTP ' + r.status + ' ' + url));
+									}
+								},
+								onerror: function () {
+									console.error('[L2D] GM 网络错误 ' + url);
+									reject(new Error('NETWORK ' + url));
+								},
+								ontimeout: function () {
+									console.error('[L2D] GM 超时 ' + url);
+									reject(new Error('TIMEOUT ' + url));
 								}
-							}, 100);
-						} else {
-							console.error('Live2D 核心库加载失败', res.status);
-							await Swal.fire({
-								title: 'Live2D 加载失败',
-								text: `HTTP ${res.status}，请检查网络`,
-								icon: 'error'
 							});
-						}
-					},
-					onerror: async function () {
-						console.error('Live2D 核心库请求失败');
-						await Swal.fire({
-							title: 'Live2D 加载失败',
-							text: '网络请求失败，请检查网络',
-							icon: 'error'
 						});
 					}
-				});
-				function loadModel(loadlive2dFn) {
-					const WAIFU_TIPS_URL = 'https://fastly.jsdelivr.net/gh/stevenjoezhang/live2d-widget@0.9.2/waifu-tips.js';
-					GM_xmlhttpRequest({
-						method: 'GET',
-						url: WAIFU_TIPS_URL,
-						onload: function (res) {
-							const script = document.createElement('script');
-							script.textContent = res.responseText;
-							document.head.appendChild(script);
-							let attempts = 0;
-							const wait = setInterval(() => {
-								attempts++;
-								let loadlive2dFn = unsafeWindow.loadlive2d;
-								if (typeof loadlive2dFn !== 'undefined') {
-									clearInterval(wait);
-									window.loadlive2d = loadlive2dFn;
-									const MODEL_URL = 'https://www.luogu.com.cn/fe/api/problem/downloadAttachment/rjg3qdqi'; loadlive2dFn('live2d', MODEL_URL);
-									const canvas = document.getElementById('live2d');
-									if (canvas) {
-										let isDragging = false,
-											startX, startY, left, top;
-										canvas.style.cursor = 'grab';
-										canvas.addEventListener('mousedown', (e) => {
-											isDragging = true;
-											startX = e.clientX;
-											startY = e.clientY;
-											const rect = waifuDiv.getBoundingClientRect();
-											left = rect.left;
-											top = rect.top;
-											canvas.style.cursor = 'grabbing';
-										});
-										document.addEventListener('mousemove', (e) => {
-											if (!isDragging) return;
-											const dx = e.clientX - startX;
-											const dy = e.clientY - startY;
-											waifuDiv.style.left = (left + dx) + 'px';
-											waifuDiv.style.top = (top + dy) + 'px';
-											waifuDiv.style.bottom = 'auto';
-										});
-										document.addEventListener('mouseup', () => {
-											if (isDragging) {
-												isDragging = false;
-												canvas.style.cursor = 'grab';
-											}
-										});
-									}
-									applyLOLScript(currentAMLSettings.live2dLol);
-								} else if (attempts > 50) {
-									clearInterval(wait);
-									console.error('loadlive2d 未定义');
+					function gmText(url) {
+						return gmFetch(url).then(function (buf) {
+							var bytes = new Uint8Array(buf);
+							try {
+								return new TextDecoder('utf-8').decode(bytes);
+							} catch (e) {
+								var s = '';
+								var CHUNK = 0x8000;
+								for (var i = 0; i < bytes.length; i += CHUNK) {
+									s += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
 								}
-							}, 100);
+								return s;
+							}
+						});
+					}
+					function demodule(code, moduleUrl) {
+						var out = code.replace(/import\{([^}]*)\}from"([^"]+)"/g, function (m, names, from) {
+							var abs = new URL(from, moduleUrl).href;
+							var destructured = names.replace(/(\w+)\s+as\s+(\w+)/g, function (mm, v, k) {
+								return v + ':' + k;
+							});
+							return 'const{' + destructured + '}=window.__l2dExports[' + JSON.stringify(abs) + '];';
+						});
+						out = out.replace(/export\{([^}]*)\};/g, function (m, body) {
+							var named = body.replace(/(\w+)\s+as\s+(\w+)/g, function (mm, v, k) {
+								return k + ':' + v;
+							});
+							return 'window.__l2dExports[' + JSON.stringify(moduleUrl) + ']={' + named + '};';
+						});
+						out = out.replace(/import\(/g, '__l2dImport(');
+						out = out.replace(
+							's=document.createElement("script"),s.src=e,s&&(s.onload=()=>t(e),s.onerror=()=>o(e),document.head.appendChild(s))',
+							'__l2dLoadScript(e).then(()=>t(e),o)'
+						);
+						return out;
+					}
+					window.__l2dExports = window.__l2dExports || {};
+					var __l2dBase = CDN + 'waifu-tips.js';
+					function __l2dImport(url) {
+						var full = /^https?:/i.test(url) ? url : new URL(url, __l2dBase).href;
+						return gmText(full).then(function (code) {
+							if (/^\s*</.test(code)) {
+								throw new Error('非 JS 内容（可能 404 或 CDN 错误页）: ' + full);
+							}
+							__l2dBase = full;
+							if (/export\{/.test(code) || /import\{/.test(code)) {
+								var conv = demodule(code, full);
+								eval(conv);
+								return window.__l2dExports[full] || {};
+							}
+							eval(code);
+							return {};
+						});
+					}
+					function __l2dLoadScript(url) {
+						return __l2dImport(url).then(function () { return url; });
+					}
+					window.__l2dImport = __l2dImport;
+					window.__l2dLoadScript = __l2dLoadScript;
+					var NativeFetch = window.fetch ? window.fetch.bind(window) : null;
+					window.fetch = function (input, init) {
+						var url = typeof input === 'string' ? input : (input && input.url) || '';
+						if (/^https?:/i.test(url)) {
+							return gmFetch(url).then(function (buf) {
+								return new Response(buf, { status: 200, statusText: 'OK' });
+							});
 						}
+						if (NativeFetch) return NativeFetch(input, init);
+						return Promise.reject(new Error('fetch disabled for ' + url));
+					};
+					var NativeImage = window.Image;
+					function gmImage() {
+						var canvas = document.createElement('canvas');
+						var listeners = [];
+						var completed = false;
+						var currentSrc = '';
+						var origAdd = canvas.addEventListener.bind(canvas);
+						canvas.addEventListener = function (type, cb, opts) {
+							if (type === 'load') { listeners.push(cb); return; }
+							return origAdd(type, cb, opts);
+						};
+						canvas.removeEventListener = function (type, cb, opts) {
+							if (type === 'load') {
+								listeners = listeners.filter(function (x) { return x !== cb; });
+								return;
+							}
+							return origAdd(type, cb, opts);
+						};
+						Object.defineProperty(canvas, 'crossOrigin', { value: 'anonymous', writable: true });
+						Object.defineProperty(canvas, 'complete', { get: function () { return completed; } });
+						Object.defineProperty(canvas, 'naturalWidth', {
+							get: function () { return canvas.width; },
+							configurable: true
+						});
+						Object.defineProperty(canvas, 'naturalHeight', {
+							get: function () { return canvas.height; },
+							configurable: true
+						});
+						Object.defineProperty(canvas, 'src', {
+							get: function () { return currentSrc; },
+							set: function (url) {
+								currentSrc = url;
+								if (!url) return;
+								gmFetch(url)
+									.then(function (buf) { return createImageBitmap(new Blob([buf])); })
+									.then(function (bmp) {
+										canvas.width = bmp.width;
+										canvas.height = bmp.height;
+										var ctx = canvas.getContext('2d');
+										if (ctx) ctx.drawImage(bmp, 0, 0);
+										completed = true;
+										if (typeof canvas.onload === 'function') {
+											try { canvas.onload(); } catch (e) { }
+										}
+										listeners.slice().forEach(function (cb) {
+											try { cb(); } catch (e) { }
+										});
+									})
+									.catch(function () {
+										if (typeof canvas.onerror === 'function') {
+											try { canvas.onerror(); } catch (e) { }
+										}
+									});
+							}
+						});
+						return canvas;
+					}
+					window.Image = gmImage;
+					window.Image.prototype = NativeImage.prototype;
+					function injectCSS(cssText) {
+						if (typeof CSSStyleSheet !== 'undefined' && 'replaceSync' in CSSStyleSheet.prototype) {
+							var sheet = new CSSStyleSheet();
+							sheet.replaceSync(cssText);
+							document.adoptedStyleSheets = Array.prototype.slice.call(document.adoptedStyleSheets || []).concat(sheet);
+							return;
+						}
+						var style = document.createElement('style');
+						document.head.appendChild(style);
+						var rules = cssText.match(/[^{}]+{[^}]+}/g) || [];
+						for (var i = 0; i < rules.length; i++) {
+							try { style.sheet.insertRule(rules[i].trim()); } catch (e) { }
+						}
+					}
+					window.addEventListener('unhandledrejection', function (ev) {
+						var r = ev.reason;
+						console.error('[L2D] 未捕获的 Promise 失败:', r && r.message ? r.message : r);
+						ev.preventDefault();
 					});
-				}
+					__l2dImport(CDN + 'waifu-tips.js')
+						.then(function () {
+							if (typeof window.initWidget !== 'function') {
+								console.error('[L2D] initWidget 未定义');
+								return;
+							}
+							if (CUSTOM_MODELS) {
+								L2D_CONFIG.waifuPath = undefined;
+								L2D_CONFIG.models = CUSTOM_MODELS;
+							}
+							window.initWidget(L2D_CONFIG);
+						})
+						.catch(function (e) {
+							console.error('[L2D] 初始化失败', e);
+						});
+					gmText(CDN + 'waifu.css').then(injectCSS).catch(function (e) {
+						console.error('[L2D] CSS 加载失败', e);
+					});
+					GM_addStyle('#waifu{left:64px !important;}#waifu-toggle{left:80px !important;}');
+				})();
 			}
 			if (currentAMLSettings.benbenctrlenterEnabled && !benbenctrlenterInited) {
 				try {
@@ -8953,7 +8966,7 @@ async function all() {
 											"zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
 										"content-type": "application/json",
 									},
-									data: JSON.stringify({"content_type":"discuss","id":discussId}),
+									data: JSON.stringify({ "content_type": "discuss", "id": discussId }),
 									onload: async function (response) {
 										if (response.status >= 200 && response.status < 300) {
 											console.debug("请求成功，返回数据：", response.responseText);
@@ -9651,7 +9664,7 @@ ${problemText}
 					const pEl = contentDiv.parentElement;
 					const wasAtBottom = !pEl || (pEl.scrollTop + pEl.clientHeight + 5 >= pEl.scrollHeight);
 					contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(fullContent || ''));
-					if (window.renderMathInElement) renderMathInElement(contentDiv, { delimiters: [{left: '$', right: '$', display: false}, {left: '$$', right: '$$', display: true}], throwOnError: false });
+					if (window.renderMathInElement) renderMathInElement(contentDiv, { delimiters: [{ left: '$', right: '$', display: false }, { left: '$$', right: '$$', display: true }], throwOnError: false });
 					if (pEl && wasAtBottom) pEl.scrollTop = pEl.scrollHeight;
 					dirty = false;
 					renderScheduled = false;
@@ -12676,8 +12689,8 @@ ${problemText}
 			setTimeout(checkScriptVersion(1), 1500);
 			if (currentAMLSettings.focusModeEnabled) {
 				try {
-					if(location.href=='https://www.luogu.com.cn/problem/U0?focus=true'){
-						document.documentElement.innerHTML=document.documentElement.innerHTML.replace('找不到题目','请认真学习哦！');
+					if (location.href == 'https://www.luogu.com.cn/problem/U0?focus=true') {
+						document.documentElement.innerHTML = document.documentElement.innerHTML.replace('找不到题目', '请认真学习哦！');
 					}
 					const path = window.location.pathname;
 					if (currentAMLSettings.focusModeHidePage) {
@@ -12700,7 +12713,7 @@ ${problemText}
 						};
 						for (const [key, val] of Object.entries(hidePagePaths)) {
 							if (currentAMLSettings[key] && path.startsWith(val)) {
-								location.href='https://www.luogu.com.cn/problem/U0?focus=true';
+								location.href = 'https://www.luogu.com.cn/problem/U0?focus=true';
 								return;
 							}
 						}
@@ -13238,7 +13251,7 @@ async function show_data_collection_notice() {
 	await show_updates();
 }
 async function show_updates() {
-	if (GM_getValue("updates_showed_1.3.2", false)) {
+	if (GM_getValue("updates_showed_1.4.2", false)) {
 		await show_cpoauth();
 		return;
 	}
@@ -13246,11 +13259,9 @@ async function show_updates() {
 		title: "更新说明",
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
-            	<h4>代码块</h4>
-            	<p>优化代码折叠动画，支持新老前端复制</p>
-                <h4>AI 题目分析</h4>
-                <p>支持 IDE 模式启动 AI 分析，窗口更新样式，支持即使关闭窗口也不会丢失记录，防止误触，现在请求生成需要按按钮 5 秒</p>
-            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年8月1日</p>
+            	<h4>Live2D 看板娘</h4>
+            	<p>在页面左下角显示 Live2D 看板娘</p>
+            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年10月11日</p>
 			</div>
         `,
 		width: '600px',
@@ -13259,7 +13270,7 @@ async function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	});
-	GM_setValue("updates_showed_1.3.2", true);
+	GM_setValue("updates_showed_1.4.2", true);
 	await show_cpoauth();
 }
 async function show_cpoauth() {
@@ -13303,7 +13314,7 @@ async function supabaseUpsert(uid) {
 			}),
 			onload: function (response) {
 				if (response.status >= 200 && response.status < 300) {
-					if (response.status==202){
+					if (response.status == 202) {
 						console.debug("Supabase API 异常");
 					}
 					resolve(response);
