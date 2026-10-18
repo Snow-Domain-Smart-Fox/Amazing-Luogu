@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.3
+// @version      1.4.4
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -9,6 +9,8 @@
 // @match        *://www.luogu.com/*
 // @match        zym2013.dpdns.org/*
 // @match        dash.amazingluogu.dpdns.org/*
+// @match        *://fecdn.luogu.com.cn/*
+// @match        *://fecdn.luogu.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -77,6 +79,274 @@
 // @run-at       document-start
 // ==/UserScript==
 
+if (
+	window !== window.top &&
+	/^fecdn\.luogu\.com(\.cn)?$/.test(location.hostname)
+) {
+	if (!GM_getValue("amlChatNotificationEnabled", true)) {
+		console.debug("[Chat调试] 私信通知已关闭，iframe 不启动");
+		return;
+	}
+	console.debug("[Chat调试] iframe 分支已启动");
+	const amlParentOrigin = (() => {
+		try {
+			if (document.referrer) {
+				return new URL(document.referrer).origin;
+			}
+		} catch (e) {}
+		return "https://www.luogu.com.cn";
+	})();
+	const amlWorkerURLFallback =
+		"https://fecdn.luogu.com.cn/columba/static.284b6b4b2a29779e.hub.worker.js";
+	const amlRid = () => Math.random().toString(16).slice(2, 11);
+	const amlNewId = () => [amlRid(), amlRid(), amlRid(), amlRid()].join("-");
+	const amlWaitUid = () =>
+		new Promise((resolve) => {
+			let timerId = null;
+			const finish = (v) => {
+				if (timerId !== null) {
+					clearInterval(timerId);
+				}
+				window.removeEventListener("message", onMsg);
+				resolve(v);
+			};
+			const onMsg = (e) => {
+				try {
+					if (e.origin !== amlParentOrigin) {
+						return;
+					}
+					if (
+						!e.data ||
+						typeof e.data !== "object" ||
+						typeof e.data.__amlChatUid !== "string" ||
+						!e.data.__amlChatUid
+					) {
+						return;
+					}
+					finish(e.data.__amlChatUid);
+				} catch (err) {}
+			};
+			const ask = () => {
+				try {
+					window.parent.postMessage(
+						{ __amlChatUidRequest: true },
+						amlParentOrigin,
+					);
+				} catch (e) {}
+			};
+			window.addEventListener("message", onMsg);
+			ask();
+			let tries = 0;
+			timerId = setInterval(() => {
+				if (++tries > 45) {
+					finish(null);
+					return;
+				}
+				ask();
+			}, 2000);
+		});
+	let amlObservedWorkerURL = null;
+	window.addEventListener("message", (e) => {
+		try {
+			const d = e.data;
+			if (
+				d &&
+				typeof d === "object" &&
+				d.type === "luogu-ws-bridge-port" &&
+				typeof d.worker === "string" &&
+				d.worker
+			) {
+				amlObservedWorkerURL = d.worker;
+				GM_setValue("amlWSWorkerURL", d.worker);
+				console.debug("[Chat调试] 捕获官方 worker 地址:", d.worker);
+			}
+		} catch (err) {}
+	});
+	const amlWaitWorkerURL = () =>
+		new Promise((resolve) => {
+			if (amlObservedWorkerURL) {
+				resolve(amlObservedWorkerURL);
+				return;
+			}
+			let tries = 0;
+			const timer = setInterval(() => {
+				if (amlObservedWorkerURL || ++tries > 40) {
+					clearInterval(timer);
+					resolve(amlObservedWorkerURL);
+				}
+			}, 500);
+		});
+	const amlResolveWorkerURL = async () => {
+		const cached = GM_getValue("amlWSWorkerURL", "");
+		if (cached) {
+			console.debug("[Chat调试] worker URL 来自缓存:", cached);
+			return cached;
+		}
+		const observed = await amlWaitWorkerURL();
+		const url = observed || amlWorkerURLFallback;
+		console.debug(
+			"[Chat调试] worker URL 来自" + (observed ? "官方消息" : "内置兜底") + ":",
+			url,
+		);
+		GM_setValue("amlWSWorkerURL", url);
+		return url;
+	};
+	const amlBridgeSession = (workerURL, uid) => {
+		let worker = null;
+		try {
+			worker = new SharedWorker(workerURL, {
+				type: "module",
+				name: "luogu-ws-shared-worker",
+			});
+		} catch (e) {
+			console.warn("[Chat调试] SharedWorker 构建失败:", e);
+			return null;
+		}
+		let activityHandler = null;
+		const cb = new MessageChannel();
+		const send = (path, argumentList, transfer) => {
+			try {
+				worker.port.postMessage(
+					{ id: amlNewId(), type: "APPLY", path, argumentList },
+					transfer || [],
+				);
+			} catch (e) {}
+		};
+		cb.port1.addEventListener("message", (e) => {
+			const d = e.data;
+			if (activityHandler) {
+				activityHandler();
+			}
+			if (d && typeof d === "object" && d.type === "APPLY") {
+				console.debug(
+					"[Chat调试] 收到回调:",
+					(d.path || []).join(".") || d.type,
+				);
+			}
+			try {
+				if (!d || typeof d !== "object") {
+					return;
+				}
+				if (d.type === "APPLY" && d.id) {
+					cb.port1.postMessage({ type: "RAW", id: d.id });
+				}
+				if (d.type !== "APPLY" || !Array.isArray(d.path)) {
+					return;
+				}
+				if (
+					d.path[0] === "onEvent" &&
+					Array.isArray(d.argumentList) &&
+					d.argumentList.length >= 3
+				) {
+					const channel = d.argumentList[0] && d.argumentList[0].value;
+					const eventName = d.argumentList[1] && d.argumentList[1].value;
+					const payload = d.argumentList[2] && d.argumentList[2].value;
+					if (
+						eventName === "message" &&
+						typeof channel === "string" &&
+						channel.indexOf("Chat:") === 0 &&
+						typeof payload === "string"
+					) {
+						window.parent.postMessage(
+							{ __amlChatPayload: payload },
+							amlParentOrigin,
+						);
+						console.debug("[Chat调试] 私信 payload 已接力给主页面");
+					}
+				}
+			} catch (err) {}
+		});
+		cb.port1.start();
+		worker.port.start();
+		send(
+			["connect"],
+			[
+				{ type: "RAW", value: "wss://ws2.luogu.com.cn/ws" },
+				{ type: "RAW", value: false },
+				{ type: "HANDLER", name: "proxy", value: cb.port2 },
+			],
+			[cb.port2],
+		);
+		send(
+			["subscribe"],
+			[
+				{ type: "RAW", value: "Chat:" + uid },
+				{ type: "RAW", value: "" },
+			],
+		);
+		return {
+			setActivityHandler(fn) {
+				activityHandler = fn;
+			},
+			close() {
+				try {
+					worker.port.close();
+				} catch (e) {}
+				try {
+					cb.port1.close();
+				} catch (e) {}
+			},
+		};
+	};
+	let amlFailCount = 0;
+	const amlStartBridge = (uid) => {
+		const url = GM_getValue("amlWSWorkerURL", "") || amlWorkerURLFallback;
+		const session = amlBridgeSession(url, uid);
+		if (!session) {
+			GM_setValue("amlWSWorkerURL", "");
+			setTimeout(() => amlStartBridge(uid), 30000);
+			return;
+		}
+		let lastActivity = Date.now();
+		let stopped = false;
+		session.setActivityHandler(() => {
+			lastActivity = Date.now();
+			amlFailCount = 0;
+		});
+		const retry = (delay) => {
+			if (stopped) {
+				return;
+			}
+			stopped = true;
+			clearInterval(watchdog);
+			session.close();
+			amlFailCount++;
+			console.warn(
+				"[Chat调试] 连接异常，" +
+					delay / 1000 +
+					" 秒后重连（连续失败 " +
+					amlFailCount +
+					" 次）",
+			);
+			if (amlFailCount >= 2) {
+				GM_setValue("amlWSWorkerURL", "");
+			}
+			setTimeout(async () => {
+				const url = await amlResolveWorkerURL();
+				GM_setValue("amlWSWorkerURL", url);
+				amlStartBridge(uid);
+			}, delay);
+		};
+		const watchdog = setInterval(() => {
+			if (Date.now() - lastActivity > 120000) {
+				retry(10000);
+			}
+		}, 30000);
+	};
+	(async () => {
+		const uid = await amlWaitUid();
+		console.debug("[Chat调试] uid 获取结果:", uid);
+		if (!uid) {
+			return;
+		}
+		const url = await amlResolveWorkerURL();
+		GM_setValue("amlWSWorkerURL", url);
+		amlStartBridge(uid);
+		console.debug("[Chat] 桥接直连已启动（iframe）");
+	})();
+	return;
+}
+
 function unregister(uid) {
 	GM_setValue("amlgEmail_" + uid, "");
 	GM_setValue("amlgPassword_" + uid, "");
@@ -84,6 +354,180 @@ function unregister(uid) {
 unsafeWindow.unregister = unregister;
 unsafeWindow.GM_getValue = GM_getValue;
 unsafeWindow.GM_setValue = GM_setValue;
+if (GM_getValue("amlChatNotificationEnabled", true)) {
+	const amlSeenChatMsgIds = new Set();
+	const handleAMLChatPayload = function (raw) {
+		try {
+			const payload = JSON.parse(raw);
+			const latestMessage = payload.message;
+			if (!latestMessage || !latestMessage.target) {
+				console.debug("[Chat调试] payload 结构不符，跳过:", raw && raw.substring(0, 120));
+				return;
+			}
+			if (latestMessage.myself && latestMessage.myself !== "RX") {
+				console.debug("[Chat调试] 自己发的消息，跳过");
+				return;
+			}
+			const chatSender = latestMessage.target;
+			if (latestMessage.id !== undefined) {
+				if (amlSeenChatMsgIds.has(latestMessage.id)) {
+					console.debug("[Chat调试] 重复消息 id=" + latestMessage.id + "，跳过");
+					return;
+				}
+				amlSeenChatMsgIds.add(latestMessage.id);
+				if (amlSeenChatMsgIds.size > 500) {
+					amlSeenChatMsgIds.clear();
+				}
+			}
+			let snippet =
+				latestMessage.content.length > 15
+					? latestMessage.content.substring(0, 15) + "..."
+					: latestMessage.content;
+			iziToast.show({
+				title: `<svg class="icon-drafts-inline" style="width: 16px; height: 16px; margin-right: 5px; vertical-align: text-bottom; fill: currentColor;"><use xlink:href="#icon-drafts"></use></svg> ${chatSender.name}`,
+				message: `${snippet}`,
+				position: "bottomRight",
+				theme: "light",
+				image: `https://cdn.luogu.com.cn/upload/usericon/${chatSender.uid}.png`,
+				imageWidth: 54,
+				balloon: true,
+				messageEscape: false,
+				progressBar: true,
+				pauseOnHover: true,
+				timeout: 10000,
+				buttons: [
+					[
+						'<button style="margin: 0 2px; margin-top: 3px !important;">回复私信</button>',
+						function (instance, toast) {
+							window.open(
+								`https://www.luogu.com.cn/chat?uid=${chatSender.uid}`,
+							);
+						},
+						true,
+					],
+				],
+				onClick: function () {
+					window.open(
+						`https://www.luogu.com.cn/chat?uid=${chatSender.uid}`,
+					);
+				},
+			});
+			if (
+				"Notification" in window &&
+				Notification.permission === "granted" &&
+				(document.hidden || !document.hasFocus())
+			) {
+				const body =
+					latestMessage.content.length > 100
+						? latestMessage.content.substring(0, 100) + "..."
+						: latestMessage.content;
+				const desktopNotification = new Notification(
+					`${chatSender.name} 的私信`,
+					{
+						body: body,
+						icon: `https://cdn.luogu.com.cn/upload/usericon/${chatSender.uid}.png`,
+						tag: `aml-chat-${chatSender.uid}`,
+						requireInteraction: false,
+					},
+				);
+				desktopNotification.onclick = () => {
+					window.open(
+						`https://www.luogu.com.cn/chat?uid=${chatSender.uid}`,
+					);
+					desktopNotification.close();
+				};
+				setTimeout(() => desktopNotification.close(), 10000);
+			}
+		} catch (e) {
+			console.debug(e);
+		}
+	};
+	const handleAMLBridgeEnvelope = function (data) {
+		try {
+			if (
+				!data ||
+				typeof data !== "object" ||
+				data.type !== "APPLY" ||
+				!Array.isArray(data.argumentList) ||
+				data.argumentList.length < 3
+			) {
+				return;
+			}
+			const eventName = data.argumentList[1] && data.argumentList[1].value;
+			const payloadRaw = data.argumentList[2] && data.argumentList[2].value;
+			if (eventName !== "message" || typeof payloadRaw !== "string") {
+				return;
+			}
+			handleAMLChatPayload(payloadRaw);
+		} catch (e) {
+			console.debug(e);
+		}
+	};
+	window.addEventListener("message", function (e) {
+		try {
+			if (!e.data || typeof e.data !== "object") {
+				return;
+			}
+			if (e.data.__amlChatUidRequest === true) {
+				if (
+					!/^https:\/\/fecdn\.luogu\.com(\.cn)?$/.test(e.origin) ||
+					!e.source
+				) {
+					return;
+				}
+				const uid = getCurrentUserId();
+				e.source.postMessage(
+					{ __amlChatUid: uid ? String(uid) : "" },
+					e.origin,
+				);
+				console.debug("[Chat调试] 收到 uid 请求，回复:", uid);
+				return;
+			}
+			if (typeof e.data.__amlChatPayload !== "string") {
+				return;
+			}
+			console.debug("[Chat调试] 主页面收到私信 payload");
+			handleAMLChatPayload(e.data.__amlChatPayload);
+		} catch (err) {
+			console.debug(err);
+		}
+	});
+	const AMLMessagePortProto = unsafeWindow.MessagePort.prototype;
+	const amlOriginalPortAddEventListener = AMLMessagePortProto.addEventListener;
+	AMLMessagePortProto.addEventListener = function (type, fn, ...rest) {
+		if (type === "message" && fn && !fn.__amlWSW) {
+			const wrapped = function (e) {
+				handleAMLBridgeEnvelope(e.data);
+				return fn.call(this, e);
+			};
+			wrapped.__amlWSW = true;
+			return amlOriginalPortAddEventListener.call(this, type, wrapped, ...rest);
+		}
+		return amlOriginalPortAddEventListener.call(this, type, fn, ...rest);
+	};
+	const amlPortOnMessageDesc = Object.getOwnPropertyDescriptor(
+		AMLMessagePortProto,
+		"onmessage",
+	);
+	if (amlPortOnMessageDesc && amlPortOnMessageDesc.set) {
+		Object.defineProperty(AMLMessagePortProto, "onmessage", {
+			get: amlPortOnMessageDesc.get,
+			set(fn) {
+				if (fn && !fn.__amlWSW) {
+					const wrapped = function (e) {
+						handleAMLBridgeEnvelope(e.data);
+						return fn.call(this, e);
+					};
+					wrapped.__amlWSW = true;
+					return amlPortOnMessageDesc.set.call(this, wrapped);
+				}
+				return amlPortOnMessageDesc.set.call(this, fn);
+			},
+			configurable: true,
+		});
+	}
+	console.debug("[Chat] 桥接监听已注入");
+}
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
 	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com") || url.includes("fastly.jsdelivr.net"))) {
@@ -739,7 +1183,6 @@ let benbenctrlenterInited = false;
 let slogenFunctionRunned = false;
 let FullBenBenInited = false;
 let nbnhhshInited = false;
-let chatWSRD = false;
 let Notificationaaaaaaa = null;
 let supabaseRunned = false;
 let onlineInitialized = false;
@@ -2150,7 +2593,7 @@ async function all() {
 				{
 					key: "chatNotificationEnabled",
 					label: "私信通知",
-					desc: "收到新私信时弹出桌面通知",
+					desc: "收到新私信时弹出桌面通知并在洛谷提示",
 					tag: "功能",
 					status: "stable",
 				},
@@ -4308,7 +4751,7 @@ async function all() {
 					"aml-chatNotificationEnabled",
 				);
 				if (chatNotificationToggle) {
-					addManagedEventListener(chatNotificationToggle, "change", function (e) {
+					addManagedEventListener(chatNotificationToggle, "change", async function (e) {
 						const newValue = e.target.checked;
 						saveAMLSetting("chatNotificationEnabled", newValue);
 						currentAMLSettings.chatNotificationEnabled = newValue;
@@ -4321,6 +4764,31 @@ async function all() {
 						if (section && notice) {
 							section.style.display = newValue ? "block" : "none";
 							notice.style.display = newValue ? "none" : "block";
+						}
+						if (
+							newValue &&
+							"Notification" in window &&
+							Notification.permission === "default"
+						) {
+							Notification.requestPermission().then(async (permission) => {
+								if (permission === "denied") {
+									await Swal.fire({
+										title: "浏览器通知权限被拒绝",
+										text: "收到新私信时将无法弹出系统通知，可在浏览器站点设置中重新开启",
+										icon: "warning",
+									});
+								}
+							});
+						} else if (
+							newValue &&
+							"Notification" in window &&
+							Notification.permission === "denied"
+						) {
+							Swal.fire({
+								title: "浏览器通知权限已被阻止",
+								text: "请点击地址栏左侧的站点设置，将通知权限改为允许后刷新页面",
+								icon: "warning",
+							});
 						}
 					});
 				}
@@ -11942,83 +12410,6 @@ ${problemText}
 					console.debug(e);
 				}
 			}
-			if (currentAMLSettings.chatNotificationEnabled) {
-				try {
-					let userId = getCurrentUserId();
-					if (userId && !chatWSRD) {
-						chatWSRD = true;
-						try {
-							const ws = new WebSocket("wss://ws.luogu.com.cn/ws");
-							ws.onopen = () => {
-								ws.send(
-									JSON.stringify({
-										channel: "chat",
-										channel_param: `${userId}`,
-										type: "join_channel",
-									}),
-								);
-								console.debug("[Chat] 已加入聊天频道");
-							};
-							ws.onmessage = (event) => {
-								console.debug("[Chat] 收到消息:", event);
-								const data = JSON.parse(event.data);
-								switch (data._ws_type) {
-									case "server_broadcast": {
-										const { message } = data;
-										let latestMessage = message;
-										let snippet =
-											latestMessage.content.length > 15
-												? latestMessage.content.substring(0, 15) + "..."
-												: latestMessage.content;
-										if (latestMessage.sender.uid != userId) {
-											iziToast.show({
-												title: `<svg class="icon-drafts-inline" style="width: 16px; height: 16px; margin-right: 5px; vertical-align: text-bottom; fill: currentColor;"><use xlink:href="#icon-drafts"></use></svg> ${latestMessage.sender.name}`,
-												message: `${snippet}`,
-												position: "bottomRight",
-												theme: "light",
-												image: `https://cdn.luogu.com.cn/upload/usericon/${latestMessage.sender.uid}.png`,
-												imageWidth: 54,
-												balloon: true,
-												messageEscape: false,
-												progressBar: true,
-												pauseOnHover: true,
-												timeout: 10000,
-												buttons: [
-													[
-														'<button style="margin: 0 2px; margin-top: 3px !important;">回复私信</button>',
-														function (instance, toast) {
-															window.open(
-																`https://www.luogu.com.cn/chat?uid=${latestMessage.sender.uid}`,
-															);
-														},
-														true,
-													],
-												],
-												onClick: function () {
-													window.open(
-														`https://www.luogu.com.cn/chat?uid=${latestMessage.sender.uid}`,
-													);
-												},
-											});
-											break;
-										}
-									}
-								}
-							};
-						} catch (e) {
-							(async () => {
-								await Swal.fire({
-									title: "私信通知 WebSocket 已断开",
-									text: "请检查网络连接并刷新页面",
-									icon: "error",
-								});
-							})();
-						}
-					}
-				} catch (e) {
-					console.debug(e);
-				}
-			}
 			if (currentAMLSettings.emojiRenderingEnabled) {
 				try {
 					var R = "color: #E67E22;";
@@ -13304,7 +13695,7 @@ async function show_data_collection_notice() {
 	await show_updates();
 }
 async function show_updates() {
-	if (GM_getValue("updates_showed_1.4.2", false)) {
+	if (GM_getValue("updates_showed_1.4.4", false)) {
 		await show_cpoauth();
 		return;
 	}
@@ -13312,8 +13703,8 @@ async function show_updates() {
 		title: "更新说明",
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
-            	<h4>Live2D 看板娘</h4>
-            	<p>在页面左下角显示 Live2D 看板娘</p>
+            	<h4>私信通知</h4>
+            	<p>私信通知功能已全面修复，已独家适配洛谷最新的私信推送机制，收到私信时支持弹出系统通知</p>
             	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年10月11日</p>
 			</div>
         `,
@@ -13323,7 +13714,7 @@ async function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	});
-	GM_setValue("updates_showed_1.4.2", true);
+	GM_setValue("updates_showed_1.4.4", true);
 	await show_cpoauth();
 }
 async function show_cpoauth() {
