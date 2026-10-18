@@ -1,4 +1,4 @@
-> 📢 Extend-Luogu 已停止维护，**Amazing‑Luogu 复原了大量 Extend-Luogu 的经典功能**，作为其替代脚本继续为洛谷提供增强体验。
+ > 📢 Extend-Luogu 已停止维护，**Amazing‑Luogu 复原了大量 Extend-Luogu 的经典功能**，作为其替代脚本继续为洛谷提供增强体验。
 
 # Amazing Luogu
 
@@ -63,7 +63,7 @@
 
 本项目采用 [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/) 许可证。
 
-简而言之：您可以自由分享（复制、分发）本作品，但**必须署名**、**不得用于商业用途**、**不得修改或衍生**。
+简而言之：您可以在**注明作者并遵守非商业用途**的前提下分享本作品；但**未经授权，不得分发或公开分享对本作品的修改或演绎版本**。
 
 ---
 
