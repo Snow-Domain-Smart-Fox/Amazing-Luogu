@@ -13705,7 +13705,7 @@ async function show_updates() {
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
             	<h4>私信通知</h4>
             	<p>私信通知功能已全面修复，已独家适配洛谷最新的私信推送机制，收到私信时支持弹出系统通知</p>
-            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年10月11日</p>
+            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年10月18日</p>
 			</div>
         `,
 		width: '600px',
