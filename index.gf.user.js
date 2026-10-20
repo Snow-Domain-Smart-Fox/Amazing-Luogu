@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.4
+// @version      1.4.5
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -9930,7 +9930,7 @@ async function all() {
 【硬性约束】
 1. 输出语言：始终使用中文。
 2. 禁止代码：严禁输出任何形式的代码，包括具体语言代码、伪代码、代码块、语法示例、编程语句；所有解答只能用自然语言、数学公式或逻辑表达式描述。
-3. LaTeX 规范：行内公式用 $...$，独立公式用 $$...$$；严禁使用 \\( \\) 或 \\[ \\] 等其他定界符。
+3. LaTeX 规范：行内公式用 $...$，独立公式用 $$...$$；严禁在 $ 后面换行；严禁使用 \\( \\) 或 \\[ \\] 等其他定界符。
 4. 推导自洽：所有数学关系（状态转移方程、递推式、边权计算、公式变形）必须给出推导过程并自检符号与逻辑正确性。
 5. 算法对应：复杂度分析必须与你所选用的算法严格对应，不要分析与算法无关的内容。
 
@@ -9989,7 +9989,7 @@ async function all() {
 - 请务必验证你的数学推导是否正确，特别是涉及边权、递推公式等部分。
 - 若分析到图论最短路且边权可能为负，请指明适用算法及负环处理策略。
 - 复杂度分析必须与所选算法对应。
-- 所有LaTeX语句必须使用$的形式。
+- 所有LaTeX语句必须使用$的形式，且$后禁止换行。
 --- 题目原文 ---
 ${problemText}
 --- 结束 ---
