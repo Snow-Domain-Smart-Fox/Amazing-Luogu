@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.5
+// @version      1.4.6
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -9170,7 +9170,17 @@ async function all() {
 									var entry = req.result;
 									if (!entry) return resolve(null);
 									if (Date.now() - entry.ts > L2D_CACHE_TTL) return resolve(null);
-									resolve(entry.data);
+									var data = entry.data;
+									if (!data || !data.byteLength) return resolve(null);
+									if (/\.json($|\?)/i.test(url)) {
+										try {
+											JSON.parse(new TextDecoder('utf-8').decode(new Uint8Array(data)));
+										} catch (err) {
+											db.transaction(L2D_CACHE_STORE, 'readwrite').objectStore(L2D_CACHE_STORE).delete(url);
+											return resolve(null);
+										}
+									}
+									resolve(data);
 								};
 								req.onerror = function () { reject(req.error); };
 							});
@@ -9209,8 +9219,22 @@ async function all() {
 									responseType: 'arraybuffer',
 									onload: function (r) {
 										if (r.status >= 200 && r.status < 300) {
-											writeCache(url, r.response);
-											resolve(r.response);
+											var buf = r.response;
+											var valid = buf && buf.byteLength > 0;
+											if (valid && /\.json($|\?)/i.test(url)) {
+												try {
+													JSON.parse(new TextDecoder('utf-8').decode(new Uint8Array(buf)));
+												} catch (err) {
+													valid = false;
+												}
+											}
+											if (valid) {
+												writeCache(url, buf);
+												resolve(buf);
+											} else {
+												console.error('[L2D] 响应内容无效 ' + r.status + ' ' + url);
+												reject(new Error('INVALID ' + url));
+											}
 										} else {
 											console.error('[L2D] GM 拉取失败 HTTP ' + r.status + ' ' + url);
 											reject(new Error('HTTP ' + r.status + ' ' + url));
