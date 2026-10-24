@@ -3,7 +3,7 @@
 // @namespace    https://zym2013.dpdns.org/
 // @version      1.4.7
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
-// @tag          洛谷,Luogu,洛谷美化,Luogu Beautification
+// @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
 // @match        *://www.luogu.com.cn/*
