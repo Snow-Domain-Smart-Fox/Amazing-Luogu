@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.8
+// @version      1.4.9
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -94,7 +94,7 @@ if (
 			if (document.referrer) {
 				return new URL(document.referrer).origin;
 			}
-		} catch (e) {}
+		} catch (e) { }
 		return "https://www.luogu.com.cn";
 	})();
 	const amlWorkerURLFallback =
@@ -125,7 +125,7 @@ if (
 						return;
 					}
 					finish(e.data.__amlChatUid);
-				} catch (err) {}
+				} catch (err) { }
 			};
 			const ask = () => {
 				try {
@@ -133,7 +133,7 @@ if (
 						{ __amlChatUidRequest: true },
 						amlParentOrigin,
 					);
-				} catch (e) {}
+				} catch (e) { }
 			};
 			window.addEventListener("message", onMsg);
 			ask();
@@ -161,7 +161,7 @@ if (
 				GM_setValue("amlWSWorkerURL", d.worker);
 				console.debug("[Chat调试] 捕获官方 worker 地址:", d.worker);
 			}
-		} catch (err) {}
+		} catch (err) { }
 	});
 	const amlWaitWorkerURL = () =>
 		new Promise((resolve) => {
@@ -211,7 +211,7 @@ if (
 					{ id: amlNewId(), type: "APPLY", path, argumentList },
 					transfer || [],
 				);
-			} catch (e) {}
+			} catch (e) { }
 		};
 		cb.port1.addEventListener("message", (e) => {
 			const d = e.data;
@@ -255,7 +255,7 @@ if (
 						console.debug("[Chat调试] 私信 payload 已接力给主页面");
 					}
 				}
-			} catch (err) {}
+			} catch (err) { }
 		});
 		cb.port1.start();
 		worker.port.start();
@@ -282,10 +282,10 @@ if (
 			close() {
 				try {
 					worker.port.close();
-				} catch (e) {}
+				} catch (e) { }
 				try {
 					cb.port1.close();
-				} catch (e) {}
+				} catch (e) { }
 			},
 		};
 	};
@@ -314,10 +314,10 @@ if (
 			amlFailCount++;
 			console.warn(
 				"[Chat调试] 连接异常，" +
-					delay / 1000 +
-					" 秒后重连（连续失败 " +
-					amlFailCount +
-					" 次）",
+				delay / 1000 +
+				" 秒后重连（连续失败 " +
+				amlFailCount +
+				" 次）",
 			);
 			if (amlFailCount >= 2) {
 				GM_setValue("amlWSWorkerURL", "");
@@ -7670,51 +7670,17 @@ async function all() {
 					}
 					(function () {
 						if (isValidUrl()) {
-							var style = document.createElement("style");
-							style.id = "aml-lgcm-style";
-							style.textContent = `
-							.aml-button-lgcm {
-								outline:none !important;
-								cursor: pointer;
-								line-height: 1.25;
-								position: relative;
-								display: block;
-								margin-left: -.0625rem;
-								padding: .5rem .75rem;
-								color: #fff !important;
-								border: .0625rem solid #dee2e6;
-								font-size: 15px;
-								font-weight: unset;
-								display: flex;
-								min-width: 36px;
-								height: 36px;
-								margin: 0 3px;
-								border-radius: 100px!important;
-								align-items: center;
-								justify-content: center;
-								transition:all 0s;
-								background-color: #5e72e4;
-							}
-							.aml-button-lgcm:hover {
-								box-shadow: 0 7px 14px rgba(50,50,93,.1), 0 3px 6px rgba(0,0,0,.08);
-								transform: translateY(-1px);
-							}
-							`;
-							document.head.appendChild(style);
-							var button = document.createElement("button");
-							button.textContent = "复制Md";
-							button.style.position = "absolute";
-							button.style.top = "100px";
-							button.style.right = "100px";
-							addManagedEventListener(window, "scroll", function () {
-								var scrollY = window.scrollY;
-								button.style.top = 100 + scrollY + "px";
+							addManagedEventListener(document, "keydown", function (event) {
+								if (
+									event.code === "KeyM" &&
+									(event.ctrlKey || event.metaKey) &&
+									event.altKey &&
+									!event.shiftKey
+								) {
+									event.preventDefault();
+									handleCopyMarkdown();
+								}
 							});
-							button.classList.add("aml-button-lgcm");
-							addManagedEventListener(button, "click", async function () {
-								handleCopyMarkdown();
-							});
-							document.body.appendChild(button);
 						}
 					})();
 				} catch (error) {
@@ -13722,7 +13688,7 @@ async function show_data_collection_notice() {
 	await show_updates();
 }
 async function show_updates() {
-	if (GM_getValue("updates_showed_1.4.4", false)) {
+	if (GM_getValue("updates_showed_1.4.9", false)) {
 		await show_cpoauth();
 		return;
 	}
@@ -13730,9 +13696,11 @@ async function show_updates() {
 		title: "更新说明",
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
+            	<h4>复制 Markdown 快捷键</h4>
+            	<p>新增快捷键 <b>Ctrl+Alt+M</b>（macOS 为 Command+Option+M），在文章、个人简介、比赛、题单、剪贴板等页面按下即可直接复制正文 Markdown，无需再点浮动按钮。</p>
             	<h4>私信通知</h4>
-            	<p>私信通知功能已全面修复，已独家适配洛谷最新的私信推送机制，收到私信时支持弹出系统通知</p>
-            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年10月18日</p>
+            	<p>私信通知功能已全面修复，已独家适配洛谷最新的私信推送机制，收到私信时支持弹出系统通知。</p>
+            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年10月30日</p>
 			</div>
         `,
 		width: '600px',
@@ -13741,7 +13709,7 @@ async function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	});
-	GM_setValue("updates_showed_1.4.4", true);
+	GM_setValue("updates_showed_1.4.9", true);
 	await show_cpoauth();
 }
 async function show_cpoauth() {
