@@ -10416,7 +10416,12 @@ ${problemText}
 				aiBtn.className = "lform-size-middle button-transparent aml-ai-analyze-btn";
 				aiBtn.type = "button";
 				aiBtn.innerHTML = "AI 分析";
-				aiBtn.setAttribute('data-v-d1779b04', '');
+				const vSource = Array.from(btnActions.querySelectorAll("button, a")).find(el => el.textContent.trim().includes("复制题目")) || Array.from(btnActions.querySelectorAll("button, a")).find(el => Array.from(el.attributes).some(attr => attr.name.startsWith("data-v-")));
+				if (vSource) {
+					Array.from(vSource.attributes).forEach(attr => {
+						if (attr.name.startsWith("data-v-")) aiBtn.setAttribute(attr.name, attr.value);
+					});
+				}
 				addManagedEventListener(aiBtn, "click", handleAIAnalyzeClick);
 				btnActions.appendChild(aiBtn);
 				if (!window._amlObserver) {
@@ -10489,6 +10494,20 @@ ${problemText}
 						const style = document.createElement('style');
 						style.id = 'aml-ai-modal-style';
 						style.textContent = `
+			                button.aml-ai-analyze-btn {
+			                    --l-button--real-color: var(--lcolor-rgb, var(--lcolor--primary, var(--lcolor--primary)));
+			                    display: inline-block;
+			                    outline: none;
+			                    cursor: pointer;
+			                    font-weight: inherit;
+			                    line-height: 1.5;
+			                    text-align: center;
+			                    vertical-align: middle;
+			                    border-radius: 3px;
+			                    border: 1px solid rgb(var(--l-button--real-color));
+			                    background: rgba(var(--l-button--real-color), 0) none;
+			                    color: rgb(var(--l-button--real-color));
+			                }
 			                #aml-ai-modal { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; z-index: 1050; display: flex; align-items: center; justify-content: center; overflow: hidden; opacity: 1; visibility: visible; transition: opacity 0.25s ease, visibility 0.25s ease; }
 			                #aml-ai-modal.hide { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
 			                #aml-ai-modal > .background { position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important; padding: 0 !important; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
