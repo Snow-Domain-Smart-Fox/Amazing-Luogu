@@ -10111,7 +10111,7 @@ ${problemText}
 			        </div>
 			    `;
 				actions.innerHTML = `
-			        <button id="aml-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button" data-v-505b6a97>查看！</button>
+			        <button id="aml-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button">查看！</button>
 			    `;
 				const confirmBtn = document.getElementById('aml-confirm-btn');
 				setupLongPress(confirmBtn, () => {
@@ -10151,8 +10151,8 @@ ${problemText}
 					content.textContent = contentText || '渲染失败，请重试';
 				}
 				actions.innerHTML = `
-			        <button id="aml-regenerate-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button" data-v-9f2998ba data-v-505b6a97>重新生成</button>
-			        <button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button" data-v-9f2998ba data-v-505b6a97>确定</button>
+			        <button id="aml-regenerate-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button">重新生成</button>
+			        <button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button">确定</button>
 			    `;
 				const regenBtn = document.getElementById('aml-regenerate-btn');
 				setupLongPress(regenBtn, () => {
@@ -10210,7 +10210,7 @@ ${problemText}
 					} else {
 						contentDiv.innerHTML = '<div style="color:#e74c3c;">未获取到有效内容，请检查 API 配置或重试</div>';
 						const actions = document.getElementById('aml-ai-actions');
-						actions.innerHTML = `<button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button" data-v-9f2998ba data-v-505b6a97>确定</button>`;
+						actions.innerHTML = `<button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button">确定</button>`;
 						document.getElementById('aml-result-confirm-btn').addEventListener('click', hideModal);
 					}
 				};
@@ -10310,7 +10310,7 @@ ${problemText}
 						isAnalyzing = false;
 						contentDiv.innerHTML = '请求超时，请稍后重试';
 						const actions = document.getElementById('aml-ai-actions');
-						actions.innerHTML = `<button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button" data-v-505b6a97>确定</button>`;
+						actions.innerHTML = `<button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button">确定</button>`;
 						document.getElementById('aml-result-confirm-btn').addEventListener('click', hideModal);
 						return;
 					}
@@ -10375,7 +10375,7 @@ ${problemText}
 					isAnalyzing = false;
 					contentDiv.innerHTML = '请求出错，请检查网络或 API 配置';
 					const actions = document.getElementById('aml-ai-actions');
-					actions.innerHTML = `<button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button" data-v-505b6a97>确定</button>`;
+					actions.innerHTML = `<button id="aml-result-confirm-btn" class="lform-size-middle button-transparent aml-confirm-btn-wrap" type="button">确定</button>`;
 					document.getElementById('aml-result-confirm-btn').addEventListener('click', hideModal);
 				});
 			}
