@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.4.9
+// @version      1.5.0
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -347,7 +347,6 @@ if (
 	})();
 	return;
 }
-
 function unregister(uid) {
 	GM_setValue("amlgEmail_" + uid, "");
 	GM_setValue("amlgPassword_" + uid, "");
@@ -8326,8 +8325,14 @@ async function all() {
 				try {
 					(async function () {
 						const ALPHABET = "abcdefghijklmnopqrstuvwxyz123456789";
+						const OCR_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 						async function loadCaptcha() {
 							let code = GM_getValue("OCRCaptchaCode");
+							const codeTime = GM_getValue("OCRCaptchaCodeTime", 0);
+							if (code && Date.now() - codeTime > OCR_CACHE_TTL) {
+								code = "";
+								GM_setValue("OCRCaptchaCode", "");
+							}
 							if (!code) {
 								let res = await new Promise((resolve, reject) => {
 									GM_xmlhttpRequest({
@@ -8344,7 +8349,10 @@ async function all() {
 									return false;
 								}
 								code = res.responseText;
-								try { GM_setValue("OCRCaptchaCode", code); } catch (e) { console.warn("缓存写入失败(可能超存储上限)", e); }
+								try {
+									GM_setValue("OCRCaptchaCode", code);
+									GM_setValue("OCRCaptchaCodeTime", Date.now());
+								} catch (e) { console.warn("缓存写入失败(可能超存储上限)", e); }
 							}
 							try {
 								const get = new Function(code + "; return { MODEL_TOPOLOGY, WEIGHT_SPECS, WEIGHTS_BASE64 };");
