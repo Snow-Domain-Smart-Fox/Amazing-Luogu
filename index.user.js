@@ -10092,11 +10092,15 @@ ${problemText}
 			let isAnalyzing = false;
 			function showModal() {
 				const modal = document.getElementById('aml-ai-modal');
-				if (modal) modal.classList.remove('hide');
+				if (!modal) return;
+				modal.classList.remove('hide');
+				modal.style.display = '';
 			}
 			function hideModal() {
 				const modal = document.getElementById('aml-ai-modal');
-				if (modal) modal.classList.add('hide');
+				if (!modal) return;
+				modal.classList.add('hide');
+				modal.style.display = 'none';
 			}
 			function renderConfirmUI() {
 				const content = document.getElementById('aml-ai-content');
@@ -10381,6 +10385,7 @@ ${problemText}
 				const modal = document.getElementById('aml-ai-modal');
 				if (!modal) return;
 				modal.classList.remove('hide');
+				modal.style.display = '';
 				const cached = getAICacheForCurrentPath();
 				if (cached && cached.content) {
 					renderResultUI(cached.content);
@@ -10414,7 +10419,7 @@ ${problemText}
 				aiBtn.className = "lform-size-middle button-transparent aml-ai-analyze-btn";
 				aiBtn.type = "button";
 				aiBtn.innerHTML = "AI 分析";
-				aiBtn.setAttribute('data-v-505b6a97', '');
+				aiBtn.setAttribute('data-v-d1779b04', '');
 				addManagedEventListener(aiBtn, "click", handleAIAnalyzeClick);
 				btnActions.appendChild(aiBtn);
 				if (!window._amlObserver) {
@@ -10489,7 +10494,7 @@ ${problemText}
 						modal.id = 'aml-ai-modal';
 						modal.className = 'aml-modal modal hide';
 						modal.setAttribute('data-v-cd5b5a1b', '');
-						modal.style = 'overflow: hidden;';
+						modal.style = 'overflow: hidden; display: none;';
 						modal.innerHTML = `
 			                <div data-v-cd5b5a1b class="background"></div>
 			                <div data-v-176b97b3="" data-v-0910ec7f="" class="l-card container type-burger" style="--l-modal--min-width: 560px;font-family:'LXGW Wenkai Screen'">
