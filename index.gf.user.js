@@ -10094,13 +10094,11 @@ ${problemText}
 				const modal = document.getElementById('aml-ai-modal');
 				if (!modal) return;
 				modal.classList.remove('hide');
-				modal.style.display = '';
 			}
 			function hideModal() {
 				const modal = document.getElementById('aml-ai-modal');
 				if (!modal) return;
 				modal.classList.add('hide');
-				modal.style.display = 'none';
 			}
 			function renderConfirmUI() {
 				const content = document.getElementById('aml-ai-content');
@@ -10385,7 +10383,6 @@ ${problemText}
 				const modal = document.getElementById('aml-ai-modal');
 				if (!modal) return;
 				modal.classList.remove('hide');
-				modal.style.display = '';
 				const cached = getAICacheForCurrentPath();
 				if (cached && cached.content) {
 					renderResultUI(cached.content);
@@ -10488,13 +10485,51 @@ ${problemText}
 			            `;
 						document.head.appendChild(style);
 					}
+					if (!document.getElementById('aml-ai-modal-style')) {
+						const style = document.createElement('style');
+						style.id = 'aml-ai-modal-style';
+						style.textContent = `
+			                #aml-ai-modal { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; z-index: 1050; display: flex; align-items: center; justify-content: center; overflow: hidden; opacity: 1; visibility: visible; transition: opacity 0.25s ease, visibility 0.25s ease; }
+			                #aml-ai-modal.hide { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
+			                #aml-ai-modal > .background { position: absolute !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; margin: 0 !important; padding: 0 !important; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+			                #aml-ai-modal > .l-card { position: absolute !important; top: 50% !important; left: 50% !important; right: auto !important; bottom: auto !important; z-index: 1; box-sizing: border-box; width: 90vw; max-width: 90vw; min-width: 0; max-height: 90vh; margin: 0 !important; overflow-y: auto; padding: 20px 24px; border-radius: 8px; background: var(--lcolor--card-background, #fff); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25); transform: translate(-50%, -50%) !important; text-align: left; transition: transform 0.25s ease !important; }
+			                #aml-ai-modal.hide > .l-card { transform: translate(-50%, -50%) scale(0.96) !important; }
+			                #aml-ai-modal .lfe-h3 { margin: 0 0 12px; font-size: 18px; font-weight: 600; }
+			                #aml-ai-modal .close { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; color: #94a3b8; transition: color 0.2s; }
+			                #aml-ai-modal .close:hover { color: #ef4444; }
+			                #aml-ai-modal .l-form-layout.row { display: flex; flex-direction: column; }
+			                #aml-ai-modal button { position: relative; box-sizing: border-box; min-height: 32px; padding: 6px 18px; border: 1px solid var(--lcolor--primary, #0e90d2); border-radius: 4px; background: transparent; color: var(--lcolor--primary, #0e90d2) !important; font-size: 14px; line-height: 1.4; cursor: pointer; user-select: none; overflow: hidden; transition: background-color 0.2s; }
+			                #aml-ai-modal button:hover { background: rgba(0, 0, 0, 0.05); color: var(--lcolor--primary, #0e90d2) !important; }
+			                #aml-ai-modal button:active { color: var(--lcolor--primary, #0e90d2) !important; }
+			                #aml-ai-content > :first-child { margin-top: 0; }
+			                #aml-ai-content h1, #aml-ai-content h2, #aml-ai-content h3, #aml-ai-content h4, #aml-ai-content h5, #aml-ai-content h6 { margin: 16px 0 8px; line-height: 1.4; font-weight: 600; }
+			                #aml-ai-content h1 { font-size: 20px; }
+			                #aml-ai-content h2 { font-size: 18px; }
+			                #aml-ai-content h3 { font-size: 16px; }
+			                #aml-ai-content p { margin: 8px 0; }
+			                #aml-ai-content ul, #aml-ai-content ol { margin: 8px 0; padding-left: 24px; }
+			                #aml-ai-content li { margin: 4px 0; }
+			                #aml-ai-content blockquote { margin: 10px 0; padding: 6px 12px; border-left: 3px solid var(--lcolor--primary, #0e90d2); background: rgba(0, 0, 0, 0.03); color: #64748b; }
+			                #aml-ai-content code { padding: 2px 5px; border-radius: 3px; background: rgba(0, 0, 0, 0.06); font-family: Consolas, Monaco, monospace; font-size: 0.92em; }
+			                #aml-ai-content pre { margin: 10px 0; padding: 10px 12px; overflow-x: auto; border-radius: 6px; background: rgba(0, 0, 0, 0.06); }
+			                #aml-ai-content pre code { padding: 0; background: transparent; }
+			                #aml-ai-content table { width: 100%; margin: 10px 0; border-collapse: collapse; font-size: 13px; }
+			                #aml-ai-content th, #aml-ai-content td { padding: 6px 10px; border: 1px solid rgba(0, 0, 0, 0.12); text-align: left; }
+			                #aml-ai-content th { background: rgba(0, 0, 0, 0.04); font-weight: 600; }
+			                #aml-ai-content img { max-width: 100%; height: auto; }
+			                #aml-ai-content a { color: var(--lcolor--primary, #0e90d2); text-decoration: none; }
+			                #aml-ai-content a:hover { text-decoration: underline; }
+			                #aml-ai-content hr { margin: 14px 0; border: 0; border-top: 1px solid rgba(0, 0, 0, 0.12); }
+			            `;
+						document.head.appendChild(style);
+					}
 					let modal = document.getElementById('aml-ai-modal');
 					if (!modal) {
 						modal = document.createElement('div');
 						modal.id = 'aml-ai-modal';
 						modal.className = 'aml-modal modal hide';
 						modal.setAttribute('data-v-cd5b5a1b', '');
-						modal.style = 'overflow: hidden; display: none;';
+						modal.style = 'overflow: hidden;';
 						modal.innerHTML = `
 			                <div data-v-cd5b5a1b class="background"></div>
 			                <div data-v-176b97b3="" data-v-0910ec7f="" class="l-card container type-burger" style="--l-modal--min-width: 560px;font-family:'LXGW Wenkai Screen'">
