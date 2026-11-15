@@ -2649,7 +2649,7 @@ async function all() {
 				{
 					key: "achievementBannerEnabled",
 					label: "成就横幅",
-					desc: "评测记录 AC 后按题目难度弹出 florr 稀有度横幅",
+					desc: "评测记录 AC 后按题目难度弹出横幅",
 					tag: "功能",
 					status: "stable",
 				},
