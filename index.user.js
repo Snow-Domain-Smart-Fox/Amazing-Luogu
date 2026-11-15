@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.0
+// @version      1.5.1
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -2307,6 +2307,7 @@ async function all() {
 				aiProblemAnalysisApiUrl: GM_getValue("amlAIProblemAnalysisApiUrl", ""),
 				aiProblemAnalysisApiKey: GM_getValue("amlAIProblemAnalysisApiKey", ""),
 				aiProblemAnalysisModel: GM_getValue("amlAIProblemAnalysisModel", "gpt-3.5-turbo"),
+				autoJudgeEnabled: GM_getValue("amlAutoJudgeEnabled", true),
 			};
 			const settingKeyMap = {
 				vscodeLuoguEnabled: "amlVscodeLuoguEnabled",
@@ -2413,6 +2414,7 @@ async function all() {
 				aiProblemAnalysisApiUrl: "amlAIProblemAnalysisApiUrl",
 				aiProblemAnalysisApiKey: "amlAIProblemAnalysisApiKey",
 				aiProblemAnalysisModel: "amlAIProblemAnalysisModel",
+				autoJudgeEnabled: "amlAutoJudgeEnabled",
 			};
 			const features = [
 				{
@@ -2594,6 +2596,13 @@ async function all() {
 					key: "chatNotificationEnabled",
 					label: "私信通知",
 					desc: "收到新私信时弹出桌面通知并在洛谷提示",
+					tag: "功能",
+					status: "stable",
+				},
+				{
+					key: "autoJudgeEnabled",
+					label: "自动测评样例",
+					desc: "在 IDE 模式下自动运行所有样例，全部 AC 后自动提交",
 					tag: "功能",
 					status: "stable",
 				},
@@ -10460,6 +10469,103 @@ ${problemText}
 				submitLink.parentNode.insertBefore(aiBtn, submitLink.nextSibling);
 				addManagedEventListener(aiBtn, "click", handleAIAnalyzeClick);
 			};
+			const shouldShowAutoJudgeButton = () => {
+				return currentAMLSettings.autoJudgeEnabled && location.hash.includes('#ide');
+			};
+			const waitForSampleResult = () => {
+				return new Promise((resolve) => {
+					const getStatusSpan = () => {
+						const actions = document.querySelector('.panel-b>.ide-toolbar>.actions');
+						if (!actions) return null;
+						return Array.from(actions.querySelectorAll('span')).find(s => !s.classList.contains('run-result')) || null;
+					};
+					let disappeared = false;
+					let attempts = 0;
+					const maxAttempts = 600;
+					const check = () => {
+						attempts++;
+						if (attempts > maxAttempts) {
+							resolve(false);
+							return;
+						}
+						const statusSpan = getStatusSpan();
+						if (!disappeared) {
+							if (!statusSpan) disappeared = true;
+							setTimeout(check, 100);
+							return;
+						}
+						if (!statusSpan) {
+							setTimeout(check, 100);
+							return;
+						}
+						resolve(statusSpan.textContent.trim() === 'AC');
+					};
+					setTimeout(check, 100);
+				});
+			};
+			const handleAutoJudgeClick = async () => {
+				if (!location.hash.includes('#ide')) return;
+				const samples = document.querySelectorAll('.io-sample');
+				if (samples.length === 0) {
+					await Swal.fire('提示', '未找到样例', 'info');
+					return;
+				}
+				const autoJudgeBtn = document.querySelector('.aml-auto-judge-btn');
+				if (autoJudgeBtn) {
+					autoJudgeBtn.style.pointerEvents = 'none';
+					autoJudgeBtn.style.opacity = '0.5';
+				}
+				let allAC = true;
+				for (let i = 0; i < samples.length; i++) {
+					const sample = samples[i];
+					const runBtn = Array.from(sample.querySelectorAll('button')).find(btn => btn.textContent.includes('运行'));
+					if (!runBtn) continue;
+					runBtn.click();
+					const isAC = await waitForSampleResult();
+					if (!isAC) {
+						allAC = false;
+						await Swal.fire('测评结果', `样例 ${i + 1} 未通过`, 'warning');
+						break;
+					}
+				}
+				if (allAC) {
+					const submitBtn = document.querySelector('.ide-toolbar .actions a.title');
+					if (submitBtn) submitBtn.click();
+				}
+				if (autoJudgeBtn) {
+					autoJudgeBtn.style.pointerEvents = '';
+					autoJudgeBtn.style.opacity = '';
+				}
+			};
+			const addAutoJudgeButtonToIdeToolbar = () => {
+				const actions = document.querySelector(".ide-toolbar .actions");
+				if (!actions) {
+					setTimeout(addAutoJudgeButtonToIdeToolbar, 500);
+					return;
+				}
+				if (actions.querySelector(".aml-auto-judge-btn") || !shouldShowAutoJudgeButton()) return;
+				const submitLink = actions.querySelector("a.title");
+				if (!submitLink) return;
+				const aiBtn = actions.querySelector(".aml-ai-analyze-btn");
+				const insertAfter = aiBtn || submitLink;
+				const autoJudgeBtn = submitLink.cloneNode(true);
+				const textSpan = autoJudgeBtn.querySelector('.text');
+				if (textSpan) textSpan.textContent = '自动测评';
+				const iconContainer = autoJudgeBtn.querySelector('.icon');
+				if (iconContainer) {
+					iconContainer.innerHTML = `<svg class="svg-inline--fa fa-vial" viewBox="0 0 512 512"><path fill="currentColor" d="M342.6 9.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l9.4 9.4L28.1 342.6C10.1 360.6 0 385 0 410.3V464c0 26.5 21.5 48 48 48H101.7c25.3 0 49.7-10.1 67.7-28.1L447.9 205.3l9.4 9.4c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L342.6 9.4zM205.3 461.3c-5.5 5.5-12.8 8.5-20.5 8.5H48V410.3c0-7.7 3-15 8.5-20.5L320 126.1 385.9 192 205.3 461.3z"/></svg>`;
+				}
+				autoJudgeBtn.classList.add('aml-auto-judge-btn');
+				insertAfter.parentNode.insertBefore(autoJudgeBtn, insertAfter.nextSibling);
+				addManagedEventListener(autoJudgeBtn, "click", handleAutoJudgeClick);
+			};
+			addManagedEventListener(window, 'hashchange', () => {
+				if (shouldShowAutoJudgeButton()) {
+					addAutoJudgeButtonToIdeToolbar();
+				} else {
+					document.querySelectorAll('.aml-auto-judge-btn').forEach(el => el.remove());
+				}
+			});
 			if (shouldShowAIAnalysisButton()) {
 				try {
 					if (!document.getElementById('aml-ai-anim-style')) {
@@ -10575,6 +10681,7 @@ ${problemText}
 					const addAllButtons = () => {
 						addAIAnalysisButtonToActions();
 						addAIAnalysisButtonToIdeToolbar();
+						addAutoJudgeButtonToIdeToolbar();
 					};
 					if (document.readyState === "loading") {
 						addManagedEventListener(document, "DOMContentLoaded", addAllButtons);
