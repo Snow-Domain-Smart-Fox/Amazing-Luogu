@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.4
+// @version      1.5.5
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -12006,15 +12006,24 @@ ${problemText}
 						}
 						return selectedText.trim();
 					}
+					function isEditableTarget(target) {
+						let el = target;
+						if (!el) return false;
+						if (el.nodeType === 3) el = el.parentElement;
+						if (!el || !el.closest) return false;
+						return !!el.closest(
+							'input, textarea, select, [contenteditable]:not([contenteditable="false"]), .editor, .CodeMirror, .cm-editor, .monaco-editor, .ace_editor',
+						);
+					}
 					function handleJumpRequest() {
 						const selectedText = getSelectedText();
 						if (selectedText === "" || selectedText === null) return;
 						jumpToProblem(selectedText);
 					}
 					addManagedEventListener(document, "dblclick", function (event) {
-						if (window.location.hostname === "www.luogu.com.cn") {
-							handleJumpRequest();
-						}
+						if (window.location.hostname !== "www.luogu.com.cn") return;
+						if (isEditableTarget(event.target)) return;
+						handleJumpRequest();
 					});
 					addKeydownListener(function (event) {
 						if (window.location.hostname !== "www.luogu.com.cn") return;
