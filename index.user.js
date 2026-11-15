@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.8
+// @version      1.5.9
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -47,6 +47,7 @@
 // @connect      luogu.ac.cn
 // @connect      uapis.cn
 // @connect      amlg.top
+// @connect      cdn.amlg.top
 // @connect      ktwhwvafywwekfkvskbk.supabase.co
 // @connect      codeforces.com
 // @connect      127.0.0.1
@@ -2173,6 +2174,10 @@ async function all() {
 					"amlFollowerCheckerEnabled",
 					false,
 				),
+				recordTestcaseBgEnabled: GM_getValue(
+					"amlRecordTestcaseBgEnabled",
+					false,
+				),
 				autoCheckIn: GM_getValue("amlAutoCheckIn", true),
 				captchaOCREndpoint: GM_getValue(
 					"amlCaptchaOCREndpoint",
@@ -2367,6 +2372,7 @@ async function all() {
 				problemBackgroundFoldThreshold: "amlProblemBackgroundFoldThreshold",
 				achievementBannerEnabled: "amlAchievementBannerEnabled",
 				followerCheckerEnabled: "amlFollowerCheckerEnabled",
+				recordTestcaseBgEnabled: "amlRecordTestcaseBgEnabled",
 				autoCheckIn: "amlAutoCheckIn",
 				memoEnabled: "amlMemoEnabled",
 				memoContent: "amlMemoContent",
@@ -2666,6 +2672,13 @@ async function all() {
 					status: "stable",
 				},
 				{
+					key: "recordTestcaseBgEnabled",
+					label: "测试点背景",
+					desc: "用图片替换评测记录中测试点的背景，右侧评测状态保持不变（首次使用会从 CDN 下载图片）",
+					tag: "外观",
+					status: "stable",
+				},
+				{
 					key: "chatMarkdown",
 					label: "聊天 Markdown",
 					desc: "支持在聊天窗口渲染 Markdown 和 KaTeX 公式",
@@ -2677,7 +2690,7 @@ async function all() {
 					label: "专注模式",
 					desc: "隐藏干扰元素，营造沉浸式学习环境",
 					tag: "阅读",
-					status: "beta",
+					status: "stable",
 				},
 				{
 					key: "autoCheckIn",
@@ -5117,6 +5130,7 @@ async function all() {
 				});
 				renderContestCalendar(false);
 				initFollowerChecker();
+				initRecordTestcaseBg();
 				const customCSSInput = document.getElementById("aml-custom-css-input");
 				const cssPositionSelect = document.getElementById(
 					"aml-css-position-select",
@@ -5282,6 +5296,20 @@ async function all() {
 								} else {
 									fcSection.style.display = "none";
 									fcNotice.style.display = "block";
+								}
+							}
+							if (feature.key === "recordTestcaseBgEnabled") {
+								currentAMLSettings.recordTestcaseBgEnabled = newValue;
+								if (newValue) {
+									if (typeof window.__amlRecordTestcaseBgInit === "function") {
+										window.__amlRecordTestcaseBgInit();
+									} else {
+										initRecordTestcaseBg();
+									}
+								} else if (
+									typeof window.__amlRecordTestcaseBgCleanup === "function"
+								) {
+									window.__amlRecordTestcaseBgCleanup();
 								}
 							}
 							if (feature.key === "slogenTimeEnabled") {
@@ -14133,6 +14161,236 @@ ${problemText}
 						fetchBtn.disabled = false;
 					}
 				});
+			}
+			function initRecordTestcaseBg() {
+				if (typeof window.__amlRecordTestcaseBgCleanup === "function") {
+					window.__amlRecordTestcaseBgCleanup();
+				}
+				window.__amlRecordTestcaseBgInit = initRecordTestcaseBg;
+				if (!currentAMLSettings.recordTestcaseBgEnabled) return;
+
+				const CACHE_KEY = "amlRecordTestcaseBgCache";
+				const CACHE_TTL = 30 * 24 * 60 * 60 * 1000;
+				const IMAGE_BASE = "https://cdn.amlg.top/amlg/status/";
+				const IMAGE_FILES = {
+					AC: "AC.jpg",
+					WA: "WA.jpg",
+					TLE: "TLE.jpg",
+					MLE: "MLE.jpg",
+					RE: "RE.jpg",
+					OLE: "OLE.jpg",
+					PE: "PE.jpg",
+					SE: "SE.jpg",
+					CE: "CE.jpg",
+				};
+				const STATUS_ALIAS = {
+					AC: "AC",
+					WA: "WA",
+					TLE: "TLE",
+					TL: "TLE",
+					MLE: "MLE",
+					ML: "MLE",
+					RE: "RE",
+					OLE: "OLE",
+					OL: "OLE",
+					PE: "PE",
+					SE: "SE",
+					CE: "CE",
+				};
+
+				let images = null;
+				let loading = false;
+				let disposed = false;
+				let applyTimer = null;
+
+				const isRecordPage = () => /^\/record\/\d+/.test(window.location.pathname);
+
+				const readCache = () => {
+					try {
+						const cache = GM_getValue(CACHE_KEY, null);
+						if (
+							cache &&
+							cache.images &&
+							typeof cache.time === "number" &&
+							Date.now() - cache.time < CACHE_TTL
+						) {
+							return cache.images;
+						}
+					} catch (e) {
+						console.debug(e);
+					}
+					return null;
+				};
+
+				const toBase64 = (buffer) => {
+					const bytes = new Uint8Array(buffer);
+					let binary = "";
+					const chunk = 0x8000;
+					for (let i = 0; i < bytes.length; i += chunk) {
+						binary += String.fromCharCode.apply(
+							null,
+							bytes.subarray(i, i + chunk),
+						);
+					}
+					return btoa(binary);
+				};
+
+				const loadOne = (key) =>
+					new Promise((resolve) => {
+						if (typeof GM_xmlhttpRequest !== "function") {
+							resolve(false);
+							return;
+						}
+						GM_xmlhttpRequest({
+							method: "GET",
+							url: IMAGE_BASE + IMAGE_FILES[key],
+							responseType: "arraybuffer",
+							timeout: 20000,
+							onload: (res) => {
+								try {
+									if (
+										res.status >= 200 &&
+										res.status < 300 &&
+										res.response &&
+										res.response.byteLength
+									) {
+										images[key] =
+											"data:image/jpeg;base64," +
+											toBase64(res.response);
+										resolve(true);
+										return;
+									}
+								} catch (e) {
+									console.debug(e);
+								}
+								resolve(false);
+							},
+							onerror: () => resolve(false),
+							ontimeout: () => resolve(false),
+						});
+					});
+
+				const loadImages = async () => {
+					if (images || loading) return;
+					const cached = readCache();
+					if (cached) {
+						images = cached;
+						return;
+					}
+					loading = true;
+					try {
+						images = {};
+						const keys = Object.keys(IMAGE_FILES);
+						const results = await Promise.all(keys.map(loadOne));
+						if (disposed) return;
+						if (results.every(Boolean)) {
+							GM_setValue(CACHE_KEY, { time: Date.now(), images });
+						} else if (!Object.keys(images).length) {
+							images = null;
+						}
+					} catch (e) {
+						console.debug(e);
+						if (!images || !Object.keys(images).length) images = null;
+					} finally {
+						loading = false;
+					}
+					applyAll();
+				};
+
+				const clearBg = (el) => {
+					["background-image", "background-size", "background-position", "background-repeat"].forEach(
+						(prop) => el.style.removeProperty(prop),
+					);
+					delete el.dataset.amlTcBg;
+				};
+
+				const hideContent = (tc) => {
+					const content = tc.querySelector(".content");
+					if (!content) return;
+					content.style.setProperty("display", "none", "important");
+					content.dataset.amlTcHidden = "1";
+				};
+
+				const restoreContent = () => {
+					document
+						.querySelectorAll('.test-case .content[data-aml-tc-hidden]')
+						.forEach((content) => {
+							content.style.removeProperty("display");
+							delete content.dataset.amlTcHidden;
+						});
+				};
+
+				const matchStatus = (el) => {
+					const raw = (el.textContent || "").replace(/[^A-Za-z]/g, "").toUpperCase();
+					if (!raw) return null;
+					return STATUS_ALIAS[raw] || STATUS_ALIAS[raw.slice(0, 3)] || STATUS_ALIAS[raw.slice(0, 2)] || null;
+				};
+
+				const applyAll = () => {
+					if (disposed || !currentAMLSettings.recordTestcaseBgEnabled) return;
+					if (!images || !isRecordPage()) return;
+					document.querySelectorAll(".test-case").forEach((tc) => {
+						if (tc.closest(".info-rows")) return;
+						const statusEl = tc.querySelector(".status");
+						if (!statusEl) return;
+						const key = matchStatus(statusEl);
+						if (!key || !images[key]) {
+							if (tc.dataset.amlTcBg) clearBg(tc);
+							return;
+						}
+						if (tc.dataset.amlTcBg === key) {
+							hideContent(tc);
+							return;
+						}
+						tc.style.setProperty("background-image", `url("${images[key]}")`, "important");
+						tc.style.setProperty("background-size", "cover", "important");
+						tc.style.setProperty("background-position", "center", "important");
+						tc.style.setProperty("background-repeat", "no-repeat", "important");
+						tc.dataset.amlTcBg = key;
+						hideContent(tc);
+					});
+				};
+
+				const scheduleApply = () => {
+					if (disposed) return;
+					clearTimeout(applyTimer);
+					applyTimer = setTimeout(() => {
+						applyTimer = null;
+						try {
+							applyAll();
+							if (!images && isRecordPage()) loadImages();
+						} catch (e) {
+							console.debug(e);
+						}
+					}, 150);
+				};
+
+				const observer = new MutationObserver((mutations) => {
+					for (const m of mutations) {
+						if (m.type === "childList" && m.addedNodes.length) {
+							scheduleApply();
+							return;
+						}
+					}
+				});
+				observer.observe(document.body, { childList: true, subtree: true });
+
+				window.__amlRecordTestcaseBgCleanup = () => {
+					disposed = true;
+					observer.disconnect();
+					clearTimeout(applyTimer);
+					applyTimer = null;
+					document.querySelectorAll(".test-case[data-aml-tc-bg]").forEach(clearBg);
+					restoreContent();
+					window.__amlRecordTestcaseBgCleanup = null;
+				};
+
+				images = readCache();
+				if (images) {
+					scheduleApply();
+				} else if (isRecordPage()) {
+					loadImages();
+				}
 			}
 			async function checkScriptVersion(op) {
 				const sources = [
