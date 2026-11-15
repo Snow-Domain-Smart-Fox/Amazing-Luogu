@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.6
+// @version      1.5.7
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -65,6 +65,7 @@
 // @require      https://cdn.amlg.top/npm/jquery@3.7.1/dist/jquery.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/izitoast@1.4.0/dist/js/iziToast.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/clipboard@2.0.11/dist/clipboard.min.js?version=1.0.1
+// @require      https://cdn.amlg.top/npm/canvas-confetti@1.6.0/dist/confetti.browser.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/vue@2.6.11/dist/vue.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/mark.js@8.11.1/dist/mark.min.js?version=1.0.1
 // @require      https://cdn.amlg.top/npm/fuse.js@7.2.0/dist/fuse.js?version=1.0.1
@@ -2164,6 +2165,10 @@ async function all() {
 					"amlProblemBackgroundFoldThreshold",
 					200,
 				),
+				achievementBannerEnabled: GM_getValue(
+					"amlAchievementBannerEnabled",
+					false,
+				),
 				autoCheckIn: GM_getValue("amlAutoCheckIn", true),
 				captchaOCREndpoint: GM_getValue(
 					"amlCaptchaOCREndpoint",
@@ -2356,6 +2361,7 @@ async function all() {
 				codeFolding: "amlCodeFolding",
 				problemBackgroundFoldEnabled: "amlProblemBackgroundFoldEnabled",
 				problemBackgroundFoldThreshold: "amlProblemBackgroundFoldThreshold",
+				achievementBannerEnabled: "amlAchievementBannerEnabled",
 				autoCheckIn: "amlAutoCheckIn",
 				memoEnabled: "amlMemoEnabled",
 				memoContent: "amlMemoContent",
@@ -2638,6 +2644,13 @@ async function all() {
 					label: "折叠题目背景",
 					desc: "题目背景字数超过设定值时自动折叠，并提供展开/折叠按钮",
 					tag: "阅读",
+					status: "stable",
+				},
+				{
+					key: "achievementBannerEnabled",
+					label: "成就横幅",
+					desc: "评测记录 AC 后按题目难度弹出 florr 稀有度横幅",
+					tag: "功能",
 					status: "stable",
 				},
 				{
@@ -5196,6 +5209,18 @@ async function all() {
 									if (typeof window.__amlBgFoldUnfold === "function") {
 										window.__amlBgFoldUnfold();
 									}
+								}
+							}
+							if (feature.key === "achievementBannerEnabled") {
+								currentAMLSettings.achievementBannerEnabled = newValue;
+								if (newValue) {
+									if (typeof window.__amlAchievementInit === "function") {
+										window.__amlAchievementInit();
+									}
+								} else if (
+									typeof window.__amlAchievementCleanup === "function"
+								) {
+									window.__amlAchievementCleanup();
 								}
 							}
 							if (feature.key === "slogenTimeEnabled") {
@@ -10099,6 +10124,246 @@ async function all() {
 					window.__amlBgFoldRescan = rescanProblemBackground;
 					window.__amlBgFoldUnfold = unfoldProblemBackground;
 					setupProblemBackgroundFold();
+				} catch (e) {
+					console.debug(e);
+				}
+			}
+			const ACHIEVEMENT_RANKS = {
+				1: { name: "入门", color: "#FE4C61", rarity: "1" },
+				2: { name: "普及-", color: "#F39C11", rarity: "2" },
+				3: { name: "普及", color: "#FFC116", rarity: "3" },
+				4: { name: "普及+/提高−", color: "#52C41A", rarity: "4" },
+				5: { name: "提高", color: "#22c5c5", rarity: "5" },
+				6: { name: "提高+/省选−", color: "#3498DB", rarity: "6" },
+				7: { name: "省选/NOI−", color: "#9D3DCF", rarity: "7" },
+				8: { name: "NOI/NOI+/CTS", color: "#0E1D69", rarity: "8" },
+			};
+			function injectAchievementStyle() {
+				if (document.getElementById("florr-achievement-style")) return;
+				const style = document.createElement("style");
+				style.id = "florr-achievement-style";
+				style.innerHTML = `
+					.florr-ach-enter { animation: florrAchSlideIn 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards; }
+					.florr-ach-leaving {
+						animation: florrAchSlideOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards !important;
+						pointer-events: none;
+					}
+					@keyframes florrAchSlideIn { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+					@keyframes florrAchSlideOut {
+						0% { transform: translateY(0); opacity: 1; }
+						30% { transform: translateY(10px); opacity: 1; }
+						100% { transform: translateY(-120%); opacity: 0; }
+					}
+					.florr-ach-glow { animation: florrAchSlideIn 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards, florrAchPulse 2s infinite ease-in-out; }
+					@keyframes florrAchPulse {
+						0% { box-shadow: 0 15px 50px rgba(0,0,0,0.15); }
+						50% { box-shadow: 0 15px 60px rgba(52, 152, 219, 0.3); border-bottom-color: #fff; }
+						100% { box-shadow: 0 15px 50px rgba(0,0,0,0.15); }
+					}
+				`;
+				document.head.appendChild(style);
+			}
+			function closeAchievementBanner(banner) {
+				if (!banner || banner.classList.contains("florr-ach-leaving")) return;
+				banner.classList.remove("florr-ach-enter", "florr-ach-glow");
+				void banner.offsetWidth;
+				banner.classList.add("florr-ach-leaving");
+				setTimeout(() => {
+					if (banner.parentNode) banner.remove();
+				}, 400);
+			}
+			function launchAchievementFireworks(color) {
+				if (typeof confetti !== "function") return;
+				const end = Date.now() + 3000;
+				(function frame() {
+					confetti({
+						particleCount: 3,
+						angle: 60,
+						spread: 55,
+						origin: { x: 0, y: 0.8 },
+						colors: [color, "#ffffff"],
+					});
+					confetti({
+						particleCount: 3,
+						angle: 120,
+						spread: 55,
+						origin: { x: 1, y: 0.8 },
+						colors: [color, "#ffffff"],
+					});
+					if (Date.now() < end) requestAnimationFrame(frame);
+				})();
+			}
+			function showAchievementBanner(target, pid) {
+				const oldBanner = document.getElementById("florr-achievement-banner");
+				if (oldBanner) oldBanner.remove();
+
+				const banner = document.createElement("div");
+				banner.id = "florr-achievement-banner";
+				banner.setAttribute(
+					"style",
+					`
+					position: fixed; top: 0; left: 0; width: 100%; height: 140px;
+					z-index: 1000000; display: flex; align-items: center; justify-content: center;
+					background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.98) 20%, rgba(255,255,255,0.98) 80%, transparent 100%);
+					border-bottom: 8px solid ${target.color};
+					box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+					cursor: pointer;
+					user-select: none;
+				`,
+				);
+				const isHighRank = ["5", "6", "7", "8"].includes(target.rarity);
+				banner.className = `florr-ach-enter ${isHighRank ? "florr-ach-glow" : ""}`;
+				banner.innerHTML = `
+					<div style="display: flex; align-items: center; gap: 50px; width: 95%; max-width: 1300px; justify-content: center;">
+						<div style="
+							flex-shrink: 0; width: 240px; height: 100px; border-radius: 20px; border: 6px solid ${target.color};
+							background: #fff; display: flex; align-items: center; justify-content: center;
+							font-size: 26px; font-weight: 900; color: ${target.color}; text-align: center;
+							line-height: 1.1; padding: 0 15px; box-sizing: border-box;
+							box-shadow: inset 0 0 20px ${target.color}22;
+							letter-spacing: 0.5px;
+						">
+							${target.name}
+						</div>
+						<div style="text-align: left; font-family: 'Arial Black', sans-serif; min-width: 450px;">
+							<div style="font-size: 16px; font-weight: 900; color: #777; letter-spacing: 4px; margin-bottom: 4px;">MISSION COMPLETE</div>
+							<div style="font-size: 45px; font-weight: 900; color: ${target.color}; line-height: 1.1;">
+								Destroy Target <span style="font-family: 'Courier New', Courier, monospace; letter-spacing: -1px;">${pid}</span>
+							</div>
+							<div style="font-size: 18px; font-weight: 400; color: #aaa; margin-top: 4px; font-family: sans-serif; letter-spacing: 2px;">
+								RANK: ${target.rarity.toUpperCase()}
+							</div>
+						</div>
+					</div>`;
+				document.body.appendChild(banner);
+				banner.onclick = () => closeAchievementBanner(banner);
+				setTimeout(() => closeAchievementBanner(banner), 7000);
+			}
+			function initAchievementBanner() {
+				console.log("[成就横幅] 初始化/重启轮询", {
+					path: location.pathname,
+					enabled: currentAMLSettings.achievementBannerEnabled,
+				});
+				if (typeof window.__amlAchievementCleanup === "function") {
+					console.log("[成就横幅] 清理上一轮轮询");
+					window.__amlAchievementCleanup();
+				}
+				injectAchievementStyle();
+				const loggedKeys = new Set();
+				const logOnce = (key, ...args) => {
+					if (loggedKeys.has(key)) return;
+					loggedKeys.add(key);
+					console.log(...args);
+				};
+				const timer = setInterval(() => {
+					try {
+						let record = null;
+						let currentUid = null;
+						const ctx = document.getElementById("lentille-context");
+						if (ctx) {
+							try {
+								const json = JSON.parse(ctx.innerHTML);
+								record = json?.data?.record || null;
+								currentUid = json?.user?.uid ?? json?.user?.id ?? null;
+							} catch (e) {
+								logOnce("ctxparse", "[成就横幅] lentille-context 解析失败", e);
+							}
+						}
+						if (!record) {
+							const feData =
+								window._feInjection ||
+								window._feConfig ||
+								(typeof unsafeWindow !== "undefined"
+									? unsafeWindow._feInjection || unsafeWindow._feConfig
+									: null);
+							record = feData?.currentData?.record || null;
+							currentUid =
+								feData?.currentUser?.uid || feData?.currentUser?.id || null;
+						}
+						if (!record) {
+							logOnce(
+								"norecord",
+								"[成就横幅] 未取到 record（lentille-context 与 _feInjection 均无）",
+							);
+							return;
+						}
+						logOnce(
+							`record:${record.id}:${record.status}`,
+							"[成就横幅] 读取到 record",
+							{
+								id: record.id,
+								status: record.status,
+								pid: record.problem?.pid,
+								difficulty: record.problem?.difficulty,
+								recordUid: record.user?.uid || record.user?.id,
+								loginUid: currentUid,
+								lastId: window.__amlAchievementLastId,
+							},
+						);
+						if (record.status !== 12 && record.status !== "Accepted") {
+							logOnce(
+								`status:${record.status}`,
+								"[成就横幅] 跳过：非 AC，status =",
+								record.status,
+							);
+							return;
+						}
+						if (record.id === window.__amlAchievementLastId) {
+							logOnce(
+								`dup:${record.id}`,
+								"[成就横幅] 跳过：该记录已展示过",
+								record.id,
+							);
+							return;
+						}
+						const targetUid = record.user?.uid || record.user?.id;
+						if (
+							!currentUid ||
+							!targetUid ||
+							String(currentUid) !== String(targetUid)
+						) {
+							logOnce(
+								`uid:${targetUid}`,
+								"[成就横幅] 跳过：非当前用户记录",
+								{
+									currentUid,
+									targetUid,
+								},
+							);
+							return;
+						}
+						window.__amlAchievementLastId = record.id;
+						const target = ACHIEVEMENT_RANKS[record.problem?.difficulty];
+						if (!target) {
+							logOnce(
+								`diff:${record.problem?.difficulty}`,
+								"[成就横幅] 跳过：难度无映射",
+								record.problem?.difficulty,
+							);
+							return;
+						}
+						console.log("[成就横幅] 触发展示", record.problem.pid, target);
+						showAchievementBanner(target, record.problem.pid);
+						if (record.problem.difficulty >= 5) {
+							console.log("[成就横幅] 高难度，释放烟花");
+							launchAchievementFireworks(target.color);
+						}
+					} catch (e) {
+						console.error("[成就横幅] 轮询异常", e);
+					}
+				}, 1000);
+				window.__amlAchievementCleanup = () => {
+					clearInterval(timer);
+					const banner = document.getElementById("florr-achievement-banner");
+					if (banner) banner.remove();
+					window.__amlAchievementCleanup = null;
+				};
+				window.__amlAchievementInit = initAchievementBanner;
+			}
+			window.__amlAchievementInit = initAchievementBanner;
+			if (currentAMLSettings.achievementBannerEnabled) {
+				try {
+					initAchievementBanner();
 				} catch (e) {
 					console.debug(e);
 				}
