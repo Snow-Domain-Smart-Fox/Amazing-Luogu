@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.2
+// @version      1.5.3
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -2309,8 +2309,9 @@ async function all() {
 				aiProblemAnalysisApiKey: GM_getValue("amlAIProblemAnalysisApiKey", ""),
 				aiProblemAnalysisModel: GM_getValue("amlAIProblemAnalysisModel", "gpt-3.5-turbo"),
 				autoJudgeEnabled: GM_getValue("amlAutoJudgeEnabled", true),
-			contestCalendarEnabled: GM_getValue("amlContestCalendarEnabled", true),
-		};
+				contestCalendarEnabled: GM_getValue("amlContestCalendarEnabled", true),
+				darkMode: GM_getValue("amlDarkMode", "auto"),
+			};
 			const settingKeyMap = {
 				vscodeLuoguEnabled: "amlVscodeLuoguEnabled",
 				autoSaveDiscussEnabled: "amlAutoSaveDiscussEnabled",
@@ -2417,8 +2418,9 @@ async function all() {
 				aiProblemAnalysisApiKey: "amlAIProblemAnalysisApiKey",
 				aiProblemAnalysisModel: "amlAIProblemAnalysisModel",
 				autoJudgeEnabled: "amlAutoJudgeEnabled",
-			contestCalendarEnabled: "amlContestCalendarEnabled",
-		};
+				contestCalendarEnabled: "amlContestCalendarEnabled",
+				darkMode: "amlDarkMode",
+			};
 			const features = [
 				{
 					key: "slogenTimeEnabled",
@@ -2603,19 +2605,19 @@ async function all() {
 					status: "stable",
 				},
 				{
-				key: "autoJudgeEnabled",
-				label: "自动测评样例",
-				desc: "在 IDE 模式下自动运行所有样例，全部 AC 后自动提交",
-				tag: "功能",
-				status: "stable",
-			},
-			{
-				key: "contestCalendarEnabled",
-				label: "比赛日历",
-				desc: "在设置面板中查看 Codeforces、AtCoder、洛谷的近期与即将开始的比赛",
-				tag: "功能",
-				status: "stable",
-			},
+					key: "autoJudgeEnabled",
+					label: "自动测评样例",
+					desc: "在 IDE 模式下自动运行所有样例，全部 AC 后自动提交",
+					tag: "功能",
+					status: "stable",
+				},
+				{
+					key: "contestCalendarEnabled",
+					label: "比赛日历",
+					desc: "在设置面板中查看 Codeforces、AtCoder、洛谷的近期与即将开始的比赛",
+					tag: "功能",
+					status: "stable",
+				},
 				{
 					key: "emojiRenderingEnabled",
 					label: "表情渲染",
@@ -4733,6 +4735,18 @@ async function all() {
 			<div id="aml-aiproblemanalysis-disabled-notice" class="disabled-notice" style="display: ${currentSettings.aiProblemAnalysisEnabled ? "none" : "block"};">AI 题目分析功能已关闭，请在功能开关中开启。</div>
 	</div>
 		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fas fa-moon"></i> &nbsp;外观</h4>
+			<div class="aml-input-group">
+				<label for="aml-dark-mode-select">主题模式</label>
+				<select id="aml-dark-mode-select" class="aml-select">
+					<option value="auto" ${currentSettings.darkMode === "auto" ? "selected" : ""}>跟随系统</option>
+					<option value="light" ${currentSettings.darkMode === "light" ? "selected" : ""}>浅色</option>
+					<option value="dark" ${currentSettings.darkMode === "dark" ? "selected" : ""}>深色</option>
+				</select>
+			</div>
+			<div class="aml-tip">支持设置面板、AI 分析面板、代码块等 Amazing Luogu 自带组件的暗色显示。</div>
+		</div>
+		<div class="aml-settings-section aml-home-card">
 			<h4><i class="fas fa-calendar-alt"></i> &nbsp;比赛日历</h4>
 			<div>
 				<div id="aml-contest-calendar-container">
@@ -4991,8 +5005,15 @@ async function all() {
 							});
 						});
 				});
-			renderContestCalendar(false);
-			const customCSSInput = document.getElementById("aml-custom-css-input");
+				const darkModeSelect = document.getElementById("aml-dark-mode-select");
+				darkModeSelect && addManagedEventListener(darkModeSelect, "change", function (e) {
+					const value = e.target.value;
+					saveAMLSetting("darkMode", value);
+					currentAMLSettings.darkMode = value;
+					if (typeof unsafeWindow.__amlApplyTheme === "function") unsafeWindow.__amlApplyTheme();
+				});
+				renderContestCalendar(false);
+				const customCSSInput = document.getElementById("aml-custom-css-input");
 				const cssPositionSelect = document.getElementById(
 					"aml-css-position-select",
 				);
@@ -11061,7 +11082,6 @@ ${problemText}
 						const introduction = marked.parse(escapedIt, { highlight: false });
 						const jsCard = document.createElement("div");
 						jsCard.style += `display: block;
-    background-color: #fff;
     border-radius: 4px;
     box-shadow: 0 1px 3px #1a1a1a1a;
     box-sizing: border-box;
@@ -11077,7 +11097,7 @@ ${problemText}
 			</div>
 			<br>
 			<div class="lfe-marked-wrap introduction">
-			<div class="lfe-marked">${introduction}</div>
+			<div class="lfe-marked">${introduction || '这个家伙很懒，什么也没有留下'}</div>
 			</div>
 					`.trim();
 						const mainContent = document.querySelectorAll(".main")[2];
@@ -11581,7 +11601,6 @@ ${problemText}
 			}
 			.message-block > *:not(.delete) {
 				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-				background-color: #fff !important;
 				font-family: LXGW WenKai Screen !important;
 			}
 			.katex-display {
@@ -12999,7 +13018,7 @@ ${problemText}
         </div>
         <div class="aml-modal-body">
             <input type="text" id="qq-emoji-search-input" placeholder="输入 ID 或描述（如 &quot;微笑&quot;，&quot;bx&quot;）"
-            style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:10px;">
+            style="display:block;width:60%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;margin:0 auto 10px;">
             <div id="qq-emoji-search-results" style="max-height:400px;overflow-y:auto;"></div>
         </div>
     </div>
@@ -13168,7 +13187,7 @@ ${problemText}
 							renderData(cached.data, true);
 							return;
 						}
-					} catch (e) {}
+					} catch (e) { }
 				}
 
 				showLoading();
@@ -13760,6 +13779,337 @@ ${problemText}
 		})(jQuery);
 	}
 	main();
+	(function initAMLTheme() {
+		const media = window.matchMedia("(prefers-color-scheme: dark)");
+		GM_addStyle(`
+			.aml-select {
+				width: 100%;
+				padding: 8px 12px;
+				border: 2px solid #e2e8f0;
+				border-radius: 6px;
+				font-size: 0.9em;
+				color: #1e293b;
+				background: #fff;
+				box-sizing: border-box;
+			}
+			html.aml-dark { color-scheme: dark; }
+			html.aml-dark .welcomeLeft,
+			html.aml-dark .welcomeRight {
+				background: #1b1f27 !important;
+				border-color: #333b4a !important;
+			}
+			html.aml-dark .aml-header {
+				background: #232833 !important;
+				color: #e5e9f0 !important;
+				border-bottom-color: #333b4a !important;
+			}
+			html.aml-dark .aml-header-btn {
+				color: #e5e9f0 !important;
+				background: rgba(255,255,255,.08) !important;
+			}
+			html.aml-dark .aml-header-btn:hover { background: rgba(255,255,255,.16) !important; }
+			html.aml-dark .aml-tab-list {
+				background: #1b1f27 !important;
+				border-right-color: #333b4a !important;
+			}
+			html.aml-dark .aml-tab-btn { color: #9aa4b2 !important; }
+			html.aml-dark .aml-tab-btn:hover { background: #2a303c !important; color: #e5e9f0 !important; }
+			html.aml-dark .aml-tab-btn.active { background: #6366f1 !important; color: #fff !important; }
+			html.aml-dark .aml-tab-content-container { background: #1b1f27 !important; }
+			html.aml-dark .aml-tab-content h4,
+			html.aml-dark .aml-tab-content#thanks-panel h4 { color: #e5e9f0 !important; }
+			html.aml-dark .aml-tab-content p,
+			html.aml-dark .aml-tab-content li { color: #b8c0cc !important; }
+			html.aml-dark .aml-home-greeting,
+			html.aml-dark .aml-time,
+			html.aml-dark .aml-card-title,
+			html.aml-dark .aml-input-group label,
+			html.aml-dark .aml-bug-content label,
+			html.aml-dark .aml-help-content h5 { color: #e5e9f0 !important; }
+			html.aml-dark .aml-yiyan { color: #b8c0cc !important; }
+			html.aml-dark .aml-yiyan-from,
+			html.aml-dark .aml-card-desc,
+			html.aml-dark .aml-script-desc,
+			html.aml-dark .aml-loading,
+			html.aml-dark .aml-no-results,
+			html.aml-dark .aml-tab-content#thanks-panel > p { color: #9aa4b2 !important; }
+			html.aml-dark .aml-history { color: #b8c0cc !important; }
+			html.aml-dark .aml-history-item { border-left-color: #333b4a !important; }
+			html.aml-dark .aml-home-card,
+			html.aml-dark .aml-settings-section,
+			html.aml-dark .features-section,
+			html.aml-dark .announcement-section,
+			html.aml-dark .aml-feature-card,
+			html.aml-dark .thanks-card,
+			html.aml-dark .aml-script-card,
+			html.aml-dark .aml-count-card {
+				background: linear-gradient(135deg, #232833 0%, #1f242e 100%) !important;
+				border-color: #333b4a !important;
+				box-shadow: 0 4px 6px -1px rgba(0,0,0,.4), 0 2px 4px -1px rgba(0,0,0,.3) !important;
+			}
+			html.aml-dark .aml-home-card h5 { color: #9aa4b2 !important; border-bottom-color: #3a4353 !important; }
+			html.aml-dark .aml-setting-item:hover { background: #2a303c !important; }
+			html.aml-dark #aml-settings-container label { color: #c8d0dc !important; }
+			html.aml-dark .aml-tip { background: #2a303c !important; color: #b8c0cc !important; }
+			html.aml-dark .disabled-notice {
+				background: #232833 !important;
+				border-color: #3a4353 !important;
+				color: #9aa4b2 !important;
+			}
+			html.aml-dark .aml-search-bar,
+			html.aml-dark .aml-select,
+			html.aml-dark .aml-settings-section input[type="text"],
+			html.aml-dark .aml-settings-section input[type="number"],
+			html.aml-dark .aml-settings-section textarea,
+			html.aml-dark .aml-settings-section select,
+			html.aml-dark .aml-bug-content input[type="text"],
+			html.aml-dark .aml-bug-content textarea,
+			html.aml-dark #aml-settings-container #aml-memo-section textarea,
+			html.aml-dark #aml-settings-container #aml-pm-section textarea {
+				background: #232833 !important;
+				border-color: #3a4353 !important;
+				color: #e5e9f0 !important;
+			}
+			html.aml-dark .aml-search-bar::placeholder,
+			html.aml-dark .aml-settings-section input::placeholder,
+			html.aml-dark .aml-settings-section textarea::placeholder { color: #6b7787 !important; }
+			html.aml-dark .aml-tab-content-container::-webkit-scrollbar-thumb,
+			html.aml-dark .aml-tab-content::-webkit-scrollbar-thumb,
+			html.aml-dark .aml-history::-webkit-scrollbar-thumb { background: #3a4353 !important; }
+			html.aml-dark .aml-help-content code { background: #2a303c !important; color: #fca5a5 !important; }
+			html.aml-dark .aml-modal-content { background: #1f242e !important; }
+			html.aml-dark .aml-modal-header { border-bottom-color: #333b4a !important; }
+			html.aml-dark .aml-modal-header h4 { color: #e5e9f0 !important; }
+			html.aml-dark .aml-modal-body { color: #b8c0cc !important; }
+			html.aml-dark .aml-modal-footer { background: #232833 !important; border-top-color: #333b4a !important; }
+			html.aml-dark .aml-notification-item { border-bottom-color: #2a303c !important; }
+			html.aml-dark .aml-notification-item:hover { background: #2a303c !important; }
+			html.aml-dark .aml-notification-item.unread { background: #26303f !important; }
+			html.aml-dark .aml-notif-title { color: #e5e9f0 !important; }
+			html.aml-dark .aml-cc-meta { color: #9aa4b2 !important; }
+			html.aml-dark .aml-cc-section h5 { color: #e5e9f0 !important; }
+			html.aml-dark .aml-cc-item { background: #232833 !important; }
+			html.aml-dark .aml-cc-title { color: #93c5fd !important; }
+			html.aml-dark .aml-cc-time { color: #b8c0cc !important; }
+			html.aml-dark .aml-cc-dur { color: #9aa4b2 !important; }
+			html.aml-dark #aml-ai-modal > .l-card {
+				background: #1f242e !important;
+				color: #e5e9f0 !important;
+				box-shadow: 0 10px 40px rgba(0,0,0,.6) !important;
+			}
+			html.aml-dark #aml-ai-modal .lfe-h3 { color: #e5e9f0 !important; }
+			html.aml-dark #aml-ai-modal .close { color: #9aa4b2 !important; }
+			html.aml-dark #aml-ai-content,
+			html.aml-dark #aml-ai-content p,
+			html.aml-dark #aml-ai-content li,
+			html.aml-dark #aml-ai-content h1,
+			html.aml-dark #aml-ai-content h2,
+			html.aml-dark #aml-ai-content h3,
+			html.aml-dark #aml-ai-content h4,
+			html.aml-dark #aml-ai-content h5,
+			html.aml-dark #aml-ai-content h6 { color: #e5e9f0 !important; }
+			html.aml-dark #aml-ai-content blockquote {
+				background: rgba(255,255,255,.05) !important;
+				color: #9aa4b2 !important;
+			}
+			html.aml-dark #aml-ai-content code { background: rgba(255,255,255,.1) !important; color: #e5e9f0 !important; }
+			html.aml-dark #aml-ai-content pre { background: #161a21 !important; }
+			html.aml-dark #aml-ai-content pre code { background: transparent !important; }
+			html.aml-dark #aml-ai-content th,
+			html.aml-dark #aml-ai-content td { border-color: rgba(255,255,255,.14) !important; }
+			html.aml-dark #aml-ai-content th { background: rgba(255,255,255,.06) !important; }
+			html.aml-dark #aml-ai-content hr { border-top-color: rgba(255,255,255,.14) !important; }
+			html.aml-dark .aml-code-foldable-wrapper {
+				background: #1b1f27 !important;
+				border-color: #333b4a !important;
+				box-shadow: 0 2px 6px rgba(0,0,0,.4) !important;
+			}
+			html.aml-dark .aml-code-fold-header {
+				background: #232833 !important;
+				color: #e5e9f0 !important;
+			}
+			html.aml-dark .aml-code-fold-header:hover { background: #2a303c !important; }
+			html.aml-dark .aml-toggle-icon { color: #9aa4b2 !important; }
+			html.aml-dark .aml-code-content { background: #161a21 !important; color: #e5e9f0 !important; }
+			html.aml-dark .aml-code-content pre,
+			html.aml-dark .aml-code-content code,
+			html.aml-dark .aml-code-foldable-wrapper .code-container { background: transparent !important; }
+			html.aml-dark .aml-code-content .token.comment,
+			html.aml-dark .aml-code-content .token.prolog,
+			html.aml-dark .aml-code-content .token.doctype,
+			html.aml-dark .aml-code-content .token.cdata { color: #6b7787 !important; }
+			html.aml-dark .aml-code-content .token.punctuation { color: #b8c0cc !important; }
+			html.aml-dark .aml-code-content .token.property,
+			html.aml-dark .aml-code-content .token.tag,
+			html.aml-dark .aml-code-content .token.boolean,
+			html.aml-dark .aml-code-content .token.number,
+			html.aml-dark .aml-code-content .token.constant,
+			html.aml-dark .aml-code-content .token.symbol,
+			html.aml-dark .aml-code-content .token.deleted { color: #fca5a5 !important; }
+			html.aml-dark .aml-code-content .token.selector,
+			html.aml-dark .aml-code-content .token.attr-name,
+			html.aml-dark .aml-code-content .token.string,
+			html.aml-dark .aml-code-content .token.char,
+			html.aml-dark .aml-code-content .token.builtin,
+			html.aml-dark .aml-code-content .token.inserted { color: #86efac !important; }
+			html.aml-dark .aml-code-content .token.operator,
+			html.aml-dark .aml-code-content .token.entity,
+			html.aml-dark .aml-code-content .token.url,
+			html.aml-dark .aml-code-content .token.variable { color: #93c5fd !important; }
+			html.aml-dark .aml-code-content .token.atrule,
+			html.aml-dark .aml-code-content .token.attr-value,
+			html.aml-dark .aml-code-content .token.keyword { color: #c4b5fd !important; }
+			html.aml-dark .aml-code-content .token.function,
+			html.aml-dark .aml-code-content .token.class-name { color: #fde68a !important; }
+			html.aml-dark .aml-code-content .token.regex,
+			html.aml-dark .aml-code-content .token.important { color: #fdba74 !important; }
+			html.aml-dark .aml-tab-content,
+			html.aml-dark .aml-home-card,
+			html.aml-dark .aml-settings-section { color: #b8c0cc; }
+			html.aml-dark .aml-tab-content a { color: #a5b4fc !important; }
+			html.aml-dark .aml-tab-content a:hover { color: #c7d2fe !important; }
+			html.aml-dark .announcement-content p strong { color: #a5b4fc !important; }
+			html.aml-dark .aml-tab-content h1,
+			html.aml-dark .aml-tab-content h2,
+			html.aml-dark .aml-tab-content h3,
+			html.aml-dark .aml-tab-content h5,
+			html.aml-dark .aml-tab-content h6,
+			html.aml-dark .welcomeRight h4 { color: #e5e9f0 !important; }
+			html.aml-dark .features-section h3,
+			html.aml-dark .features-section h5,
+			html.aml-dark .announcement-section h3,
+			html.aml-dark .announcement-section h5 {
+				color: #9aa4b2 !important;
+				border-bottom-color: #3a4353 !important;
+			}
+			html.aml-dark .announcement-content p { color: #b8c0cc !important; }
+			html.aml-dark .feature-card {
+				background: linear-gradient(145deg, #232833, #1f242e) !important;
+				border-color: #333b4a !important;
+			}
+			html.aml-dark .feature-card:hover { background: linear-gradient(145deg, #2a3140, #232833) !important; }
+			html.aml-dark .feature-card span { color: #e5e9f0 !important; }
+			html.aml-dark .thanks-card { border-color: #333b4a !important; }
+			html.aml-dark .thanks-avatar { background: #232833 !important; border-color: #3a4353 !important; }
+			html.aml-dark .thanks-username { color: #e5e9f0 !important; }
+			html.aml-dark .thanks-contribution { color: #9aa4b2 !important; }
+			html.aml-dark .aml-explore-carousel { background: #232833 !important; border-color: #333b4a !important; }
+			html.aml-dark .aml-carousel-caption {
+				background: #232833 !important;
+				border-top-color: #333b4a !important;
+				color: #b8c0cc !important;
+			}
+			html.aml-dark .aml-count-label { color: #9aa4b2 !important; }
+			html.aml-dark .aml-script-name { color: #e5e9f0 !important; }
+			html.aml-dark .aml-script-icon { background: #2f3545 !important; color: #a5b4fc !important; }
+			html.aml-dark .aml-script-type.stylus { background: #4a2026 !important; color: #fca5a5 !important; }
+			html.aml-dark .aml-script-type.tampermonkey,
+			html.aml-dark .aml-script-type.scriptcat { background: #2f3545 !important; color: #a5b4fc !important; }
+			html.aml-dark .aml-script-type.software { background: #1f3a2b !important; color: #86efac !important; }
+			html.aml-dark .aml-script-type.website { background: #3d3520 !important; color: #fde68a !important; }
+			html.aml-dark .aml-setting-item label { color: #c8d0dc !important; }
+			html.aml-dark .aml-settings-section label { color: #e5e9f0 !important; }
+			html.aml-dark .aml-card-title,
+			html.aml-dark .aml-input-group label { color: #e5e9f0 !important; }
+			html.aml-dark .aml-feature-tag { background: #2f3545 !important; color: #a5b4fc !important; }
+			html.aml-dark .aml-feature-status.stable { background: #1f3a2b !important; color: #86efac !important; }
+			html.aml-dark .aml-feature-status.beta { background: #3d3520 !important; color: #fde68a !important; }
+			html.aml-dark .aml-feature-status.deprecated { background: #4a2026 !important; color: #fca5a5 !important; }
+			html.aml-dark .aml-notification-drawer { background: #1f242e !important; border-left-color: #333b4a !important; }
+			html.aml-dark .aml-notification-header { background: #232833 !important; border-bottom-color: #333b4a !important; }
+			html.aml-dark .aml-notification-header h5 { color: #e5e9f0 !important; }
+			html.aml-dark .aml-notification-item.unread { background: #26303f !important; }
+			html.aml-dark .aml-notif-time { color: #9aa4b2 !important; }
+			html.aml-dark .aml-searchAnywhereCloseSettings,
+			html.aml-dark .searchAnywhereCloseSettings { background: #2a303c !important; color: #e5e9f0 !important; }
+			html.aml-dark .searchAnywhereEntrance { background: #2a303c !important; color: #e5e9f0 !important; }
+			html.aml-dark .searchAnywhereEntrance:hover { background: #3a4353 !important; }
+			html.aml-dark .searchAnywhereEntrance svg,
+			html.aml-dark .searchAnywhereEntrance svg path { fill: #e5e9f0 !important; }
+			html.aml-dark #qq-emoji-search-toggle {
+				background: #2a303c !important;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+			}
+			html.aml-dark #qq-emoji-search-panel .aml-modal-header h4 { color: #e5e9f0 !important; }
+			html.aml-dark #qq-emoji-search-input {
+				background: #232833 !important;
+				border-color: #3a4353 !important;
+				color: #e5e9f0 !important;
+			}
+			html.aml-dark #qq-emoji-search-input::placeholder { color: #6b7787 !important; }
+			html.aml-dark #qq-emoji-search-results > div > div { border-color: #3a4353 !important; }
+			html.aml-dark #qq-emoji-search-results > div > div div { color: #9aa4b2 !important; }
+			html.aml-dark #aml-ai-content a { color: #7dd3fc !important; }
+			html.aml-dark .aml-home-card p,
+			html.aml-dark .aml-home-card li { color: #b8c0cc !important; }
+			html.aml-dark .aml-help-content p { color: #b8c0cc !important; }
+			html.aml-dark .aml-time-container {
+				background: rgba(99, 102, 241, 0.12) !important;
+				border-color: rgba(99, 102, 241, 0.25) !important;
+			}
+			html.aml-dark .aml-status[style*="green"] { background: #1f3a2b !important; color: #86efac !important; }
+			html.aml-dark .aml-status[style*="red"] { background: #4a2026 !important; color: #fca5a5 !important; }
+			html.aml-dark .aml-panel-content { background: rgba(27, 31, 39, 0.95) !important; }
+			html.aml-dark .welcomeRight input,
+			html.aml-dark .welcomeRight textarea,
+			html.aml-dark .welcomeRight select {
+				background-color: #232833 !important;
+				border-color: #3a4353 !important;
+				color: #e5e9f0 !important;
+			}
+			html.aml-dark .aml-memo-content pre code,
+			html.aml-dark .aml-luogu-md-rendered pre code {
+				background: #161a21 !important;
+				border-color: #333b4a !important;
+				color: #e5e9f0 !important;
+			}
+			html.aml-dark .codecopy-btn {
+				background: #2a303c !important;
+				color: #c8d0dc !important;
+				border-color: #3a4353 !important;
+			}
+			html.aml-dark .codecopy-btn:hover,
+			html.aml-dark .codecopy-btn:active { background: #3a4353 !important; color: #e5e9f0 !important; }
+			html.aml-dark .aml-luogu-md-rendered blockquote { border-left-color: #4b5563 !important; color: #9aa4b2 !important; }
+			html.aml-dark .aml-copy-code-btn:hover { color: #a5b4fc !important; }
+			html.aml-dark .aml-l-card { background: #1f242e !important; }
+			html.aml-dark .aml-l-card h3 { color: #e5e9f0 !important; }
+			html.aml-dark .aml-l-card .lfe-marked { color: #b8c0cc; }
+			html.aml-dark #aml-ai-content div { color: #b8c0cc !important; }
+			html.aml-dark .nbnhhsh-box { color: #b8c0cc !important; }
+			html.aml-dark .nbnhhsh-box-pop {
+				background: #1f242e !important;
+				box-shadow: 0 3px 30px -4px rgba(0, 0, 0, 0.7) !important;
+			}
+			html.aml-dark .nbnhhsh-box-pop::before { border-bottom-color: #1f242e !important; }
+			html.aml-dark .nbnhhsh-box-pop h4 { color: #e5e9f0 !important; }
+			html.aml-dark .nbnhhsh-box sub { background: rgba(255, 255, 255, 0.1) !important; color: #9aa4b2 !important; }
+			html.aml-dark .nbnhhsh-tag-item:nth-child(even) { background: rgba(99, 102, 241, 0.12) !important; }
+			html.aml-dark .nbnhhsh-tran-list { color: #b8c0cc !important; }
+			html.aml-dark .nbnhhsh-inputting-list { color: #e5e9f0 !important; }
+			html.aml-dark .nbnhhsh-inputting-list h5 { color: #9aa4b2 !important; }
+		`);
+		const apply = function () {
+			const isHomePage = () => {
+				const p = window.location.pathname;
+				return p === "/" || p === "";
+			};
+			const mode = GM_getValue("amlDarkMode", "auto");
+			const isDark = !isHomePage() && (mode === "dark" || (mode === "auto" && media.matches));
+			document.documentElement.classList.toggle("aml-dark", isDark);
+		};
+		unsafeWindow.__amlApplyTheme = apply;
+		apply();
+		if (media.addEventListener) media.addEventListener("change", apply);
+		else if (media.addListener) media.addListener(apply);
+		let lastPath = window.location.pathname;
+		setInterval(() => {
+			if (window.location.pathname !== lastPath) {
+				lastPath = window.location.pathname;
+				apply();
+			}
+		}, 300);
+	})();
 	if (supabaseRunned) return;
 	supabaseRunned = true;
 	const SUPABASE_URL = "https://ktwhwvafywwekfkvskbk.supabase.co";
