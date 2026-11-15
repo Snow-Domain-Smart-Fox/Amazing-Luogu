@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.7
+// @version      1.5.8
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -2169,6 +2169,10 @@ async function all() {
 					"amlAchievementBannerEnabled",
 					false,
 				),
+				followerCheckerEnabled: GM_getValue(
+					"amlFollowerCheckerEnabled",
+					false,
+				),
 				autoCheckIn: GM_getValue("amlAutoCheckIn", true),
 				captchaOCREndpoint: GM_getValue(
 					"amlCaptchaOCREndpoint",
@@ -2362,6 +2366,7 @@ async function all() {
 				problemBackgroundFoldEnabled: "amlProblemBackgroundFoldEnabled",
 				problemBackgroundFoldThreshold: "amlProblemBackgroundFoldThreshold",
 				achievementBannerEnabled: "amlAchievementBannerEnabled",
+				followerCheckerEnabled: "amlFollowerCheckerEnabled",
 				autoCheckIn: "amlAutoCheckIn",
 				memoEnabled: "amlMemoEnabled",
 				memoContent: "amlMemoContent",
@@ -2650,6 +2655,13 @@ async function all() {
 					key: "achievementBannerEnabled",
 					label: "成就横幅",
 					desc: "评测记录 AC 后按题目难度弹出横幅",
+					tag: "功能",
+					status: "stable",
+				},
+				{
+					key: "followerCheckerEnabled",
+					label: "粉丝变化",
+					desc: "在设置面板中对比粉丝增减（开启后，手动操作时可能会向洛谷发起大量请求）",
 					tag: "功能",
 					status: "stable",
 				},
@@ -4289,7 +4301,11 @@ async function all() {
 									{ id: 681292, name: 'banglee', contribution: '报告 BUG 或提出建议' },
 									{ id: 930718, name: 'Eason_lyx', contribution: '报告 BUG 或提出建议' },
 									{ id: 1447705, name: 'Hel_Y', contribution: '报告 BUG 或提出建议' },
+									{ id: 1255556, name: 'tingting28', contribution: '报告 BUG 或提出建议' },
 								];
+								const failedFollowUids =
+									window.__amlFailedFollowUids ||
+									(window.__amlFailedFollowUids = new Set());
 								contributors.forEach(contrib => {
 									const card = document.createElement('div');
 									card.className = 'thanks-card';
@@ -4306,20 +4322,11 @@ async function all() {
 									grid.appendChild(card);
 									const btn = card.querySelector('.thanks-follow-btn');
 									console.debug('Checking follow status for user', contrib.id, 'currentUid:', getCurrentUserId(), 'getCurrentUserId', getCurrentUserId);
-									if (contrib.id == getCurrentUserId() || getCurrentUserId() === null) {
+									if (contrib.id == getCurrentUserId() || failedFollowUids.has(contrib.id)) {
 										btn.innerHTML = '<i class="fas fa-exclamation"></i> 无法关注';
 										btn.disabled = true;
 										return;
 									}
-									Promise.all([
-										fetch(\`https://www.luogu.com.cn/api/user/info/\${contrib.id}\`).then(r => r.json()),
-										fetch(\`https://www.luogu.com.cn/user/\${contrib.id}\`).then(r => r.text())
-									]).then(([infoData, profileHtml]) => {
-										if (infoData?.user?.userRelationship === 1 || profileHtml?.includes('该用户未通过实名认证')) {
-											btn.innerHTML = '<i class="fas fa-exclamation"></i> 无法关注';
-											btn.disabled = true;
-										}
-									}).catch(() => {});
 									addManagedEventListener(btn, 'click', async () => {
 										btn.disabled = true;
 										btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 关注中…';
@@ -4337,12 +4344,14 @@ async function all() {
 											if (res.ok) {
 												btn.innerHTML = '<i class="fas fa-check"></i> 已关注';
 											} else {
-												btn.innerHTML = '<i class="fas fa-times"></i> 关注失败';
-												btn.disabled = false;
+												failedFollowUids.add(contrib.id);
+												btn.innerHTML = '<i class="fas fa-exclamation"></i> 无法关注';
+												btn.disabled = true;
 											}
 										} catch {
-											btn.innerHTML = '<i class="fas fa-exclamation"></i> 网络错误';
-											btn.disabled = false;
+											failedFollowUids.add(contrib.id);
+											btn.innerHTML = '<i class="fas fa-exclamation"></i> 无法关注';
+											btn.disabled = true;
 										}
 									});
 								});
@@ -4809,6 +4818,44 @@ async function all() {
 				</div>
 			</div>
 		</div>
+		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fas fa-user-friends"></i> &nbsp;粉丝变化</h4>
+			<div id="aml-fchecker-container">
+				<div id="aml-fc-disabled-notice" class="disabled-notice" style="display: ${currentSettings.followerCheckerEnabled ? "none" : "block"};">该功能默认关闭。开启后，手动操作时可能会向洛谷发起大量请求（获取粉丝列表、关注/取关），请确认后到「功能开关」中开启。</div>
+				<div id="aml-fc-section" style="display: ${currentSettings.followerCheckerEnabled ? "block" : "none"};">
+					<div class="aml-fc-toolbar">
+						<button id="aml-fc-fetch-btn" class="aml-primary-btn"><i class="fas fa-users"></i> 获取粉丝列表</button>
+						<label class="aml-fc-option"><input type="checkbox" id="aml-fc-show-btn"> 显示回敬/回关按钮</label>
+					</div>
+					<div id="aml-fc-status" class="aml-fc-status"></div>
+					<div id="aml-fc-list"></div>
+					<div class="aml-tip" style="margin-top: 8px;">算法与界面改自 Gary0 的「洛谷取关提醒器」6.0，已获作者许可按 CC-BY-NC-ND 4.0 分发。</div>
+				</div>
+			</div>
+			<style>
+				.aml-fc-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+				.aml-fc-option { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555; cursor: pointer; }
+				.aml-fc-status { font-size: 12px; color: #888; margin: 8px 0; }
+				.aml-fc-actions { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+				.aml-fc-section { margin: 10px 0 4px; font-size: 13px; font-weight: 600; color: #333; }
+				.aml-fc-users { display: flex; flex-direction: column; max-height: 360px; overflow-y: auto; }
+				.aml-fc-user { display: flex; align-items: center; gap: 8px; padding: 8px 4px; border-bottom: 1px solid #eee; width: 100%; box-sizing: border-box; }
+				.aml-fc-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; }
+				.aml-fc-user-main { flex: 1; min-width: 0; }
+				.aml-fc-user-name { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13px; overflow: hidden; white-space: nowrap; }
+				.aml-fc-user-name a { text-decoration: none; overflow: hidden; text-overflow: ellipsis; }
+				.aml-fc-badge { color: #fff; font-size: 10px; font-weight: 400; padding: 1px 6px; border-radius: 2px; flex-shrink: 0; }
+				.aml-fc-slogan { font-size: 12px; color: #888; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+				.aml-fc-action { border: none; border-radius: 4px; padding: 4px 10px; font-size: 11px; color: #fff; cursor: pointer; white-space: nowrap; }
+				.aml-fc-action:disabled { background: #bfbfbf !important; cursor: default; }
+				.aml-fc-empty { text-align: center; color: #888; padding: 14px; font-size: 13px; }
+				.aml-fc-pager { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; font-size: 12px; color: #666; }
+				.aml-fc-pager span { white-space: nowrap; flex-shrink: 0; }
+				.aml-fc-pager .aml-primary-btn,
+				.aml-fc-actions .aml-primary-btn,
+				.aml-fc-toolbar .aml-primary-btn { width: auto; padding: 4px 12px; font-size: 12px; font-weight: 500; box-shadow: none; justify-content: center; }
+			</style>
+		</div>
         <div class="aml-settings-section aml-home-card">
 			<h4><i class="fas fa-bell"></i> &nbsp;授权注册提示</h4>
 			<div>
@@ -5069,6 +5116,7 @@ async function all() {
 					if (typeof unsafeWindow.__amlApplyTheme === "function") unsafeWindow.__amlApplyTheme();
 				});
 				renderContestCalendar(false);
+				initFollowerChecker();
 				const customCSSInput = document.getElementById("aml-custom-css-input");
 				const cssPositionSelect = document.getElementById(
 					"aml-css-position-select",
@@ -5221,6 +5269,19 @@ async function all() {
 									typeof window.__amlAchievementCleanup === "function"
 								) {
 									window.__amlAchievementCleanup();
+								}
+							}
+							if (feature.key === "followerCheckerEnabled") {
+								currentAMLSettings.followerCheckerEnabled = newValue;
+								const fcSection = document.getElementById("aml-fc-section");
+								const fcNotice = document.getElementById("aml-fc-disabled-notice");
+								if (newValue) {
+									fcSection.style.display = "block";
+									fcNotice.style.display = "none";
+									initFollowerChecker();
+								} else {
+									fcSection.style.display = "none";
+									fcNotice.style.display = "block";
 								}
 							}
 							if (feature.key === "slogenTimeEnabled") {
@@ -7505,17 +7566,6 @@ async function all() {
 					}
 				});
 			}
-			const difficultyColors = [
-				[232, 232, 232],
-				[254, 76, 97],
-				[243, 156, 17],
-				[255, 193, 22],
-				[83, 196, 26],
-				[19, 194, 194],
-				[52, 152, 219],
-				[156, 61, 207],
-				[14, 29, 105],
-			];
 			GM_addStyle(`
 				@import url('https://cdn.amlg.top/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css');
 				div:has(> span > svg[data-icon="rectangle-ad"]) {
@@ -10129,14 +10179,14 @@ async function all() {
 				}
 			}
 			const ACHIEVEMENT_RANKS = {
-				1: { name: "入门", color: "#FE4C61", rarity: "1" },
-				2: { name: "普及-", color: "#F39C11", rarity: "2" },
-				3: { name: "普及", color: "#FFC116", rarity: "3" },
-				4: { name: "普及+/提高−", color: "#52C41A", rarity: "4" },
-				5: { name: "提高", color: "#22c5c5", rarity: "5" },
-				6: { name: "提高+/省选−", color: "#3498DB", rarity: "6" },
-				7: { name: "省选/NOI−", color: "#9D3DCF", rarity: "7" },
-				8: { name: "NOI/NOI+/CTS", color: "#0E1D69", rarity: "8" },
+				1: { name: "入门", color: "#FE4C61", dark: "#FF8A96", rarity: "1" },
+				2: { name: "普及-", color: "#F39C11", dark: "#FFB74D", rarity: "2" },
+				3: { name: "普及", color: "#FFC116", dark: "#FFD964", rarity: "3" },
+				4: { name: "普及+/提高−", color: "#52C41A", dark: "#7ED957", rarity: "4" },
+				5: { name: "提高", color: "#22c5c5", dark: "#4FDBDB", rarity: "5" },
+				6: { name: "提高+/省选−", color: "#3498DB", dark: "#6BB6F0", rarity: "6" },
+				7: { name: "省选/NOI−", color: "#9D3DCF", dark: "#BD8BEF", rarity: "7" },
+				8: { name: "NOI/NOI+/CTS", color: "#0E1D69", dark: "#8494F0", rarity: "8" },
 			};
 			function injectAchievementStyle() {
 				if (document.getElementById("florr-achievement-style")) return;
@@ -10159,6 +10209,18 @@ async function all() {
 						0% { box-shadow: 0 15px 50px rgba(0,0,0,0.15); }
 						50% { box-shadow: 0 15px 60px rgba(52, 152, 219, 0.3); border-bottom-color: #fff; }
 						100% { box-shadow: 0 15px 50px rgba(0,0,0,0.15); }
+					}
+					html.al-dark #florr-achievement-banner {
+						background: linear-gradient(90deg, transparent 0%, rgba(27,31,39,0.98) 20%, rgba(27,31,39,0.98) 80%, transparent 100%) !important;
+						box-shadow: 0 15px 50px rgba(0,0,0,0.55) !important;
+					}
+					html.al-dark #florr-achievement-banner .florr-ach-badge {
+						background: #232833 !important;
+						box-shadow: inset 0 0 20px rgba(255,255,255,0.08) !important;
+					}
+					html.al-dark #florr-achievement-banner .florr-ach-mission,
+					html.al-dark #florr-achievement-banner .florr-ach-rank {
+						color: #9aa4b2 !important;
 					}
 				`;
 				document.head.appendChild(style);
@@ -10193,9 +10255,16 @@ async function all() {
 					if (Date.now() < end) requestAnimationFrame(frame);
 				})();
 			}
+			function getAchievementColor(target) {
+				return document.documentElement.classList.contains("al-dark") &&
+					target.dark
+					? target.dark
+					: target.color;
+			}
 			function showAchievementBanner(target, pid) {
 				const oldBanner = document.getElementById("florr-achievement-banner");
 				if (oldBanner) oldBanner.remove();
+				const rankColor = getAchievementColor(target);
 
 				const banner = document.createElement("div");
 				banner.id = "florr-achievement-banner";
@@ -10205,7 +10274,7 @@ async function all() {
 					position: fixed; top: 0; left: 0; width: 100%; height: 140px;
 					z-index: 1000000; display: flex; align-items: center; justify-content: center;
 					background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.98) 20%, rgba(255,255,255,0.98) 80%, transparent 100%);
-					border-bottom: 8px solid ${target.color};
+					border-bottom: 8px solid ${rankColor};
 					box-shadow: 0 15px 50px rgba(0,0,0,0.15);
 					cursor: pointer;
 					user-select: none;
@@ -10216,21 +10285,21 @@ async function all() {
 				banner.innerHTML = `
 					<div style="display: flex; align-items: center; gap: 50px; width: 95%; max-width: 1300px; justify-content: center;">
 						<div style="
-							flex-shrink: 0; width: 240px; height: 100px; border-radius: 20px; border: 6px solid ${target.color};
+							flex-shrink: 0; width: 240px; height: 100px; border-radius: 20px; border: 6px solid ${rankColor};
 							background: #fff; display: flex; align-items: center; justify-content: center;
-							font-size: 26px; font-weight: 900; color: ${target.color}; text-align: center;
+							font-size: 26px; font-weight: 900; color: ${rankColor}; text-align: center;
 							line-height: 1.1; padding: 0 15px; box-sizing: border-box;
-							box-shadow: inset 0 0 20px ${target.color}22;
+							box-shadow: inset 0 0 20px ${rankColor}22;
 							letter-spacing: 0.5px;
-						">
+						" class="florr-ach-badge">
 							${target.name}
 						</div>
 						<div style="text-align: left; font-family: 'Arial Black', sans-serif; min-width: 450px;">
-							<div style="font-size: 16px; font-weight: 900; color: #777; letter-spacing: 4px; margin-bottom: 4px;">MISSION COMPLETE</div>
-							<div style="font-size: 45px; font-weight: 900; color: ${target.color}; line-height: 1.1;">
+							<div style="font-size: 16px; font-weight: 900; color: #777; letter-spacing: 4px; margin-bottom: 4px;" class="florr-ach-mission">MISSION COMPLETE</div>
+							<div style="font-size: 45px; font-weight: 900; color: ${rankColor}; line-height: 1.1;">
 								Destroy Target <span style="font-family: 'Courier New', Courier, monospace; letter-spacing: -1px;">${pid}</span>
 							</div>
-							<div style="font-size: 18px; font-weight: 400; color: #aaa; margin-top: 4px; font-family: sans-serif; letter-spacing: 2px;">
+							<div style="font-size: 18px; font-weight: 400; color: #aaa; margin-top: 4px; font-family: sans-serif; letter-spacing: 2px;" class="florr-ach-rank">
 								RANK: ${target.rarity.toUpperCase()}
 							</div>
 						</div>
@@ -10346,7 +10415,7 @@ async function all() {
 						showAchievementBanner(target, record.problem.pid);
 						if (record.problem.difficulty >= 5) {
 							console.log("[成就横幅] 高难度，释放烟花");
-							launchAchievementFireworks(target.color);
+							launchAchievementFireworks(getAchievementColor(target));
 						}
 					} catch (e) {
 						console.error("[成就横幅] 轮询异常", e);
@@ -12223,14 +12292,14 @@ ${problemText}
 					const cachedData = GM_getValue(CACHE_KEY, {
 						expireTime: 0,
 						colorEntries: [],
-						version: "0.9.4",
+						version: "0.9.6",
 					});
 					let problemColorMap;
 					if (
 						cachedData &&
 						Date.now() < cachedData.expireTime &&
 						cachedData.colorEntries.length != 0 &&
-						cachedData.version == "0.9.4"
+						cachedData.version == "0.9.6"
 					) {
 						problemColorMap = new Map(cachedData.colorEntries);
 						console.debug(
@@ -12240,28 +12309,38 @@ ${problemText}
 					} else {
 						const rawColors = GM_getValue("AMLG_PROBLEM_COLORS", []);
 						const colorEntries = rawColors
-							.map((p) => [
-								p.id,
-								`rgb(${difficultyColors[Number(p.difficulty)]?.join(",")})`,
-							])
-							.filter(Boolean);
+							.filter((p) => p && p.id)
+							.map((p) => {
+								const d = Number(p.difficulty);
+								return [p.id, Number.isFinite(d) ? d : 0];
+							});
 						problemColorMap = new Map(colorEntries);
 						GM_setValue(CACHE_KEY, {
 							colorEntries: colorEntries,
 							expireTime: Date.now() + CACHE_TTL,
 							createTime: Date.now(),
-							version: "0.9.4",
+							version: "0.9.6",
 						});
 						console.debug(
 							Date.now(),
 							"Problem color map set up & cached for 30 days.",
 						);
 					}
+					function formatDifficultyColor(difficulty) {
+						const d = Number(difficulty);
+						const isDark = document.documentElement.classList.contains("al-dark");
+						if (!Number.isFinite(d) || d <= 0) {
+							return isDark ? "rgb(154, 164, 178)" : "rgb(232, 232, 232)";
+						}
+						const rank = ACHIEVEMENT_RANKS[d];
+						if (!rank) return null;
+						return isDark ? rank.dark : rank.color;
+					}
 					async function getProblemColor(problemPid, isPriority = false) {
 						if (problemColorMap.has(problemPid)) {
-							return problemColorMap.get(problemPid);
+							return formatDifficultyColor(problemColorMap.get(problemPid));
 						}
-						return "rgb(null)";
+						return null;
 					}
 					function isValidProblemPid(pid) {
 						if (pid.startsWith("UVA")) return true;
@@ -12290,10 +12369,20 @@ ${problemText}
 								firstChild.innerText === pid
 							) {
 								const color = await getProblemColor(pid, isPriority);
+								if (!color) return;
 								firstChild.style.color = color;
 								firstChild.style.fontWeight = "bold";
+							} else if (
+								firstChild &&
+								firstChild.tagName === "B" &&
+								firstChild.innerText === pid
+							) {
+								const color = await getProblemColor(pid, isPriority);
+								if (!color) return;
+								firstChild.style.color = color;
 							} else {
 								const color = await getProblemColor(pid, isPriority);
+								if (!color) return;
 								const innerHTML = linkElement.innerHTML;
 								linkElement.innerHTML = innerHTML.replace(
 									pid,
@@ -12320,8 +12409,9 @@ ${problemText}
 								} else if (mutation.type === "characterData") {
 									if (mutation.target.parentElement.matches("span.pid")) {
 										const pid = mutation.target.textContent;
-										mutation.target.parentElement.style.color =
-											await getProblemColor(pid);
+										const color = await getProblemColor(pid);
+										if (!color) continue;
+										mutation.target.parentElement.style.color = color;
 										mutation.target.parentElement.style.fontWeight = "bold";
 									}
 								}
@@ -12338,6 +12428,11 @@ ${problemText}
 						}
 					}
 					setTimeout(startColorizing, 1500);
+					unsafeWindow.__amlRecolorProblemColors = () => {
+						document.querySelectorAll("a[href]").forEach((link) => {
+							colorizeProblemLink(link);
+						});
+					};
 				} catch (e) {
 					console.debug(e);
 				}
@@ -13041,8 +13136,8 @@ ${problemText}
 				}
 				return unsafe
 					.replace(/&/g, "&amp;")
-					.replace(/</g, "<")
-					.replace(/>/g, ">")
+					.replace(/</g, "&lt;")
+					.replace(/>/g, "&gt;")
 					.replace(/"/g, "&quot;")
 					.replace(/'/g, "&#039;");
 			}
@@ -13682,6 +13777,362 @@ ${problemText}
 				} catch (err) {
 					container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-circle"></i> 加载失败：${err && err.message ? err.message : String(err)}<br><span style="font-size:12px;color:#888;">点击右上角「重新加载」重试</span></div>`;
 				}
+			}
+			async function initFollowerChecker() {
+				if (!currentAMLSettings.followerCheckerEnabled) return;
+				const container = document.getElementById("aml-fchecker-container");
+				if (!container || container.dataset.inited === "1") return;
+				container.dataset.inited = "1";
+				const listEl = document.getElementById("aml-fc-list");
+				const statusEl = document.getElementById("aml-fc-status");
+				const fetchBtn = document.getElementById("aml-fc-fetch-btn");
+				const showBtnEl = document.getElementById("aml-fc-show-btn");
+				if (!listEl || !statusEl || !fetchBtn || !showBtnEl) return;
+
+				const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+				const SHOW_KEY = "fchecker-setting";
+				const readShowBtn = () => {
+					try {
+						const saved = localStorage.getItem(SHOW_KEY);
+						if (saved) return JSON.parse(saved)["show-btn"] !== "false";
+					} catch (e) { }
+					return true;
+				};
+				const writeShowBtn = (val) => {
+					let obj = {};
+					try { obj = JSON.parse(localStorage.getItem(SHOW_KEY)) || {}; } catch (e) { }
+					obj["show-btn"] = String(val);
+					localStorage.setItem(SHOW_KEY, JSON.stringify(obj));
+				};
+				showBtnEl.checked = readShowBtn();
+				let currentList = null;
+				const PAGE_SIZE = 50;
+				let currentPage = 1;
+
+				const updateRelation = async (uid, action) => {
+					try {
+						const res = await fetch("https://www.luogu.com.cn/api/user/updateRelationShip", {
+							method: "POST",
+							headers: {
+								"content-type": "application/json",
+								"x-csrf-token": gettoken(),
+								"x-requested-with": "XMLHttpRequest",
+							},
+							body: JSON.stringify({ uid: Number(uid), relationship: Number(action) }),
+						});
+						return res.ok;
+					} catch (e) {
+						return false;
+					}
+				};
+				const getColor = (color) => {
+					const name = String(color || "").toLowerCase();
+					if (name === "cheater") return "var(--lfe-color--yellow-4, #f0a020)";
+					if (!/^[a-z][a-z-]{0,19}$/.test(name) || name === "gray") {
+						return "var(--lfe-color--grey-3, #888)";
+					}
+					return `var(--lfe-color--${name}-3, #888)`;
+				};
+				const parseFollowers = (html) => {
+					const m = html.match(/<script id="lentille-context" type="application\/json">([\s\S]*?)<\/script>/);
+					if (!m) return { success: false, data: "页面解析失败" };
+					try {
+						const json = JSON.parse(m[1]);
+						if (!json?.data?.users?.result) return { success: false, data: "页面解析失败" };
+						return { success: true, data: json.data.users.result, count: json.data.users.count };
+					} catch (e) {
+						return { success: false, data: "页面解析失败" };
+					}
+				};
+				const getFollowers = async (uid, page) => {
+					try {
+						const res = await fetch(`https://www.luogu.com.cn/user/${uid}/follower?page=${page}`);
+						return parseFollowers(await res.text());
+					} catch (err) {
+						return { success: false, data: `获取粉丝列表失败: ${err}` };
+					}
+				};
+				const getFollowersCount = async (uid) => {
+					try {
+						const res = await fetch(`https://www.luogu.com.cn/user/${uid}/follower`);
+						const data = parseFollowers(await res.text());
+						return data.success ? { success: true, data: data.count } : data;
+					} catch (err) {
+						return { success: false, data: `获取粉丝数量失败: ${err}` };
+					}
+				};
+				const getAllFollowers = async (uid) => {
+					const setProgress = (text) => {
+						statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text}`;
+					};
+					setProgress("正在获取粉丝列表 0%");
+					let totalCount = null;
+					const pageCache = new Map();
+					const fetchPage = async (p) => {
+						if (pageCache.has(p)) return pageCache.get(p);
+						await sleep(400);
+						const res = await getFollowers(uid, p);
+						if (!res.success) return null;
+						if (typeof res.count === "number") totalCount = res.count;
+						pageCache.set(p, res.data);
+						return res.data;
+					};
+
+					let oldList = null;
+					try {
+						const saved = localStorage.getItem("fchecker");
+						if (saved) oldList = JSON.parse(saved);
+					} catch (e) { }
+					if (!Array.isArray(oldList)) oldList = null;
+
+					let pCheck = 1;
+					if (oldList && oldList.length > 0) pCheck = Math.floor((oldList.length - 1) / 20) + 1;
+
+					const initData = await fetchPage(pCheck);
+					if (!initData) {
+						statusEl.textContent = "获取粉丝列表失败";
+						return null;
+					}
+					if (totalCount === null) {
+						const cdata = await getFollowersCount(uid);
+						if (!cdata.success) {
+							statusEl.textContent = cdata.data;
+							return null;
+						}
+						totalCount = cdata.data;
+					}
+					const count = totalCount;
+					if (count > 800) {
+						statusEl.textContent = "您的粉丝页数太多，为防止高频请求导致封号，禁止使用";
+						return null;
+					}
+					if (count === 0) {
+						statusEl.textContent = "共 0 位粉丝";
+						return [];
+					}
+
+					let resolved = 0;
+					const updateProgress = (delta) => {
+						resolved += delta;
+						setProgress(`正在获取粉丝列表 ${Math.min(100, Math.floor((resolved / count) * 100))}%`);
+					};
+					const pages = Math.ceil(count / 20);
+
+					if (oldList && oldList.length > 0 && count >= oldList.length) {
+						const n = oldList.length;
+						const offset = (n - 1) % 20;
+						const targetUid = oldList[n - 1].uid;
+						if (initData.length > offset && initData[offset].uid === targetUid) {
+							const list = oldList.slice(0, n);
+							updateProgress(n);
+							if (initData.length > offset + 1) {
+								const extra = initData.slice(offset + 1);
+								list.push(...extra);
+								updateProgress(extra.length);
+							}
+							let ok = true;
+							for (let p = pCheck + 1; p <= pages; p++) {
+								const pData = await fetchPage(p);
+								if (pData) {
+									list.push(...pData);
+									updateProgress(pData.length);
+								} else {
+									ok = false;
+									break;
+								}
+							}
+							if (ok && list.length === count) return list;
+						}
+					}
+
+					resolved = 0;
+					updateProgress(0);
+
+					const oldMap = new Map();
+					if (oldList) for (let i = 0; i < oldList.length; i++) oldMap.set(oldList[i].uid, i);
+					const solve = async (p1, p2) => {
+						if (p1 > p2) return [];
+						if (p1 === p2) {
+							const data = await fetchPage(p1);
+							if (data) updateProgress(data.length);
+							return data;
+						}
+						if (oldList && oldList.length > 0) {
+							const data1 = await fetchPage(p1);
+							const data2 = await fetchPage(p2);
+							if (!data1 || !data2) return null;
+							if (data1.length > 0 && data2.length > 0) {
+								const u1 = data1[0];
+								const u2 = data2[data2.length - 1];
+								if (oldMap.has(u1.uid) && oldMap.has(u2.uid)) {
+									const idx1 = oldMap.get(u1.uid);
+									const idx2 = oldMap.get(u2.uid);
+									const expectedLen = (p2 - p1) * 20 + data2.length;
+									const startIdx = (p1 - 1) * 20;
+									if (idx1 >= startIdx && idx2 - idx1 + 1 === expectedLen) {
+										const res = oldList.slice(idx1, idx2 + 1);
+										updateProgress(res.length);
+										return res;
+									}
+								}
+							}
+						}
+						const mid = Math.floor((p1 + p2) / 2);
+						const left = await solve(p1, mid);
+						if (!left) return null;
+						const right = await solve(mid + 1, p2);
+						if (!right) return null;
+						return left.concat(right);
+					};
+
+					const nowList = await solve(1, pages);
+					if (nowList && nowList.length === count) return nowList;
+					statusEl.textContent = "获取粉丝列表失败";
+					return null;
+				};
+
+				const renderUser = (user, actionType) => {
+					const color = getColor(user.color);
+					let btnHtml = "";
+					if (readShowBtn() && actionType === "unfollow") {
+						btnHtml = `<button class="aml-fc-action" data-uid="${user.uid}" data-action="0" style="background:#ff4d4f">回敬</button>`;
+					} else if (readShowBtn() && actionType === "new") {
+						btnHtml = `<button class="aml-fc-action" data-uid="${user.uid}" data-action="1" style="background:#52c41a">回关</button>`;
+					}
+					return `<div class="aml-fc-user">
+						<img class="aml-fc-avatar" src="https://cdn.luogu.com.cn/upload/usericon/${user.uid}.png" loading="lazy" alt="">
+						<div class="aml-fc-user-main">
+							<div class="aml-fc-user-name">
+								<a href="/user/${user.uid}" target="_blank" style="color:${color}">${escapeHtml(user.name)}</a>
+								${user.badge ? `<span class="aml-fc-badge" style="background:${color}">${escapeHtml(user.badge)}</span>` : ""}
+							</div>
+							<div class="aml-fc-slogan">${escapeHtml(user.slogan || "这个家伙很懒，什么也没有留下")}</div>
+						</div>
+						${btnHtml}
+					</div>`;
+				};
+				const bindActions = () => {
+					listEl.querySelectorAll(".aml-fc-action").forEach((btn) => {
+						addManagedEventListener(btn, "click", async () => {
+							const uid = Number(btn.dataset.uid);
+							const action = Number(btn.dataset.action);
+							btn.disabled = true;
+							btn.textContent = "...";
+							const ok = await updateRelation(uid, action);
+							btn.textContent = ok ? (action === 1 ? "已互关" : "已取关") : "失败或未关注";
+							if (!ok) btn.disabled = false;
+						});
+					});
+				};
+				const saveSnapshot = () => {
+					if (!currentList) return;
+					localStorage.setItem("fchecker", JSON.stringify(currentList));
+					statusEl.textContent = `已保存当前 ${currentList.length} 位粉丝作为旧列表`;
+				};
+				const renderDiff = () => {
+					if (!currentList) return;
+					let oldList = null;
+					try { oldList = JSON.parse(localStorage.getItem("fchecker") || "null"); } catch (e) { }
+					if (!Array.isArray(oldList)) {
+						statusEl.textContent = "还没有旧列表，请先保存哦";
+						return;
+					}
+					const oldMap = new Map(oldList.map((u) => [u.uid, u]));
+					const nowMap = new Map(currentList.map((u) => [u.uid, u]));
+					const unfollowed = [];
+					const added = [];
+					oldMap.forEach((u, uid) => { if (!nowMap.has(uid)) unfollowed.push(u); });
+					nowMap.forEach((u, uid) => { if (!oldMap.has(uid)) added.push(u); });
+					const section = (title, arr, type) =>
+						`<div class="aml-fc-section">${title}（${arr.length}）</div>` +
+						(arr.length ? arr.map((u) => renderUser(u, type)).join("") : '<div class="aml-fc-empty">无</div>');
+					listEl.innerHTML = `<div class="aml-fc-actions">
+							<button id="aml-fc-back-btn" class="aml-primary-btn"><i class="fas fa-arrow-left"></i> 返回列表</button>
+							<button id="aml-fc-save-btn" class="aml-primary-btn"><i class="fas fa-save"></i> 覆盖旧列表</button>
+						</div>
+						<div class="aml-fc-users">${section("取关用户", unfollowed, "unfollow")}${section("新粉丝", added, "new")}</div>`;
+					bindActions();
+					const backBtn = document.getElementById("aml-fc-back-btn");
+					const saveBtn = document.getElementById("aml-fc-save-btn");
+					backBtn && addManagedEventListener(backBtn, "click", () => renderList(currentList));
+					saveBtn && addManagedEventListener(saveBtn, "click", saveSnapshot);
+				};
+				const renderList = (list) => {
+					if (!Array.isArray(list) || list.length === 0) {
+						listEl.innerHTML = '<div class="aml-fc-empty">暂无粉丝数据</div>';
+						return;
+					}
+					const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+					if (currentPage > totalPages) currentPage = totalPages;
+					if (currentPage < 1) currentPage = 1;
+					const start = (currentPage - 1) * PAGE_SIZE;
+					const pageUsers = list.slice(start, start + PAGE_SIZE);
+					listEl.innerHTML = `<div class="aml-fc-actions">
+							<button id="aml-fc-compare-btn" class="aml-primary-btn"><i class="fas fa-code-compare"></i> 对比差异</button>
+							<button id="aml-fc-save-btn" class="aml-primary-btn"><i class="fas fa-save"></i> 覆盖旧列表</button>
+						</div>
+						<div class="aml-fc-users">${pageUsers.map((u) => renderUser(u, "")).join("")}</div>
+						<div class="aml-fc-pager">
+							<button id="aml-fc-prev-btn" class="aml-primary-btn" ${currentPage <= 1 ? "disabled" : ""}><i class="fas fa-chevron-left"></i> 上一页</button>
+							<span>${currentPage} / ${totalPages}（共 ${list.length} 位）</span>
+							<button id="aml-fc-next-btn" class="aml-primary-btn" ${currentPage >= totalPages ? "disabled" : ""}>下一页 <i class="fas fa-chevron-right"></i></button>
+						</div>`;
+					bindActions();
+					const compareBtn = document.getElementById("aml-fc-compare-btn");
+					const saveBtn = document.getElementById("aml-fc-save-btn");
+					const prevBtn = document.getElementById("aml-fc-prev-btn");
+					const nextBtn = document.getElementById("aml-fc-next-btn");
+					compareBtn && addManagedEventListener(compareBtn, "click", renderDiff);
+					saveBtn && addManagedEventListener(saveBtn, "click", saveSnapshot);
+					prevBtn && addManagedEventListener(prevBtn, "click", () => {
+						if (currentPage > 1) {
+							currentPage--;
+							renderList(currentList);
+						}
+					});
+					nextBtn && addManagedEventListener(nextBtn, "click", () => {
+						if (currentPage < totalPages) {
+							currentPage++;
+							renderList(currentList);
+						}
+					});
+				};
+
+				addManagedEventListener(showBtnEl, "change", () => {
+					writeShowBtn(showBtnEl.checked);
+					if (currentList) renderList(currentList);
+				});
+				addManagedEventListener(fetchBtn, "click", async () => {
+					if (fetchBtn.disabled) return;
+					fetchBtn.disabled = true;
+					try {
+						const uid = getCurrentUserId();
+						if (!uid) {
+							statusEl.textContent = "未登录，无法获取粉丝列表";
+							return;
+						}
+						const now = new Date();
+						const lastTime = localStorage.getItem("fchecker-last");
+						const todayRaw = localStorage.getItem("fchecker-today");
+						if (lastTime && todayRaw && now.toDateString() === lastTime) {
+							try { currentList = JSON.parse(todayRaw); } catch (e) { currentList = null; }
+						}
+						if (!currentList) {
+							currentList = await getAllFollowers(uid);
+							if (currentList) {
+								localStorage.setItem("fchecker-last", now.toDateString());
+								localStorage.setItem("fchecker-today", JSON.stringify(currentList));
+							}
+						}
+						if (currentList) {
+							statusEl.textContent = `共 ${currentList.length} 位粉丝`;
+							currentPage = 1;
+							renderList(currentList);
+						}
+					} finally {
+						fetchBtn.disabled = false;
+					}
+				});
 			}
 			async function checkScriptVersion(op) {
 				const sources = [
@@ -14359,6 +14810,12 @@ ${problemText}
 			html.al-dark .aml-cc-title { color: #93c5fd !important; }
 			html.al-dark .aml-cc-time { color: #b8c0cc !important; }
 			html.al-dark .aml-cc-dur { color: #9aa4b2 !important; }
+			html.al-dark .aml-fc-option { color: #b8c0cc !important; }
+			html.al-dark .aml-fc-status { color: #9aa4b2 !important; }
+			html.al-dark .aml-fc-section { color: #e5e9f0 !important; }
+			html.al-dark .aml-fc-user { border-bottom-color: #2f3542 !important; }
+			html.al-dark .aml-fc-slogan { color: #9aa4b2 !important; }
+			html.al-dark .aml-fc-pager { color: #9aa4b2 !important; }
 			html.al-dark #aml-ai-modal > .l-card {
 				background: #1f242e !important;
 				color: #e5e9f0 !important;
@@ -14566,6 +15023,9 @@ ${problemText}
 			const mode = GM_getValue("amlDarkMode", "auto");
 			const isDark = !isHomePage() && (mode === "dark" || (mode === "auto" && media.matches));
 			document.documentElement.classList.toggle("al-dark", isDark);
+			if (typeof unsafeWindow.__amlRecolorProblemColors === "function") {
+				unsafeWindow.__amlRecolorProblemColors();
+			}
 		};
 		unsafeWindow.__amlApplyTheme = apply;
 		apply();
