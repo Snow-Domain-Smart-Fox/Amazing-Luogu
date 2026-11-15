@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.5
+// @version      1.5.6
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -2156,6 +2156,14 @@ async function all() {
 				problemJumper: GM_getValue("amlProblemJumper", true),
 				saveStationJumper: GM_getValue("amlSaveStationJumper", true),
 				codeFolding: GM_getValue("amlCodeFolding", true),
+				problemBackgroundFoldEnabled: GM_getValue(
+					"amlProblemBackgroundFoldEnabled",
+					true,
+				),
+				problemBackgroundFoldThreshold: GM_getValue(
+					"amlProblemBackgroundFoldThreshold",
+					200,
+				),
 				autoCheckIn: GM_getValue("amlAutoCheckIn", true),
 				captchaOCREndpoint: GM_getValue(
 					"amlCaptchaOCREndpoint",
@@ -2346,6 +2354,8 @@ async function all() {
 				discussListLength: "amlDiscussListLength",
 				colorUpdateInterval: "amlColorUpdateInterval",
 				codeFolding: "amlCodeFolding",
+				problemBackgroundFoldEnabled: "amlProblemBackgroundFoldEnabled",
+				problemBackgroundFoldThreshold: "amlProblemBackgroundFoldThreshold",
 				autoCheckIn: "amlAutoCheckIn",
 				memoEnabled: "amlMemoEnabled",
 				memoContent: "amlMemoContent",
@@ -2620,6 +2630,13 @@ async function all() {
 					key: "emojiRenderingEnabled",
 					label: "表情渲染",
 					desc: "自动渲染聊天和评论中的 QQ 表情代码",
+					tag: "阅读",
+					status: "stable",
+				},
+				{
+					key: "problemBackgroundFoldEnabled",
+					label: "折叠题目背景",
+					desc: "题目背景字数超过设定值时自动折叠，并提供展开/折叠按钮",
 					tag: "阅读",
 					status: "stable",
 				},
@@ -3470,6 +3487,23 @@ async function all() {
 					justify-content: space-between;
 					align-items: center;
 					margin-bottom: 4px;
+				}
+				.aml-bg-fold-btn {
+					margin-left: 0.6em;
+					padding: 0 0.5em;
+					font-size: 0.75em;
+					line-height: 1.6;
+					vertical-align: middle;
+					cursor: pointer;
+					color: #3498db;
+					background: transparent;
+					border: 1px solid #3498db;
+					border-radius: 4px;
+					transition: background-color 0.2s, color 0.2s;
+				}
+				.aml-bg-fold-btn:hover {
+					color: #fff;
+					background: #3498db;
 				}
 				.aml-feature-tag {
 					font-size: 12px;
@@ -4600,6 +4634,16 @@ async function all() {
 			<div id="aml-discuss-disabled-notice" class="disabled-notice" style="display: ${currentSettings.discussListLengthEnabled ? "none" : "block"};">讨论列表长度限制功能已关闭，请在功能开关中开启。</div>
 		</div>
 		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fa-solid fa-book-open"></i> &nbsp;题目背景折叠</h4>
+			<div id="aml-bgfold-section" style="display: ${currentSettings.problemBackgroundFoldEnabled ? "block" : "none"};">
+				<div class="aml-input-group">
+					<label for="aml-bgfold-threshold">背景字数超过该值时默认折叠（0 表示默认展开）:</label>
+					<input type="number" min="0" id="aml-bgfold-threshold" value="${currentSettings.problemBackgroundFoldThreshold}">
+				</div>
+			</div>
+			<div id="aml-bgfold-disabled-notice" class="disabled-notice" style="display: ${currentSettings.problemBackgroundFoldEnabled ? "none" : "block"};">题目背景折叠功能已关闭，请在功能开关中开启。</div>
+		</div>
+		<div class="aml-settings-section aml-home-card">
 			<h4><i class="fa-regular fa-clock"></i> &nbsp;签名时间提示</h4>
 			<div id="aml-slogentime-section" style="display: ${currentSettings.slogenTimeEnabled ? "block" : "none"};">
 				<div class="aml-input-group">
@@ -5132,6 +5176,28 @@ async function all() {
 									discussNotice.style.display = "block";
 								}
 							}
+							if (feature.key === "problemBackgroundFoldEnabled") {
+								currentAMLSettings.problemBackgroundFoldEnabled = newValue;
+								const bgFoldSection = document.getElementById(
+									"aml-bgfold-section",
+								);
+								const bgFoldNotice = document.getElementById(
+									"aml-bgfold-disabled-notice",
+								);
+								if (newValue) {
+									bgFoldSection.style.display = "block";
+									bgFoldNotice.style.display = "none";
+									if (typeof window.__amlBgFoldRescan === "function") {
+										window.__amlBgFoldRescan();
+									}
+								} else {
+									bgFoldSection.style.display = "none";
+									bgFoldNotice.style.display = "block";
+									if (typeof window.__amlBgFoldUnfold === "function") {
+										window.__amlBgFoldUnfold();
+									}
+								}
+							}
 							if (feature.key === "slogenTimeEnabled") {
 								currentAMLSettings.slogenTimeEnabled = newValue;
 								if (!newValue && heartbeatInterval) {
@@ -5302,6 +5368,23 @@ async function all() {
 						);
 						saveAMLSetting("discussListLength", newValue);
 						discussLengthInput.value = newValue;
+					};
+				}
+				const bgFoldThresholdInput = document.querySelector(
+					"#aml-bgfold-threshold",
+				);
+				if (bgFoldThresholdInput) {
+					bgFoldThresholdInput.oninput = (e) => {
+						const newValue = Math.max(parseInt(e.target.value) || 0, 0);
+						saveAMLSetting("problemBackgroundFoldThreshold", newValue);
+						currentAMLSettings.problemBackgroundFoldThreshold = newValue;
+						bgFoldThresholdInput.value = newValue;
+						if (typeof window.__amlBgFoldUnfold === "function") {
+							window.__amlBgFoldUnfold();
+						}
+						if (typeof window.__amlBgFoldRescan === "function") {
+							window.__amlBgFoldRescan();
+						}
 					};
 				}
 				const benbenUidsInput = document.querySelector(
@@ -9909,6 +9992,117 @@ async function all() {
 					console.debug(e);
 				}
 			}
+			function setupProblemBackgroundFold() {
+				const problemPath = location.pathname;
+				if (!problemPath.startsWith("/problem/")) return;
+				if (/^\/problem\/(list|solution|statistics|discuss)/.test(problemPath)) return;
+				const threshold =
+					Number(currentAMLSettings.problemBackgroundFoldThreshold) || 0;
+
+				document.querySelectorAll("h2, h3, h4").forEach((heading) => {
+					if (heading.dataset.amlBgFold) return;
+					const headingText = (heading.textContent || "")
+						.replace(/#+\s*$/, "")
+						.trim();
+					if (headingText !== "题目背景") return;
+
+					const siblings = [];
+					let node = heading.nextElementSibling;
+					while (node && !["H2", "H3", "H4"].includes(node.tagName)) {
+						siblings.push(node);
+						node = node.nextElementSibling;
+					}
+					if (siblings.length === 0) {
+						heading.dataset.amlBgFold = "skip";
+						return;
+					}
+
+					const length = siblings.reduce(
+						(sum, el) => sum + (el.textContent || "").length,
+						0,
+					);
+					const autoFold = threshold > 0 && length > threshold;
+
+					const wrapper = document.createElement("div");
+					wrapper.className = "aml-bg-fold-content";
+					wrapper.style.display = autoFold ? "none" : "";
+					heading.after(wrapper);
+					siblings.forEach((el) => wrapper.appendChild(el));
+
+					const spacer = document.createElement("br");
+					spacer.className = "aml-bg-fold-spacer";
+					spacer.style.display = autoFold ? "" : "none";
+					wrapper.after(spacer);
+
+					const button = document.createElement("button");
+					button.type = "button";
+					button.className = "aml-bg-fold-btn";
+					button.textContent = autoFold ? "▶ 展开背景" : "▼ 折叠背景";
+					button.addEventListener("click", () => {
+						const collapsed = wrapper.style.display === "none";
+						wrapper.style.display = collapsed ? "" : "none";
+						spacer.style.display = collapsed ? "none" : "";
+						button.textContent = collapsed ? "▼ 折叠背景" : "▶ 展开背景";
+					});
+					heading.appendChild(button);
+					heading.dataset.amlBgFold = "done";
+				});
+			}
+			function unfoldProblemBackground() {
+				document
+					.querySelectorAll(".aml-bg-fold-content")
+					.forEach((wrapper) => {
+						const parent = wrapper.parentElement;
+						if (!parent) return;
+						while (wrapper.firstChild) {
+							parent.insertBefore(wrapper.firstChild, wrapper);
+						}
+						wrapper.remove();
+					});
+				document
+					.querySelectorAll(".aml-bg-fold-btn, .aml-bg-fold-spacer")
+					.forEach((el) => el.remove());
+				document.querySelectorAll("[data-aml-bg-fold]").forEach((el) => {
+					delete el.dataset.amlBgFold;
+				});
+			}
+			if (currentAMLSettings.problemBackgroundFoldEnabled) {
+				try {
+					if (typeof window.__amlBgFoldCleanup === "function") {
+						window.__amlBgFoldCleanup();
+					}
+					let bgFoldTimer = null;
+					const rescanProblemBackground = () => {
+						clearTimeout(bgFoldTimer);
+						bgFoldTimer = setTimeout(() => {
+							try {
+								setupProblemBackgroundFold();
+							} catch (e) {
+								console.debug(e);
+							}
+						}, 200);
+					};
+					const bgFoldObserver = new MutationObserver(
+						rescanProblemBackground,
+					);
+					bgFoldObserver.observe(document.body, {
+						childList: true,
+						subtree: true,
+					});
+					window.__amlBgFoldCleanup = () => {
+						bgFoldObserver.disconnect();
+						clearTimeout(bgFoldTimer);
+						window.__amlBgFoldRescan = null;
+						window.__amlBgFoldUnfold = null;
+						window.__amlBgFoldCleanup = null;
+					};
+					window.__amlBgFoldRescan = rescanProblemBackground;
+					window.__amlBgFoldUnfold = unfoldProblemBackground;
+					setupProblemBackgroundFold();
+				} catch (e) {
+					console.debug(e);
+				}
+			}
 			if (typeof addManagedEventListener !== 'function') {
 				window.addManagedEventListener = function (element, event, handler) {
 					element.addEventListener(event, handler);
@@ -14020,6 +14214,8 @@ ${problemText}
 			html.al-dark .aml-card-title,
 			html.al-dark .aml-input-group label { color: #e5e9f0 !important; }
 			html.al-dark .aml-feature-tag { background: #2f3545 !important; color: #a5b4fc !important; }
+			html.al-dark .aml-bg-fold-btn { color: #a5b4fc !important; border-color: #a5b4fc !important; background: transparent !important; }
+			html.al-dark .aml-bg-fold-btn:hover { color: #1b1f27 !important; background: #a5b4fc !important; }
 			html.al-dark .aml-feature-status.stable { background: #1f3a2b !important; color: #86efac !important; }
 			html.al-dark .aml-feature-status.beta { background: #3d3520 !important; color: #fde68a !important; }
 			html.al-dark .aml-feature-status.deprecated { background: #4a2026 !important; color: #fca5a5 !important; }
