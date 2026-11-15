@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.1
+// @version      1.5.2
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -530,7 +530,7 @@ if (GM_getValue("amlChatNotificationEnabled", true)) {
 }
 const originalFetch = window.fetch;
 window.fetch = function (url, options) {
-	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com") || url.includes("fastly.jsdelivr.net"))) {
+	if (typeof GM_xmlhttpRequest === "function" && typeof url === "string" && (url.includes("waline.amlg.top") || url.includes("unpkg.com") || url.includes("fastly.jsdelivr.net") || url.includes("contest-calendar-api.amlg.top"))) {
 		return new Promise(function (resolve, reject) {
 			let requestData = options?.body;
 			if (requestData instanceof FormData) {
@@ -567,6 +567,7 @@ window.fetch = function (url, options) {
 						status: response.status,
 						statusText: response.statusText,
 						headers: headers,
+						ok: response.status >= 200 && response.status < 300,
 						text: function () { return Promise.resolve(response.responseText); },
 						json: function () { return Promise.resolve(JSON.parse(response.responseText)); },
 					});
@@ -2308,7 +2309,8 @@ async function all() {
 				aiProblemAnalysisApiKey: GM_getValue("amlAIProblemAnalysisApiKey", ""),
 				aiProblemAnalysisModel: GM_getValue("amlAIProblemAnalysisModel", "gpt-3.5-turbo"),
 				autoJudgeEnabled: GM_getValue("amlAutoJudgeEnabled", true),
-			};
+			contestCalendarEnabled: GM_getValue("amlContestCalendarEnabled", true),
+		};
 			const settingKeyMap = {
 				vscodeLuoguEnabled: "amlVscodeLuoguEnabled",
 				autoSaveDiscussEnabled: "amlAutoSaveDiscussEnabled",
@@ -2415,7 +2417,8 @@ async function all() {
 				aiProblemAnalysisApiKey: "amlAIProblemAnalysisApiKey",
 				aiProblemAnalysisModel: "amlAIProblemAnalysisModel",
 				autoJudgeEnabled: "amlAutoJudgeEnabled",
-			};
+			contestCalendarEnabled: "amlContestCalendarEnabled",
+		};
 			const features = [
 				{
 					key: "slogenTimeEnabled",
@@ -2574,7 +2577,7 @@ async function all() {
 				{
 					key: "copyMarkdownEnabled",
 					label: "复制 Markdown",
-					desc: "页面右上角添加按钮复制当前内容 Markdown",
+					desc: "页面按 Ctrl(Command)+Alt+M 复制当前内容 Markdown",
 					tag: "功能",
 					status: "stable",
 				},
@@ -2600,12 +2603,19 @@ async function all() {
 					status: "stable",
 				},
 				{
-					key: "autoJudgeEnabled",
-					label: "自动测评样例",
-					desc: "在 IDE 模式下自动运行所有样例，全部 AC 后自动提交",
-					tag: "功能",
-					status: "stable",
-				},
+				key: "autoJudgeEnabled",
+				label: "自动测评样例",
+				desc: "在 IDE 模式下自动运行所有样例，全部 AC 后自动提交",
+				tag: "功能",
+				status: "stable",
+			},
+			{
+				key: "contestCalendarEnabled",
+				label: "比赛日历",
+				desc: "在设置面板中查看 Codeforces、AtCoder、洛谷的近期与即将开始的比赛",
+				tag: "功能",
+				status: "stable",
+			},
 				{
 					key: "emojiRenderingEnabled",
 					label: "表情渲染",
@@ -4721,6 +4731,14 @@ async function all() {
 				<div class="aml-tip">注意：仅支持 OpenAI Chat Completions API 格式，AI 不会输出代码，只会提供分析和思路指导。</div>
 			</div>
 			<div id="aml-aiproblemanalysis-disabled-notice" class="disabled-notice" style="display: ${currentSettings.aiProblemAnalysisEnabled ? "none" : "block"};">AI 题目分析功能已关闭，请在功能开关中开启。</div>
+	</div>
+		<div class="aml-settings-section aml-home-card">
+			<h4><i class="fas fa-calendar-alt"></i> &nbsp;比赛日历</h4>
+			<div>
+				<div id="aml-contest-calendar-container">
+					<div style="text-align:center;padding:20px;color:#888;"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>
+				</div>
+			</div>
 		</div>
         <div class="aml-settings-section aml-home-card">
 			<h4><i class="fas fa-bell"></i> &nbsp;授权注册提示</h4>
@@ -4973,7 +4991,8 @@ async function all() {
 							});
 						});
 				});
-				const customCSSInput = document.getElementById("aml-custom-css-input");
+			renderContestCalendar(false);
+			const customCSSInput = document.getElementById("aml-custom-css-input");
 				const cssPositionSelect = document.getElementById(
 					"aml-css-position-select",
 				);
@@ -13083,6 +13102,100 @@ ${problemText}
 					if (numA < numB) return -1;
 				}
 				return 0;
+			}
+			async function renderContestCalendar(force) {
+				const API_BASE = "https://contest-calendar-api.amlg.top";
+				const CACHE_KEY = "amlContestCalendarCache";
+				const CACHE_TTL = 24 * 60 * 60 * 1000;
+				const container = document.getElementById("aml-contest-calendar-container");
+				if (!container) return;
+
+				const sourceMeta = {
+					codeforces: { label: "CF", color: "#1f8acb", url: (c) => `https://codeforces.com/contest/${c.id}` },
+					atcoder: { label: "AT", color: "#27ae60", url: () => "https://atcoder.jp/contests/" },
+					luogu: { label: "洛谷", color: "#52c41a", url: (c) => `https://www.luogu.com.cn/contest/${c.luoguId || c.id}` },
+				};
+				const fmtTime = (iso) => (iso ? iso.slice(0, 16).replace("T", " ") : "");
+				const fmtDuration = (sec) => {
+					if (!sec) return "";
+					const h = Math.floor(sec / 3600);
+					const m = Math.floor((sec % 3600) / 60);
+					return h > 0 ? `${h}小时${m > 0 ? m + "分" : ""}` : `${m}分钟`;
+				};
+				const renderItem = (c) => {
+					const meta = sourceMeta[c.source] || { label: c.source, color: "#888", url: () => "#" };
+					return `<div class="aml-cc-item">
+						<span class="aml-cc-tag" style="background:${meta.color}">${meta.label}</span>
+						<a class="aml-cc-title" href="${meta.url(c)}" target="_blank" rel="noopener">${c.title}</a>
+						<span class="aml-cc-time">${fmtTime(c.start)} ~ ${fmtTime(c.end)}</span>
+						<span class="aml-cc-dur">${fmtDuration(c.duration)}</span>
+					</div>`;
+				};
+				const renderList = (list) =>
+					list.length
+						? list.map(renderItem).join("")
+						: '<div style="text-align:center;color:#888;padding:20px">暂无数据</div>';
+
+				const showLoading = () => {
+					container.innerHTML = '<div style="text-align:center;padding:20px;color:#888;"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
+				};
+				const renderData = (data, isCache) => {
+					const recent = data.recent || [];
+					const waiting = data.waiting || [];
+					const updated = data.generated_at ? fmtTime(data.generated_at) : "";
+					const cacheTag = isCache ? '<span style="color:#faad14;font-size:11px;">（缓存）</span>' : "";
+					container.innerHTML = `
+						<div class="aml-cc-meta">数据更新于 ${updated} · 近期 ${recent.length} 场 / 等待 ${waiting.length} 场 ${cacheTag}</div>
+						<div class="aml-cc-section"><h5>近期比赛（7天内）</h5><div class="aml-cc-list">${renderList(recent)}</div></div>
+						<div class="aml-cc-section"><h5>等待列表（7~62天）</h5><div class="aml-cc-list">${renderList(waiting)}</div></div>
+						<style>
+							.aml-cc-meta { color: #888; font-size: 12px; margin-bottom: 10px; }
+							.aml-cc-section h5 { margin: 12px 0 6px; color: #333; font-size: 13px; }
+							.aml-cc-list { display: flex; flex-direction: column; gap: 5px; max-height: 300px; overflow-y: auto; }
+							.aml-cc-item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #f7f8fa; border-radius: 5px; font-size: 12px; }
+							.aml-cc-tag { color: #fff; padding: 1px 6px; border-radius: 3px; font-size: 10px; white-space: nowrap; }
+							.aml-cc-title { flex: 1; color: #1f8acb; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+							.aml-cc-title:hover { text-decoration: underline; }
+							.aml-cc-time { color: #555; white-space: nowrap; }
+							.aml-cc-dur { color: #888; white-space: nowrap; }
+						</style>`;
+				};
+
+				if (!force) {
+					try {
+						const cached = GM_getValue(CACHE_KEY, null);
+						if (cached && Date.now() - cached.timestamp < CACHE_TTL && cached.data) {
+							renderData(cached.data, true);
+							return;
+						}
+					} catch (e) {}
+				}
+
+				showLoading();
+				try {
+					const metaRes = await fetch(`${API_BASE}/all.json`);
+					if (!metaRes.ok) throw new Error(`HTTP ${metaRes.status}`);
+					const meta = await metaRes.json();
+					const totalPages = meta.total_pages || 1;
+
+					const pagePromises = [];
+					for (let p = 1; p <= totalPages; p++) {
+						pagePromises.push(fetch(`${API_BASE}/all-${p}.json`).then((r) => r.json()));
+					}
+					const wlPromise = fetch(`${API_BASE}/all-wl.json`).then((r) => r.json());
+
+					const [pages, wl] = await Promise.all([Promise.all(pagePromises), wlPromise]);
+					const data = {
+						recent: pages.flatMap((p) => p.contests || []),
+						waiting: (wl && wl.contests) || [],
+						generated_at: meta.generated_at,
+					};
+
+					GM_setValue(CACHE_KEY, { data, timestamp: Date.now() });
+					renderData(data, false);
+				} catch (err) {
+					container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-circle"></i> 加载失败：${err && err.message ? err.message : String(err)}<br><span style="font-size:12px;color:#888;">点击右上角「重新加载」重试</span></div>`;
+				}
 			}
 			async function checkScriptVersion(op) {
 				const sources = [
