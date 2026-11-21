@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.6.2
+// @version      1.6.3
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -15415,14 +15415,19 @@ ${problemText}
 			const mode = GM_getValue("amlDarkMode", "auto");
 			const luoguTheme = document.documentElement.getAttribute("data-lcolor-theme");
 			const isDark = !isHomePage() && (mode === "dark" || (mode === "auto" && luoguTheme === "dark"));
+			const wasDark = document.documentElement.classList.contains("al-dark");
 			document.documentElement.classList.toggle("al-dark", isDark);
-			if (typeof unsafeWindow.__amlRecolorProblemColors === "function") {
+			if (wasDark !== isDark && typeof unsafeWindow.__amlRecolorProblemColors === "function") {
 				unsafeWindow.__amlRecolorProblemColors();
 			}
 		};
 		unsafeWindow.__amlApplyTheme = apply;
 		apply();
-		new MutationObserver(() => apply()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-lcolor-theme"] });
+		let themeDebounce = null;
+		new MutationObserver(() => {
+			clearTimeout(themeDebounce);
+			themeDebounce = setTimeout(apply, 100);
+		}).observe(document.documentElement, { attributes: true, attributeFilter: ["data-lcolor-theme"] });
 		let lastPath = window.location.pathname;
 		setInterval(() => {
 			if (window.location.pathname !== lastPath) {
