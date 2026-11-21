@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.6.1
+// @version      1.6.2
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -15091,7 +15091,6 @@ ${problemText}
 	}
 	main();
 	(function initAMLTheme() {
-		const media = window.matchMedia("(prefers-color-scheme: dark)");
 		GM_addStyle(`
 			.aml-select {
 				width: 100%;
@@ -15414,7 +15413,8 @@ ${problemText}
 				return p === "/" || p === "";
 			};
 			const mode = GM_getValue("amlDarkMode", "auto");
-			const isDark = !isHomePage() && (mode === "dark" || (mode === "auto" && media.matches));
+			const luoguTheme = document.documentElement.getAttribute("data-lcolor-theme");
+			const isDark = !isHomePage() && (mode === "dark" || (mode === "auto" && luoguTheme === "dark"));
 			document.documentElement.classList.toggle("al-dark", isDark);
 			if (typeof unsafeWindow.__amlRecolorProblemColors === "function") {
 				unsafeWindow.__amlRecolorProblemColors();
@@ -15422,8 +15422,7 @@ ${problemText}
 		};
 		unsafeWindow.__amlApplyTheme = apply;
 		apply();
-		if (media.addEventListener) media.addEventListener("change", apply);
-		else if (media.addListener) media.addListener(apply);
+		new MutationObserver(() => apply()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-lcolor-theme"] });
 		let lastPath = window.location.pathname;
 		setInterval(() => {
 			if (window.location.pathname !== lastPath) {
