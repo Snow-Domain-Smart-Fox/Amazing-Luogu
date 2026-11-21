@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.5.9
+// @version      1.6.0
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -13750,13 +13750,22 @@ ${problemText}
 				};
 				const renderData = (data, isCache) => {
 					const recent = data.recent || [];
-					const waiting = data.waiting || [];
+					const waiting = (data.waiting || []).slice()
+						.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+					const now = Date.now();
+					const ended = recent
+						.filter((c) => new Date(c.end).getTime() < now)
+						.sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
+					const upcoming = recent
+						.filter((c) => new Date(c.end).getTime() >= now)
+						.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 					const updated = data.generated_at ? fmtTime(data.generated_at) : "";
 					const cacheTag = isCache ? '<span style="color:#faad14;font-size:11px;">（缓存）</span>' : "";
 					container.innerHTML = `
-						<div class="aml-cc-meta">数据更新于 ${updated} · 近期 ${recent.length} 场 / 等待 ${waiting.length} 场 ${cacheTag}</div>
-						<div class="aml-cc-section"><h5>近期比赛（7天内）</h5><div class="aml-cc-list">${renderList(recent)}</div></div>
-						<div class="aml-cc-section"><h5>等待列表（7~62天）</h5><div class="aml-cc-list">${renderList(waiting)}</div></div>
+						<div class="aml-cc-meta">数据更新于 ${updated} · 已结束 ${ended.length} 场 / 即将开始 ${upcoming.length} 场 / 等待 ${waiting.length} 场 ${cacheTag}</div>
+						<div class="aml-cc-section"><h5>近期结束比赛（可赛后补题）</h5><div class="aml-cc-list">${renderList(ended)}</div></div>
+						<div class="aml-cc-section"><h5>即将开始 / 进行中比赛</h5><div class="aml-cc-list">${renderList(upcoming)}</div></div>
+						<div class="aml-cc-section"><h5>长期后的比赛（7~62天）</h5><div class="aml-cc-list">${renderList(waiting)}</div></div>
 						<style>
 							.aml-cc-meta { color: #888; font-size: 12px; margin-bottom: 10px; }
 							.aml-cc-section h5 { margin: 12px 0 6px; color: #333; font-size: 13px; }
@@ -13803,7 +13812,7 @@ ${problemText}
 					GM_setValue(CACHE_KEY, { data, timestamp: Date.now() });
 					renderData(data, false);
 				} catch (err) {
-					container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-circle"></i> 加载失败：${err && err.message ? err.message : String(err)}<br><span style="font-size:12px;color:#888;">点击右上角「重新加载」重试</span></div>`;
+					container.innerHTML = `<div style="text-align:center;padding:20px;color:#ef4444;"><i class="fas fa-exclamation-circle"></i> 加载失败：${err && err.message ? err.message : String(err)}<br><span style="font-size:12px;color:#888;">请稍后重新打开设置面板重试</span></div>`;
 				}
 			}
 			async function initFollowerChecker() {
