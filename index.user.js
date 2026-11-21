@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.6.0
+// @version      1.6.1
 // @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
@@ -73,6 +73,7 @@
 // @require      https://cdn.amlg.top/npm/@waline/client@3.15.2/dist/waline.umd.js?version=1.0.8
 // @require      https://cdn.amlg.top/npm/@trim21/gm-fetch@0.3.0/dist/gm_fetch.js?version=1.2.5
 // @require      https://cdn.amlg.top/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js?version=1.3.3
+// @require      https://cdn.amlg.top/npm/lottie-web@5.12.2/build/player/lottie.min.js?version=1.0.0
 // @resource     iziToastCSS https://cdn.amlg.top/npm/izitoast@1.4.0/dist/css/iziToast.min.css?version=1.0.1
 // @resource     icomoonCSS https://cdn.amlg.top/gh/marcelodolza/iziToast@master/docs/css/icomoon.css?version=1.0.1
 // @resource     hljs https://cdn.amlg.top/gh/highlightjs/cdn-release/build/styles/github.min.css?version=1.0.1
@@ -2324,6 +2325,7 @@ async function all() {
 					true,
 				),
 				emojiRenderingEnabled: GM_getValue("amlEmojiRenderingEnabled", true),
+				superEmojiEnabled: GM_getValue("amlSuperEmojiEnabled", false),
 				aiProblemAnalysisEnabled: GM_getValue("amlAIProblemAnalysisEnabled", false),
 				aiProblemAnalysisApiUrl: GM_getValue("amlAIProblemAnalysisApiUrl", ""),
 				aiProblemAnalysisApiKey: GM_getValue("amlAIProblemAnalysisApiKey", ""),
@@ -2438,6 +2440,7 @@ async function all() {
 				focusModeHideRecordFilters: "amlFocusModeHideRecordFilters",
 				chatNotificationEnabled: "amlChatNotificationEnabled",
 				emojiRenderingEnabled: "amlEmojiRenderingEnabled",
+				superEmojiEnabled: "amlSuperEmojiEnabled",
 				aiProblemAnalysisEnabled: "amlAIProblemAnalysisEnabled",
 				aiProblemAnalysisApiUrl: "amlAIProblemAnalysisApiUrl",
 				aiProblemAnalysisApiKey: "amlAIProblemAnalysisApiKey",
@@ -2647,6 +2650,13 @@ async function all() {
 					key: "emojiRenderingEnabled",
 					label: "表情渲染",
 					desc: "自动渲染聊天和评论中的 QQ 表情代码",
+					tag: "阅读",
+					status: "stable",
+				},
+				{
+					key: "superEmojiEnabled",
+					label: "QQ 超级表情",
+					desc: "使用 Lottie 动画渲染 QQ 超级表情（需先开启表情渲染），鼠标悬停时播放",
 					tag: "阅读",
 					status: "stable",
 				},
@@ -4623,6 +4633,7 @@ async function all() {
 							: feature.status === "beta"
 								? "Beta"
 								: "弃用";
+					const featureDisabled = feature.key === "superEmojiEnabled" && !currentSettings.emojiRenderingEnabled;
 					featuresHTML += `<div class="aml-feature-card" data-search-text="${feature.label} ${feature.desc} ${feature.tag} ${statusText}">
 				<div class="aml-card-header">
 					<span class="aml-feature-tag">${feature.tag}</span>
@@ -4630,7 +4641,7 @@ async function all() {
 				</div>
 				<div class="aml-card-body">
 					<div class="aml-card-title">
-						<input type="checkbox" id="aml-${feature.key}" ${currentSettings[feature.key] ? "checked" : ""}>
+						<input type="checkbox" id="aml-${feature.key}" ${currentSettings[feature.key] ? "checked" : ""} ${featureDisabled ? "disabled" : ""}>
 						<label for="aml-${feature.key}">${feature.label}</label>
 					</div>
 					<div class="aml-card-desc">${feature.desc}</div>
@@ -5193,6 +5204,16 @@ async function all() {
 						checkbox.onchange = (e) => {
 							const newValue = e.target.checked;
 							saveAMLSetting(feature.key, newValue);
+							if (feature.key === "emojiRenderingEnabled") {
+								const superCb = document.getElementById("aml-superEmojiEnabled");
+								if (superCb) {
+									superCb.disabled = !newValue;
+									if (!newValue) {
+										superCb.checked = false;
+										saveAMLSetting("superEmojiEnabled", false);
+									}
+								}
+							}
 							if (feature.key === "memoEnabled") {
 								const memoSection = document.getElementById("aml-memo-section");
 								const memoNotice = document.getElementById(
@@ -13411,6 +13432,26 @@ ${problemText}
 						["zuotj", "\u5DE6\u592A\u6781"],
 						["zyj", "\u7728\u773C\u775B"],
 					];
+						const superEmojis = [
+							["360", "亲亲"], ["361", "狗狗笑哭"], ["362", "好兄弟"], ["363", "狗狗可怜"],
+							["364", "超级赞"], ["365", "狗狗生气"], ["366", "芒狗"], ["367", "狗狗疑问"],
+							["368", "奥特笑哭"], ["369", "彩虹"], ["370", "祝贺"], ["371", "冒泡"],
+							["372", "气呼呼"], ["373", "忙"], ["374", "波波流泪"], ["375", "超级鼓掌"],
+							["376", "跺脚"], ["377", "嗨"], ["378", "企鹅笑哭"], ["379", "企鹅流泪"],
+							["380", "真棒"], ["381", "路过"], ["382", "emo"], ["383", "企鹅爱心"],
+							["384", "晚安"], ["385", "太气了"], ["386", "呜呜呜"], ["387", "太好笑"],
+							["388", "太头疼"], ["389", "太赞了"], ["390", "太头秃"], ["391", "太沧桑"],
+							["396", "狼狗"], ["397", "抛媚眼"], ["398", "超级ok"], ["399", "tui"],
+							["400", "快乐"], ["401", "超级转圈"], ["402", "别说话"], ["403", "出去玩"],
+							["404", "闪亮登场"], ["405", "好运来"], ["406", "姐是女王"], ["407", "我听听"],
+							["408", "臭美"], ["409", "送你花花"], ["410", "么么哒"], ["411", "一起嗨"],
+							["412", "开心"], ["413", "摇起来"],
+						];
+						r.push(...superEmojis);
+						const superEmojiAlias = {};
+						superEmojis.forEach(([id, name]) => { superEmojiAlias[name] = id; });
+						const SUPER_CDN = "https://cdn.amlg.top/amlg/emoji/";
+						const isSuperEmoji = (id) => /^\d{3}$/.test(id) && Number(id) >= 360;
 					var A = "/%EMOJI%([^<A-Za-z][^>]*<)",
 						E =
 							'<span class="lgse-emoji-code" style="color: #c8c8c8; font-size: 0.3em;">/%EMOJI%</span><img src="%SOURCE%" alt="%NAME%" title="%NAME%" class="lgse-emoji-image" width="28px" height="28px">$1';
@@ -13431,9 +13472,22 @@ ${problemText}
 							let t = !1,
 								n = `>${e.data} <`;
 							for (let c = 0; c < r.length; c++) {
-								let i = new RegExp(A.replace(/%EMOJI%/g, r[c][0]), "g"),
+								if (isSuperEmoji(r[c][0]) && !GM_getValue("amlSuperEmojiEnabled", false)) continue;
+								let i = new RegExp(A.replace(/%EMOJI%/g, r[c][0]), "g");
+								let l;
+								if (isSuperEmoji(r[c][0])) {
+									l = `<span class="aml-super-emoji" data-lottie-id="${r[c][0]}" title="/${r[c][0]} ${r[c][1]}" style="display:inline-block;width:24px;height:24px;vertical-align:middle;"></span>`;
+								} else {
 									l = E.replace(/%EMOJI%/g, r[c][0]).replace(/%NAME%/g, r[c][1]);
+								}
 								for (; i.test(n);) ((n = n.replace(i, l)), (t = !0));
+							}
+							if (GM_getValue("amlSuperEmojiEnabled", false)) {
+								for (const [name, numId] of Object.entries(superEmojiAlias)) {
+									let i = new RegExp(A.replace(/%EMOJI%/g, name), "g"),
+										l = `<span class="aml-super-emoji" data-lottie-id="${numId}" title="/${name}" style="display:inline-block;width:24px;height:24px;vertical-align:middle;"></span>`;
+									for (; i.test(n);) ((n = n.replace(i, l)), (t = !0));
+								}
 							}
 							return [t, n.substring(1, n.length - 2)];
 						}
@@ -13449,6 +13503,67 @@ ${problemText}
 									((t = t || i[0]), (e[n][c].lgse_replaced = "true"));
 								}
 						t && s("Replaced");
+						initSuperEmojiLotties();
+					}
+					function initSuperEmojiLotties() {
+						if (typeof lottie === "undefined") return;
+						if (!GM_getValue("amlSuperEmojiEnabled", false)) return;
+						if (!window.__amlLottieMemCache) window.__amlLottieMemCache = {};
+						if (!window.__amlLottiePending) window.__amlLottiePending = {};
+						const LOTTIE_TTL = 365 * 24 * 60 * 60 * 1000;
+						const getCached = (id) => {
+							if (window.__amlLottieMemCache[id]) return window.__amlLottieMemCache[id];
+							try {
+								const raw = GM_getValue("amlLottieCache_" + id, null);
+								if (raw && raw.ts && Date.now() - raw.ts < LOTTIE_TTL && raw.data) {
+									window.__amlLottieMemCache[id] = raw.data;
+									return raw.data;
+								}
+							} catch (e) {}
+							return null;
+						};
+						document.querySelectorAll(".aml-super-emoji:not([data-lottie-inited])").forEach((el) => {
+							const id = el.getAttribute("data-lottie-id");
+							if (!id) return;
+							el.setAttribute("data-lottie-inited", "true");
+							const render = (data) => {
+								if (!el.isConnected) return;
+								const anim = lottie.loadAnimation({
+									container: el,
+									renderer: "svg",
+									loop: false,
+									autoplay: false,
+									animationData: JSON.parse(JSON.stringify(data)),
+								});
+								anim.goToAndStop(0, true);
+								el.addEventListener("mouseenter", () => { anim.goToAndPlay(0, true); });
+								anim.addEventListener("complete", () => { anim.goToAndStop(0, true); });
+							};
+							const cached = getCached(id);
+							if (cached) { render(cached); return; }
+							if (window.__amlLottiePending[id]) {
+								window.__amlLottiePending[id].push(render);
+								return;
+							}
+							window.__amlLottiePending[id] = [render];
+							GM_xmlhttpRequest({
+								method: "GET",
+								url: SUPER_CDN + id + ".json",
+								responseType: "json",
+								onload: (res) => {
+									if (res.status >= 200 && res.status < 300 && res.response) {
+										window.__amlLottieMemCache[id] = res.response;
+										try { GM_setValue("amlLottieCache_" + id, { data: res.response, ts: Date.now() }); } catch (e) {}
+										(window.__amlLottiePending[id] || []).forEach((cb) => cb(res.response));
+									}
+									delete window.__amlLottiePending[id];
+								},
+								onerror: () => {
+									delete window.__amlLottiePending[id];
+									document.querySelectorAll(`.aml-super-emoji[data-lottie-id="${id}"]`).forEach((e) => e.removeAttribute("data-lottie-inited"));
+								},
+							});
+						});
 					}
 					const SCAN_INTERVAL = 1000;
 					const SEARCH_PANEL_ID = "qq-emoji-search-panel";
@@ -13471,7 +13586,9 @@ ${problemText}
 					var o = T;
 					function buildEmojiList() {
 						const list = [];
+						const superOn = GM_getValue("amlSuperEmojiEnabled", false);
 						r.forEach(([id, describe]) => {
+							if (isSuperEmoji(id) && !superOn) return;
 							list.push({
 								id: id,
 								describe: describe,
@@ -13547,15 +13664,24 @@ ${problemText}
 										);
 									}
 								};
-								const imgSrc = g[o["img-src"]].replace(/%EMOJI%/g, emoji.id);
-								item.innerHTML = `
-								<img src="${imgSrc}" style="width: 48px; height: 48px; vertical-align: middle;">
-								<div style="font-size: 10px; margin-top: 2px;">${emoji.describe}</div>
-								<div style="font-size: 10px; margin-top: 1px; color: gray;">/${emoji.id}</div>
-							`;
+								if (isSuperEmoji(emoji.id)) {
+									item.innerHTML = `
+									<span class="aml-super-emoji" data-lottie-id="${emoji.id}" style="display:inline-block;width:48px;height:48px;"></span>
+									<div style="font-size: 10px; margin-top: 2px;">${emoji.describe}</div>
+									<div style="font-size: 10px; margin-top: 1px; color: gray;">/${emoji.id}</div>
+								`;
+								} else {
+									const imgSrc = g[o["img-src"]].replace(/%EMOJI%/g, emoji.id);
+									item.innerHTML = `
+									<img src="${imgSrc}" style="width: 48px; height: 48px; vertical-align: middle;">
+									<div style="font-size: 10px; margin-top: 2px;">${emoji.describe}</div>
+									<div style="font-size: 10px; margin-top: 1px; color: gray;">/${emoji.id}</div>
+								`;
+								}
 								gridContainer.appendChild(item);
 							});
 							resultsDiv.appendChild(gridContainer);
+							initSuperEmojiLotties();
 						} else {
 							resultsDiv.innerHTML =
 								'<p style="text-align: center;">未找到匹配的表情。</p>';
