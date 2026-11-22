@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Amazing Luogu
 // @namespace    https://zym2013.dpdns.org/
-// @version      1.6.3
-// @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, Save Station Jumper, and More!
+// @version      1.6.4
+// @description  Amazing Luogu with Chat Markdown, Problem Colors, Cover Removal, Problem Jumper, and More!
 // @tag          洛谷,Luogu,洛谷美化,LuoguBeautification
 // @author       zhangyimin12345&yangrenrui
 // @icon         https://cdn.luogu.com.cn/upload/usericon/3.png
@@ -44,7 +44,6 @@
 // @connect      www.luogu.com.cn
 // @connect      lab.magiconch.com
 // @connect      yiyan.amlg.top
-// @connect      luogu.ac.cn
 // @connect      uapis.cn
 // @connect      amlg.top
 // @connect      cdn.amlg.top
@@ -2115,13 +2114,8 @@ async function all() {
 					true,
 				),
 				userSearchEnabled: GM_getValue("amlUserSearchEnabled", true),
-				autoSaveDiscussEnabled: GM_getValue("amlAutoSaveDiscussEnabled", false),
 				showUserIntroductionEnabled: GM_getValue(
 					"amlShowUserIntroductionEnabled",
-					true,
-				),
-				luoguComDiscussToComCnEnabled: GM_getValue(
-					"amlLuoguComDiscussToComCnEnabled",
 					true,
 				),
 				benbentopEnabled: GM_getValue("amlBenbentopEnabled", true),
@@ -2336,12 +2330,10 @@ async function all() {
 			};
 			const settingKeyMap = {
 				vscodeLuoguEnabled: "amlVscodeLuoguEnabled",
-				autoSaveDiscussEnabled: "amlAutoSaveDiscussEnabled",
 				showUserIntroductionEnabled: "amlShowUserIntroductionEnabled",
 				extendTaskEnabled: "amlExtendTaskEnabled",
 				benbenctrlenterEnabled: "amlBenbenctrlenterEnabled",
 				live2DEnabled: "amlLive2DEnabled",
-				luoguComDiscussToComCnEnabled: "amlLuoguComDiscussToComCnEnabled",
 				userEloColorEnabled: "amlUserEloColorEnabled",
 				userMarkEnabled: "amlUserMarkEnabled",
 				benbentopEnabled: "amlBenbentopEnabled",
@@ -2472,13 +2464,6 @@ async function all() {
 					status: "stable",
 				},
 				{
-					key: "luoguComDiscussToComCnEnabled",
-					label: "讨论自动切换",
-					desc: "把国际站讨论自动切换到国内站，无法访问的国内站讨论自动切换到保存站",
-					tag: "功能",
-					status: "stable",
-				},
-				{
 					key: "defaultCodeEnabled",
 					label: "代码缺省源",
 					desc: "在题目提交和 IDE 页面的代码框为空时，自动填充默认代码",
@@ -2552,13 +2537,6 @@ async function all() {
 					key: "codeforcesOriginDifEnabled",
 					label: "显示 Codeforces 原始难度",
 					desc: "在题目页面显示 Codeforces 原始难度，缓存时间为 24 小时，首次访问题目不会更改，需要刷新页面才能看到效果，API 来自 Codeforces",
-					tag: "功能",
-					status: "stable",
-				},
-				{
-					key: "autoSaveDiscussEnabled",
-					label: "在讨论页面按下 Ctrl+S 保存当前讨论",
-					desc: "在讨论页面按下 Ctrl+S 来保存当前查看的讨论到 luogu.ac.cn，API 来自 luogu.ac.cn",
 					tag: "功能",
 					status: "stable",
 				},
@@ -4199,7 +4177,6 @@ async function all() {
 						{ name: 'Better Luogu', icon: 'fas fa-puzzle-piece', type: 'tampermonkey', desc: '强大的洛谷插件', link: 'https://blg.volatiles.dpdns.org/' },
 						{ name: 'Argon Luogu 2026', icon: 'fa-brands fa-css', type: 'software', desc: '比 Argon Luogu 更兼容 Amazing Luogu ，而且更美丽', link: 'https://userstyles.world/style/28284/argon-luogu-dev-2026' },
 						{ name: 'OI CPP', icon: 'fa-solid fa-code', type: 'software', desc: '强大的 IDE', link: 'https://oicpp.mywwzh.top/' },
-						{ name: '洛谷档案馆', icon: 'fa-regular fa-floppy-disk', type: 'website', desc: '强大的洛谷保存站。', link: 'https://luogu.ac.cn/' },
 						{ name: 'S-A-OJ', icon: 'fa-brands fa-css', type: 'software', desc: '完美的 OJ - OJ 样式修改', link: 'https://userstyles.world/style/26790/sa-oj-oj-luoguatcoder'}
 					];
 				}
@@ -9344,24 +9321,6 @@ async function all() {
 					console.debug(e);
 				}
 			}
-			if (currentAMLSettings.luoguComDiscussToComCnEnabled && /^\/discuss\/\d+$/.test(location.pathname)) {
-				try {
-					function getPageStatusCode() {
-						const entry = performance.getEntriesByType("navigation")[0];
-						if (entry && entry.responseStatus) {
-							return entry.responseStatus;
-						}
-						return 0;
-					}
-					if (location.hostname.includes('.cn') && getPageStatusCode() != 200) {
-						location.href = location.href.replace("www.luogu.com.cn", "luogu.ac.cn").replace("luogu.com.cn", "luogu.ac.cn");
-					} else if (getPageStatusCode() != 200) {
-						location.hostname = "www.luogu.com.cn";
-					}
-				} catch (e) {
-					console.debug(e);
-				}
-			}
 			if (currentAMLSettings.live2DEnabled && !live2DInited) {
 				live2DInited = true;
 				(function () {
@@ -9718,85 +9677,6 @@ async function all() {
 								.parentElement.children[0].children[0].before(doc);
 						}
 					}
-				} catch (e) {
-					console.debug(e);
-				}
-			}
-			if (
-				currentAMLSettings.autoSaveDiscussEnabled &&
-				location.pathname.startsWith("/discuss/")
-			) {
-				try {
-					let discussId = location.pathname.split("/discuss/")[1].split("/")[0];
-					$(document).on("keydown", async function (e) {
-						if ((event.ctrlKey || event.metaKey) && e.key === "s") {
-							e.preventDefault();
-							try {
-								const url = "https://luogu.ac.cn/api/v1/save";
-								GM_xmlhttpRequest({
-									method: "POST",
-									url: url,
-									headers: {
-										accept: "text/x-component",
-										"accept-encoding": "gzip, deflate, br, zstd",
-										"accept-language":
-											"zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-										"content-type": "application/json",
-									},
-									data: JSON.stringify({ "content_type": "discuss", "id": discussId }),
-									onload: async function (response) {
-										if (response.status >= 200 && response.status < 300) {
-											console.debug("请求成功，返回数据：", response.responseText);
-											await Swal.fire({
-												title: "保存成功",
-												html: "讨论数据已保存到 luogu.ac.cn ！",
-												showCancelButton: false,
-												confirmButtonText: "确定",
-												icon: "success",
-											});
-										} else {
-											console.error(`HTTP error! Status: ${response.status}`);
-											await Swal.fire({
-												title: "保存失败",
-												html: "保存到 luogu.ac.cn 时发生错误！",
-												showCancelButton: false,
-												confirmButtonText: "确定",
-												icon: "error",
-											});
-										}
-									},
-									onerror: async function (error) {
-										await Swal.fire({
-											title: "保存失败",
-											html: "保存到 luogu.ac.cn 时发生错误！",
-											showCancelButton: false,
-											confirmButtonText: "确定",
-											icon: "error",
-										});
-									},
-									ontimeout: async function () {
-										console.error("请求超时");
-										await Swal.fire({
-											title: "保存失败",
-											html: "保存到 luogu.ac.cn 时发生错误！",
-											showCancelButton: false,
-											confirmButtonText: "确定",
-											icon: "error",
-										});
-									},
-									timeout: 10000,
-								});
-							} catch (error) {
-								await Swal.fire({
-									title: "保存失败",
-									html: "保存到 luogu.ac.cn 时发生错误！",
-									showCancelButton: false,
-									confirmButtonText: "确定",
-									icon: "error",
-								});
-							}
-						}
-					});
 				} catch (e) {
 					console.debug(e);
 				}
@@ -15651,7 +15531,7 @@ async function show_data_collection_notice() {
 	await show_updates();
 }
 async function show_updates() {
-	if (GM_getValue("updates_showed_1.4.9", false)) {
+	if (GM_getValue("updates_showed_1.6.4", false)) {
 		await show_cpoauth();
 		return;
 	}
@@ -15659,11 +15539,13 @@ async function show_updates() {
 		title: "更新说明",
 		html: `
             <div style="text-align: left; max-height: 400px; overflow-y: auto; padding: 10px; font-size: 14px; line-height: 1.7;">
-            	<h4>复制 Markdown 快捷键</h4>
-            	<p>新增快捷键 <b>Ctrl+Alt+M</b>（macOS 为 Command+Option+M），在文章、个人简介、比赛、题单、剪贴板等页面按下即可直接复制正文 Markdown，无需再点浮动按钮。</p>
-            	<h4>私信通知</h4>
-            	<p>私信通知功能已全面修复，已独家适配洛谷最新的私信推送机制，收到私信时支持弹出系统通知。</p>
-            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年10月30日</p>
+            	<h4>移除保存讨论功能</h4>
+            	<p>由于 <b>luogu.ac.cn</b> 已无法访问，原「在讨论页面按下 Ctrl+S 保存当前讨论」功能已移除，对应设置项与相关网络请求权限一并删除。</p>
+            	<h4>移除讨论自动切换</h4>
+            	<p>因保存站 <b>luogu.ac.cn</b> 已无法访问，「讨论自动切换」功能同时下线：不再把无法访问的讨论跳转到保存站，跨站跳转逻辑及对应设置项一并移除。</p>
+            	<h4>移除洛谷档案馆入口</h4>
+            	<p>实用网站列表中的「洛谷档案馆」外链已移除。</p>
+            	<p style="text-align: right; margin-top: 15px; color: #666;">最后更新日期：2026年11月22日</p>
 			</div>
         `,
 		width: '600px',
@@ -15672,7 +15554,7 @@ async function show_updates() {
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	});
-	GM_setValue("updates_showed_1.4.9", true);
+	GM_setValue("updates_showed_1.6.4", true);
 	await show_cpoauth();
 }
 async function show_cpoauth() {
